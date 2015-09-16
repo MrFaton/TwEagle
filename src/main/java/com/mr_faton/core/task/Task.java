@@ -1,7 +1,5 @@
 package com.mr_faton.core.task;
 
-import com.mr_faton.core.table.TwitterUser;
-
 /**
  * Created by Mr_Faton on 15.09.2015.
  */

@@ -31,4 +31,9 @@ public class TwEagle {
             executableThread.interrupt();
         }
     }
+
+    public void shutDown() {
+        stop();
+        taskControl.shutDown();
+    }
 }
