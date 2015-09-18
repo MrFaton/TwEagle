@@ -1,5 +1,0 @@
-INSERT INTO tweagle.twitter_messages (id, message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymised, posted) VALUES (1, 'Привет всем!!', 1, 'SomeGuy', 1, null, null, '2014-08-31', 0, 0);
-INSERT INTO tweagle.twitter_messages (id, message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymised, posted) VALUES (2, 'Жарко сегодня', 1, 'TestGuy', 1, null, null, '2013-08-31', 0, 0);
-INSERT INTO tweagle.twitter_messages (id, message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymised, posted) VALUES (3, 'блин, вот уже и осень пришла', 1, 'TestGuy2', 1, null, null, '2015-09-01', 0, 0);
-INSERT INTO tweagle.twitter_messages (id, message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymised, posted) VALUES (4, 'ещё пару деньков лета!!))', 1, 'TOto', 1, null, null, '2013-08-28', 0, 0);
-INSERT INTO tweagle.twitter_messages (id, message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymised, posted) VALUES (5, 'как же хочется чтобы такая пора длилась вечно!', 1, 'Foo', 1, null, null, '2015-03-14', 0, 0);

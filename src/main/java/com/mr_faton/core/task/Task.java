@@ -11,6 +11,7 @@ public interface Task extends Runnable {
     void setTime();
 
     void update();
+    void save();
 
     void setDailyParams();
 }

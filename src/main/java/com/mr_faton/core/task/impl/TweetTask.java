@@ -1,114 +1,160 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
-import com.mr_faton.core.dao.TwitterMessageDAO;
-import com.mr_faton.core.manager.TwitterUserManager;
-import com.mr_faton.core.table.TwitterMessage;
-import com.mr_faton.core.table.TwitterUser;
+import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.dao.TweetUserDAO;
+import com.mr_faton.core.dao.UserDAO;
+import com.mr_faton.core.exception.NoSuchEntityException;
+import com.mr_faton.core.table.Message;
+import com.mr_faton.core.table.TweetUser;
 import com.mr_faton.core.task.Task;
+import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import twitter4j.TwitterException;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 /**
- * Created by root on 16.09.2015.
+ * Created by Mr_Faton on 18.09.2015.
  */
-
-/*TODO finish this*/
 public class TweetTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.TweetTask");
-    private final TwitterUserManager twitterUserManager;
-    private final TwitterMessageDAO twitterMessagesDAO;
-    private final TwitterAPI twitterAPI;
     private boolean status = true;
-    private TwitterUser user = null;
+    private TweetUser tweetUser = null;
+
+    private final TwitterAPI twitterAPI;
+    private final TweetUserDAO tweetUserDAO;
+    private final MessageDAO messageDAO;
+
 
 
     public TweetTask(
-            TwitterUserManager twitterUserManager,
-            TwitterMessageDAO twitterMessagesDAO,
-            TwitterAPI twitterAPI) {
-        logger.debug("constructor");
-        this.twitterUserManager = twitterUserManager;
-        this.twitterMessagesDAO = twitterMessagesDAO;
+            TwitterAPI twitterAPI,
+            TweetUserDAO tweetUserDAO,
+            MessageDAO messageDAO,
+            UserDAO userDAO
+    ) {
         this.twitterAPI = twitterAPI;
+        this.tweetUserDAO = tweetUserDAO;
+        this.messageDAO = messageDAO;
     }
 
     @Override
     public boolean getStatus() {
+        logger.debug("get status => " + status);
         return status;
     }
 
     @Override
     public void setStatus(boolean status) {
+        logger.debug("change status => " + status);
         this.status = status;
     }
 
     @Override
     public long getTime() {
         logger.debug("get time");
-        if (user == null) {
-            logger.debug("no user for tweet, return Long.MAX_VALUE");
+        if (tweetUser == null) {
+            logger.debug("tweetUser == null");
             return Long.MAX_VALUE;
         }
-
-        logger.debug("user time is " + user.getNextTweet());
-        return user.getNextTweet();
+        return tweetUser.getNextTweet();
     }
 
     @Override
     public void setTime() {
-        logger.debug("set time for next tweet");
-        user.setNextTweet(evalNextTweetTime(user));
+        logger.debug("set time");
+        if (tweetUser == null) {
+            logger.debug("tweetUser == null");
+            return;
+        }
+        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
     }
 
     @Override
     public void update() {
-        logger.debug("get user for tne next tweet");
-        user = twitterUserManager.getUserForTweet();
+        logger.debug("update task");
+        try {
+            tweetUser = tweetUserDAO.getUserForTweet();
+        } catch (SQLException e) {
+            logger.warn("exception during load tweetUser for tweet from db");
+            tweetUser = null;
+            return;
+        } catch (NoSuchEntityException e) {
+            logger.debug("no tweetUser in db for tweet");
+            tweetUser = null;
+            return;
+        }
+    }
+
+    @Override
+    public void save() {
+        logger.debug("save used tweetUser into db");
+        try {
+            tweetUserDAO.updateUser(tweetUser);
+        } catch (SQLException e) {
+            logger.warn("exception during saving updating tweetUser in db");
+        }
     }
 
     @Override
     public void setDailyParams() {
-        logger.debug("set daily params for all enabled tweet users");
-        List<TwitterUser> userList = twitterUserManager.getUserList();
-        for (TwitterUser twitterUser : userList) {
-            if (twitterUser.getTweetStatus() && twitterUser.getLastUpdateDay() != TimeWizard.getCurDay()) {
-                twitterUser.setCurTweets(0);
-                twitterUser.setMaxTweets(evalMaxTweets(twitterUser));
-                twitterUser.setNextTweet(evalNextTweetTime(twitterUser));
-                twitterUser.setLastUpdateDay(TimeWizard.getCurDay());
+        logger.debug("set daily params");
+        try {
+            List<TweetUser> tweetUserList = tweetUserDAO.getUserList();
+            for (TweetUser tweetUser : tweetUserList) {
+                int curDay = TimeWizard.getCurDay();
+                if (curDay != tweetUser.getLastUpdateDay() && tweetUser.isTweet()) {
+                    tweetUser.setCurTweets(0);
+                    tweetUser.setMaxTweets(evalMaxTweets(tweetUser));
+                    tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+                    tweetUser.setLastUpdateDay(curDay);
+                }
             }
+            tweetUserDAO.updateUserList(tweetUserList);
+        } catch (SQLException e) {
+            logger.warn("exception while updating tweet tweetUser list", e);
+        } catch (NoSuchEntityException e) {
+            logger.debug("no tweet users in db");
         }
     }
 
-    /*TODO specially finish this*/
     @Override
     public void run() {
         logger.info("post tweet");
+        int currentTweets = tweetUser.getCurTweets();
+        int maxTweets = tweetUser.getMaxTweets();
+        if (currentTweets == maxTweets) {
+            logger.debug("done work, because currentTweets == maxTweets");
+            return;
+        }
+
         try {
-            int currentTweets = user.getCurTweets();
-            int maxTweets = user.getMaxTweets();
-            if (currentTweets == maxTweets) {
-                logger.debug("done work, because currentTweets == maxTweets");
+            int appLimit = twitterAPI.getAppLimit(tweetUser.getName());
+            if (appLimit == 0) {
+                logger.warn("application limit was exhausted");
                 return;
             }
+            Message message = messageDAO.getMessage(tweetUser.getName(), true);
+            long messageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
 
-            TwitterMessage twitterMessage = twitterMessagesDAO.getTweet(user.isMale());
+            logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + messageId + " " +
+                    "and text: " + message.getMessage());
 
-            twitterAPI.postTweet(user, twitterMessage.getMessage());
-            currentTweets++;
-            user.setCurTweets(currentTweets);
-            twitterMessagesDAO.updatePosted(twitterMessage);
-        } catch (SQLException e) {
-            logger.warn("exception while loading tweet fom DB", e);
+            int curTweets = tweetUser.getCurTweets();
+            tweetUser.setCurTweets(++curTweets);
+
+            messageDAO.updatePostedMessage(message);
+
         } catch (TwitterException e) {
-            logger.warn("exception while posting tweet", e);
+            e.printStackTrace();
+        } catch (NoSuchEntityException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -118,9 +164,8 @@ public class TweetTask implements Task {
     }
 
 
-
-    private int evalMaxTweets(TwitterUser twitterUser) {
-        logger.debug("evaluate max tweets for user " + twitterUser.getName());
+    private int evalMaxTweets(TweetUser tweetUser) {
+        logger.debug("evaluate max tweets for tweetUser " + tweetUser.getName());
 //        Date creationDate = twitterUser.getCreationDate();
 //        int min = 2;
 //        int max = 6;
@@ -129,11 +174,10 @@ public class TweetTask implements Task {
         return 3;
     }
 
-    private long evalNextTweetTime(TwitterUser twitterUser) {
-        logger.debug("evaluate next tweet time for user " + twitterUser.getName());
-        Date creationDate = twitterUser.getCreationDate();
-        int curTweets = twitterUser.getCurTweets();
-        int maxTweets = twitterUser.getMaxTweets();
+    private long evalNextTweetTime(TweetUser tweetUser) {
+        logger.debug("evaluate next tweet time for tweetUser " + tweetUser.getName());
+        int curTweets = tweetUser.getCurTweets();
+        int maxTweets = tweetUser.getMaxTweets();
 
         if (curTweets == maxTweets) {
             return Long.MAX_VALUE;

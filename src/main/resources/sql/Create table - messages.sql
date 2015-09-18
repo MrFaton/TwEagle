@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS tweagle.twitter_messages;
-CREATE TABLE tweagle.twitter_messages
+DROP TABLE IF EXISTS tweagle.messages;
+CREATE TABLE tweagle.messages
 (
   id INT AUTO_INCREMENT NOT NULL,
   message VARCHAR (150) NOT NULL,
@@ -8,8 +8,8 @@ CREATE TABLE tweagle.twitter_messages
   owner_male BOOLEAN NOT NULL,
   recipient VARCHAR (25),
   recipient_male BOOLEAN,
-  posted_date DATE NOT NULL,
-  synonymised BOOLEAN NOT NULL DEFAULT 0,
+  posted_date TIMESTAMP NOT NULL,
+  synonymized BOOLEAN NOT NULL DEFAULT 0,
   posted BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (id)
 );

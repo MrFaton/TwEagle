@@ -1,3 +1,0 @@
-INSERT INTO tweagle.twitter_donors (donor_name, male, take_messages, take_following, take_followers, take_status, take_messages_date, take_following_date, take_followers_date, take_status_date) VALUES ('Mr_Faton', 1, 0, 0, 0, 0, null, null, null, null);
-INSERT INTO tweagle.twitter_donors (donor_name, male, take_messages, take_following, take_followers, take_status, take_messages_date, take_following_date, take_followers_date, take_status_date) VALUES ('Sudden_kiss', 0, 0, 0, 0, 0, null, null, null, null);
-INSERT INTO tweagle.twitter_donors (donor_name, male, take_messages, take_following, take_followers, take_status, take_messages_date, take_following_date, take_followers_date, take_status_date) VALUES ('Wild_Happiness', 0, 0, 0, 0, 0, null, null, null, null);

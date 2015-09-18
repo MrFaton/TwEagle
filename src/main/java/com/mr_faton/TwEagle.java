@@ -1,6 +1,6 @@
 package com.mr_faton;
 
-import com.mr_faton.core.TaskControl;
+import com.mr_faton.core.TaskManager;
 import org.apache.log4j.Logger;
 
 /**
@@ -10,30 +10,30 @@ public class TwEagle {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.TwEagle");
     private Thread executableThread;
-    private final TaskControl taskControl;
+    private final TaskManager taskManager;
 
-    public TwEagle(TaskControl taskControl) {
+    public TwEagle(TaskManager taskManager) {
         logger.debug("constructor");
-        this.taskControl = taskControl;
+        this.taskManager = taskManager;
     }
 
     public void start() {
         logger.info("start Task Control");
-        taskControl.setState(true);
-        executableThread = new Thread(taskControl);
+        taskManager.setState(true);
+        executableThread = new Thread(taskManager);
         executableThread.start();
     }
 
     public void stop() {
         logger.info("stop Task Control");
         if (executableThread != null) {
-            taskControl.setState(false);
+            taskManager.setState(false);
             executableThread.interrupt();
         }
     }
 
     public void shutDown() {
         stop();
-        taskControl.shutDown();
+        taskManager.shutDown();
     }
 }

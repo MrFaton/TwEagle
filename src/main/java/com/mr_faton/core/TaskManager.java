@@ -15,9 +15,9 @@ import java.util.*;
 /**
  * Created by Mr_Faton on 15.09.2015.
  */
-public class TaskControl implements Runnable {
+public class TaskManager implements Runnable {
     private static final Logger logger = Logger.getLogger("" +
-            "com.mr_faton.core.TaskControl");
+            "com.mr_faton.core.TaskManager");
     private static final List<Task> taskList = new ArrayList<>();
     private final ExecutionPool executionPool;
     private final DBConnectionPool connectionPool;
@@ -27,7 +27,7 @@ public class TaskControl implements Runnable {
     private static int APP_STOP_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR"));
 
 
-    public TaskControl(ExecutionPool executionPool, DBConnectionPool connectionPool, TwitterUserManager userManager) throws SQLException {
+    public TaskManager(ExecutionPool executionPool, DBConnectionPool connectionPool, TwitterUserManager userManager) throws SQLException {
         logger.debug("constructor");
         this.executionPool = executionPool;
         this.connectionPool = connectionPool;
