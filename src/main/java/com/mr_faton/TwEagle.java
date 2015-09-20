@@ -4,7 +4,10 @@ import com.mr_faton.core.TaskManager;
 import org.apache.log4j.Logger;
 
 /**
- * Created by Mr_Faton on 15.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 15.09.2015
  */
 public class TwEagle {
     private static final Logger logger = Logger.getLogger("" +

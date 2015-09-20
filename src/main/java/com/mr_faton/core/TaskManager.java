@@ -1,7 +1,6 @@
 package com.mr_faton.core;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
-import com.mr_faton.core.manager.TwitterUserManager;
 import com.mr_faton.core.pool.db_connection.DBConnectionPool;
 import com.mr_faton.core.pool.execution.ExecutionPool;
 import com.mr_faton.core.task.Task;
@@ -9,36 +8,29 @@ import com.mr_faton.core.util.SettingsHolder;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Created by Mr_Faton on 15.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 15.09.2015
  */
 public class TaskManager implements Runnable {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.TaskManager");
     private static final List<Task> taskList = new ArrayList<>();
-    private final ExecutionPool executionPool;
+//    private final ExecutionPool executionPool;
     private final DBConnectionPool connectionPool;
-    private final TwitterUserManager userManager;
     private boolean state = true;
     private static int APP_START_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_START_HOUR"));
     private static int APP_STOP_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR"));
 
 
-    public TaskManager(ExecutionPool executionPool, DBConnectionPool connectionPool, TwitterUserManager userManager) throws SQLException {
+    public TaskManager(/*ExecutionPool executionPool, */DBConnectionPool connectionPool) {
         logger.debug("constructor");
-        this.executionPool = executionPool;
+//        this.executionPool = executionPool;
         this.connectionPool = connectionPool;
-        this.userManager = userManager;
-
-        try {
-            userManager.loadUserList();
-        } catch (SQLException e) {
-            logger.error("exception while loading user list from DB", e);
-            throw e;
-        }
     }
 
     public boolean getState() {
@@ -89,17 +81,16 @@ public class TaskManager implements Runnable {
                 if (sleepTime > 0) {
                     idle(sleepTime);
                 }
-
-                task.setTime();
-                executionPool.execute(task);
+                task.execute();
+                task.save();
+                task.update();
             }
 
         } catch (InterruptedException ex) {
             logger.info("Task Control was interrupted");
-            stop();
         } catch (Exception e) {
             logger.warn("exception during executing task", e);
-            stop();
+            state = false;
         }
     }
 
@@ -140,14 +131,6 @@ public class TaskManager implements Runnable {
         Thread.sleep(sleepTime);
     }
 
-    private void stop() {
-        state = false;
-        try {
-            userManager.saveUserList();
-        } catch (SQLException e) {
-            logger.error("exception while saving user list", e);
-        }
-    }
 
     private Task getNextTask() throws NoSuchEntityException {
         Task nextTask = null;
@@ -169,7 +152,7 @@ public class TaskManager implements Runnable {
     }
 
     public void shutDown() {
-        if (executionPool != null) executionPool.shutDown();
+//        if (executionPool != null) executionPool.shutDown();
         if (connectionPool != null) connectionPool.shutDown();
     }
 }

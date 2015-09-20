@@ -2,10 +2,12 @@ package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
 import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.dao.PostedMessageDAO;
 import com.mr_faton.core.dao.TweetUserDAO;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
+import com.mr_faton.core.table.PostedMessage;
 import com.mr_faton.core.table.TweetUser;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
@@ -14,6 +16,7 @@ import org.apache.log4j.Logger;
 import twitter4j.TwitterException;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,6 +31,7 @@ public class TweetTask implements Task {
     private final TwitterAPI twitterAPI;
     private final TweetUserDAO tweetUserDAO;
     private final MessageDAO messageDAO;
+    private final PostedMessageDAO postedMessageDAO;
 
 
 
@@ -35,11 +39,12 @@ public class TweetTask implements Task {
             TwitterAPI twitterAPI,
             TweetUserDAO tweetUserDAO,
             MessageDAO messageDAO,
-            UserDAO userDAO
+            PostedMessageDAO postedMessageDAO
     ) {
         this.twitterAPI = twitterAPI;
         this.tweetUserDAO = tweetUserDAO;
         this.messageDAO = messageDAO;
+        this.postedMessageDAO = postedMessageDAO;
     }
 
     @Override
@@ -64,8 +69,7 @@ public class TweetTask implements Task {
         return tweetUser.getNextTweet();
     }
 
-    @Override
-    public void setTime() {
+    private void setTime() {
         logger.debug("set time");
         if (tweetUser == null) {
             logger.debug("tweetUser == null");
@@ -90,7 +94,6 @@ public class TweetTask implements Task {
         }
     }
 
-    @Override
     public void save() {
         logger.debug("save used tweetUser into db");
         try {
@@ -123,14 +126,8 @@ public class TweetTask implements Task {
     }
 
     @Override
-    public void run() {
+    public void execute() {
         logger.info("post tweet");
-        int currentTweets = tweetUser.getCurTweets();
-        int maxTweets = tweetUser.getMaxTweets();
-        if (currentTweets == maxTweets) {
-            logger.debug("done work, because currentTweets == maxTweets");
-            return;
-        }
 
         try {
             int appLimit = twitterAPI.getAppLimit(tweetUser.getName());
@@ -144,17 +141,29 @@ public class TweetTask implements Task {
             logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + messageId + " " +
                     "and text: " + message.getMessage());
 
-            int curTweets = tweetUser.getCurTweets();
-            tweetUser.setCurTweets(++curTweets);
+            int currentTweets = tweetUser.getCurTweets();
+            int maxTweets = tweetUser.getMaxTweets();
+
+            currentTweets++;
+            tweetUser.setCurTweets(currentTweets);
+
+            if (currentTweets != maxTweets) {
+                tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+            } else {
+                tweetUser.setNextTweet(Long.MAX_VALUE);
+            }
 
             messageDAO.updatePostedMessage(message);
 
+            PostedMessage postedMessage = createPostedMessage(messageId, message);
+            postedMessageDAO.savePostedMessage(postedMessage);
+
         } catch (TwitterException e) {
-            e.printStackTrace();
+            logger.warn("exception while posting tweet", e);
         } catch (NoSuchEntityException e) {
-            e.printStackTrace();
+            logger.warn("exception", e);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.warn("some sql exception", e);
         }
     }
 
@@ -188,5 +197,18 @@ public class TweetTask implements Task {
         int rnd = RandomGenerator.getNumber(min, max);
         long nextTime = rnd * 1000 + System.currentTimeMillis();
         return nextTime;
+    }
+
+    private PostedMessage createPostedMessage(long messageId, Message message) {
+        PostedMessage postedMessage = new PostedMessage();
+        postedMessage.setMessage(message.getMessage());
+        postedMessage.setMessageId(messageId);
+        postedMessage.setTweet(message.isTweet());
+        postedMessage.setOwner(message.getOwner());
+        postedMessage.setRecipient(null);
+        Date postedDate = new Date(System.currentTimeMillis());
+        postedMessage.setPostedDate(postedDate);
+
+        return postedMessage;
     }
 }
