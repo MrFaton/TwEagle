@@ -10,7 +10,6 @@ import java.util.List;
  * Created by Mr_Faton on 18.09.2015.
  */
 public interface TweetUserDAO {
-    TweetUser getUserByName(String name) throws SQLException, NoSuchEntityException;
     TweetUser getUserForTweet() throws SQLException, NoSuchEntityException;
     List<TweetUser> getUserList() throws SQLException, NoSuchEntityException;
 

@@ -28,4 +28,11 @@ public class TimeWizard {
         Calendar calendar = Calendar.getInstance();
         return calendar.get(Calendar.HOUR_OF_DAY);
     }
+
+    /*TODO done*/
+    public static int monthDiff(Calendar startCalendar) {
+        Calendar currentCalendar = Calendar.getInstance();
+        int diffYear = currentCalendar.get(Calendar.YEAR) - startCalendar.get(Calendar.YEAR);
+        return diffYear * 12 + currentCalendar.get(Calendar.MONTH)
+    }
 }

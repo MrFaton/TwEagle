@@ -10,6 +10,7 @@ public class User {
     private String password;
     private String email;
     private Date creationDate;
+    private boolean male;
 
     private int messages;
     private int following;
@@ -48,6 +49,13 @@ public class User {
     }
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public boolean isMale() {
+        return male;
+    }
+    public void setMale(boolean male) {
+        this.male = male;
     }
 
 

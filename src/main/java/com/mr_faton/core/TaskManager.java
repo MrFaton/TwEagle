@@ -1,9 +1,10 @@
 package com.mr_faton.core;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
-import com.mr_faton.core.pool.db_connection.DBConnectionPool;
+import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.execution.ExecutionPool;
 import com.mr_faton.core.task.Task;
+import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
@@ -15,22 +16,22 @@ import java.util.*;
  *
  * @author Mr_Faton
  * @since 15.09.2015
+ * @version 1.5
  */
 public class TaskManager implements Runnable {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.TaskManager");
     private static final List<Task> taskList = new ArrayList<>();
-//    private final ExecutionPool executionPool;
-    private final DBConnectionPool connectionPool;
     private boolean state = true;
     private static int APP_START_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_START_HOUR"));
     private static int APP_STOP_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR"));
 
+    private final ExecutionPool executionPool;
+    private final TransactionManager transactionManager;
 
-    public TaskManager(/*ExecutionPool executionPool, */DBConnectionPool connectionPool) {
-        logger.debug("constructor");
-//        this.executionPool = executionPool;
-        this.connectionPool = connectionPool;
+    public TaskManager(ExecutionPool executionPool, TransactionManager transactionManager) {
+        this.executionPool = executionPool;
+        this.transactionManager = transactionManager;
     }
 
     public boolean getState() {
@@ -46,15 +47,9 @@ public class TaskManager implements Runnable {
 
 
 
-
     @Override
     public void run() {
         try {
-            int curHour = TimeWizard.getCurHour();
-            if (curHour <= APP_START_HOUR && curHour >= APP_STOP_HOUR) {
-                logger.info("out of work period");
-                idle(getSleepTimeForNextPeriod());
-            }
 
             setDailyParams();
             updateAllTasks();
@@ -65,13 +60,20 @@ public class TaskManager implements Runnable {
 
             while (state) {
                 logger.debug("new loop");
+                int curHour = TimeWizard.getCurHour();
+                if (curHour <= APP_START_HOUR && curHour >= APP_STOP_HOUR) {
+                    logger.info("out of work period");
+                    idle(getSleepTimeForNextPeriod());
+
+                    setDailyParams();
+                    updateAllTasks();
+                }
+
                 try {
                     task = getNextTask();
                 } catch (NoSuchEntityException noEntityEx) {
                     logger.info("no task to execute");
                     idle(getSleepTimeForNextPeriod());
-                    setDailyParams();
-                    updateAllTasks();
                     continue;
                 }
 
@@ -81,9 +83,9 @@ public class TaskManager implements Runnable {
                 if (sleepTime > 0) {
                     idle(sleepTime);
                 }
-                task.execute();
-                task.save();
-                task.update();
+
+                task.setNextTime();
+                executionPool.execute(task);
             }
 
         } catch (InterruptedException ex) {
@@ -98,18 +100,26 @@ public class TaskManager implements Runnable {
 
 
 
-
-
     private void updateAllTasks() {
-        for (Task task : taskList) {
-            task.update();
-        }
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                for (Task task : taskList) {
+                    task.update();
+                }
+            }
+        });
     }
 
     private void setDailyParams() {
-        for (Task task : taskList) {
-            task.setDailyParams();
-        }
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                for (Task task : taskList) {
+                    task.setDailyParams();
+                }
+            }
+        });
     }
 
     private long getSleepTimeForNextPeriod() {
@@ -131,7 +141,6 @@ public class TaskManager implements Runnable {
         Thread.sleep(sleepTime);
     }
 
-
     private Task getNextTask() throws NoSuchEntityException {
         Task nextTask = null;
         long minTaskTime = Long.MAX_VALUE;
@@ -152,7 +161,7 @@ public class TaskManager implements Runnable {
     }
 
     public void shutDown() {
-//        if (executionPool != null) executionPool.shutDown();
-        if (connectionPool != null) connectionPool.shutDown();
+        transactionManager.shutDown();
+        executionPool.shutDown();
     }
 }

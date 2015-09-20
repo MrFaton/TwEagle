@@ -1,13 +1,19 @@
 package com.mr_faton.core.pool.execution.impl;
 
+import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.execution.ExecutionPool;
 import com.mr_faton.core.task.Task;
+import com.mr_faton.core.util.Command;
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.*;
 
 /**
- * Created by Mr_Faton on 15.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 15.09.2015
+ * @version 1.0
  */
 public class OptimalExecutor implements ExecutionPool {
     private static final Logger logger = Logger.getLogger("" +
@@ -18,18 +24,33 @@ public class OptimalExecutor implements ExecutionPool {
     private static final int MAX_POOL_SIZE = 10;
     private static final int ROOT_THREADS = 1;
     private static final long THREAD_LIFE_TIME = 2L;
+    private final TransactionManager transactionManager;
 
-    public OptimalExecutor() {
+    public OptimalExecutor(TransactionManager transactionManager) {
         logger.debug("constructor");
         queue = new ArrayBlockingQueue<>(QUEUE_SIZE, true);
         pool =
                 new ThreadPoolExecutor(ROOT_THREADS, MAX_POOL_SIZE, THREAD_LIFE_TIME, TimeUnit.MINUTES, queue);
+        this.transactionManager = transactionManager;
     }
 
     @Override
-    public void execute(Task task) throws Exception {
+    public void execute(final Task task) throws Exception {
         logger.debug("execute " + task);
-        pool.execute(task);
+
+        pool.execute(new Runnable() {
+            @Override
+            public void run() {
+                transactionManager.doInTransaction(new Command() {
+                    @Override
+                    public void doCommands() throws Exception {
+                        task.execute();
+                        task.save();
+                        task.update();
+                    }
+                });
+            }
+        });
     }
 
     @Override

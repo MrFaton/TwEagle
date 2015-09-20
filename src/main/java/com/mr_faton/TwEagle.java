@@ -21,14 +21,14 @@ public class TwEagle {
     }
 
     public void start() {
-        logger.info("start Task Control");
+        logger.info("start TaskControl");
         taskManager.setState(true);
         executableThread = new Thread(taskManager);
         executableThread.start();
     }
 
     public void stop() {
-        logger.info("stop Task Control");
+        logger.info("stop TaskControl");
         if (executableThread != null) {
             taskManager.setState(false);
             executableThread.interrupt();
