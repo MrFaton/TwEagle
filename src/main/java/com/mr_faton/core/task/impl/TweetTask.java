@@ -16,11 +16,9 @@ import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import twitter4j.TwitterException;
 
-import javax.jws.soap.SOAPBinding;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -198,44 +196,43 @@ public class TweetTask implements Task {
 
         switch (lifeMonth) {
             case 0: {
-                RandomGenerator.getNumberFromZeroToRequirement();
-                break;
+                return RandomGenerator.getNumberFromZeroToRequirement(4);
             }
             case 1: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(8);
             }
             case 2: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(12);
             }
             case 3: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(16);
             }
             case 4: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(20);
             }
             case 5: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(24);
             }
             case 6: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(28);
             }
             case 7: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(32);
             }
             case 8: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(36);
             }
             case 9: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(40);
             }
             case 10: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(44);
             }
             case 11: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(48);
             }
             default: {
-                return RandomGenerator.getNumberFromZeroToRequirement();
+                return RandomGenerator.getNumberFromZeroToRequirement(52);
             }
         }
 
@@ -257,8 +254,7 @@ public class TweetTask implements Task {
         int min = 10;
         int max = 90;
         int rnd = RandomGenerator.getNumber(min, max);
-        long nextTime = rnd * 1000 + System.currentTimeMillis();
-        return nextTime;
+        return rnd * 1000 + System.currentTimeMillis();
     }
 
     private PostedMessage createPostedMessage(long messageId, Message message) {
