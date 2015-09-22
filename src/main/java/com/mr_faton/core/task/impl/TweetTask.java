@@ -18,7 +18,9 @@ import twitter4j.TwitterException;
 
 import javax.jws.soap.SOAPBinding;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -189,13 +191,56 @@ public class TweetTask implements Task {
     private int evalMaxTweets(TweetUser tweetUser) throws SQLException, NoSuchEntityException {
         logger.debug("evaluate max tweets for tweetUser " + tweetUser.getName());
         User user = userDAO.getUserByName(tweetUser.getName());
-        Date creationDate = user.getCreationDate();
-//        Date creationDate = twitterUser.getCreationDate();
-//        int min = 2;
-//        int max = 6;
-//        int rnd = RandomGenerator.getNumber(min, max);
-//        return rnd;
-        return 3;
+        Calendar creationDate = Calendar.getInstance();
+        creationDate.setTime(user.getCreationDate());
+
+        int lifeMonth = TimeWizard.monthDiff(creationDate);
+
+        switch (lifeMonth) {
+            case 0: {
+                RandomGenerator.getNumberFromZeroToRequirement();
+                break;
+            }
+            case 1: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 2: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 3: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 4: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 5: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 6: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 7: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 8: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 9: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 10: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            case 11: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+            default: {
+                return RandomGenerator.getNumberFromZeroToRequirement();
+            }
+        }
+
+
+//        return 3;
     }
 
     private long evalNextTweetTime(TweetUser tweetUser) {
@@ -203,7 +248,9 @@ public class TweetTask implements Task {
         int curTweets = tweetUser.getCurTweets();
         int maxTweets = tweetUser.getMaxTweets();
 
-        if (curTweets == maxTweets) {
+        int tempCurTweets =  curTweets + 1;
+
+        if (tempCurTweets == maxTweets) {
             return Long.MAX_VALUE;
         }
 

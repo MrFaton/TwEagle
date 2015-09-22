@@ -31,8 +31,13 @@ public class TimeWizard {
 
     /*TODO done*/
     public static int monthDiff(Calendar startCalendar) {
-        Calendar currentCalendar = Calendar.getInstance();
-        int diffYear = currentCalendar.get(Calendar.YEAR) - startCalendar.get(Calendar.YEAR);
-        return diffYear * 12 + currentCalendar.get(Calendar.MONTH)
+        Calendar curCalendar = Calendar.getInstance();
+
+        int startCalendarDays = (startCalendar.get(Calendar.YEAR) * 365) + ((startCalendar.get(Calendar.MONTH) + 1) * 30) + startCalendar.get(Calendar.DAY_OF_MONTH);
+        int curCalendarDays = (curCalendar.get(Calendar.YEAR) * 365) + ((curCalendar.get(Calendar.MONTH) + 1) * 30) + curCalendar.get(Calendar.DAY_OF_MONTH);
+
+        int diffDays = curCalendarDays - startCalendarDays;
+
+        return diffDays / 30;
     }
 }
