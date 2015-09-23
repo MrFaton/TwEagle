@@ -7,12 +7,12 @@ package com.mr_faton.core.task.util;
  * @since 22.09.2015
  */
 public interface PostStrategy {
-    int QUICK_FAST = 0;
-    int FAST = 1;
-    int QUICK_MEDIUM = 2;
-    int MEDIUM = 3;
-    int QUICK_SLOW = 4;
-    int SLOW = 5;
+    int QUICK_FAST = 1;
+    int FAST = 2;
+    int QUICK_MEDIUM = 3;
+    int MEDIUM = 4;
+    int QUICK_SLOW = 5;
+    int SLOW = 6;
 
     int QUICK_FAST_PERCENT = 15;
     int FAST_PERCENT = 30;

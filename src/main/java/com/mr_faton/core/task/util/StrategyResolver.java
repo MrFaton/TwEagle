@@ -46,7 +46,7 @@ public class StrategyResolver {
     }
 
     private static int evalPartOfTheDay() {
-        return RandomGenerator.getNumberFromZeroToRequirement(5); //5 - all parts of the day
+        return RandomGenerator.getNumber(1, 6); //6 - all parts of the day
     }
 
     private static int evalStrategyIndex() {
