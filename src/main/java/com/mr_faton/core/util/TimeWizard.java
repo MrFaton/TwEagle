@@ -29,7 +29,6 @@ public class TimeWizard {
         return calendar.get(Calendar.HOUR_OF_DAY);
     }
 
-    /*TODO done*/
     public static int monthDiff(Calendar startCalendar) {
         Calendar curCalendar = Calendar.getInstance();
 
@@ -39,5 +38,15 @@ public class TimeWizard {
         int diffDays = curCalendarDays - startCalendarDays;
 
         return diffDays / 30;
+    }
+
+    public static long getStartTimeForUser(long startTime, long stopTime, int dayPercent) {
+        long totalWorkPeriod = stopTime - startTime;
+        return totalWorkPeriod / 100 * dayPercent;
+    }
+
+    public static long getStopTimeForUser(long startTime, long stopTime, int dayPercent, int strategyPercent) {
+        long totalWorkPeriod = stopTime - startTime;
+
     }
 }
