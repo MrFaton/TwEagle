@@ -39,14 +39,4 @@ public class TimeWizard {
 
         return diffDays / 30;
     }
-
-    public static long getStartTimeForUser(long startTime, long stopTime, int dayPercent) {
-        long totalWorkPeriod = stopTime - startTime;
-        return totalWorkPeriod / 100 * dayPercent;
-    }
-
-    public static long getStopTimeForUser(long startTime, long stopTime, int dayPercent, int strategyPercent) {
-        long totalWorkPeriod = stopTime - startTime;
-
-    }
 }
