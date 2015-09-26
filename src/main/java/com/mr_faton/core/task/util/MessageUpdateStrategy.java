@@ -16,8 +16,6 @@ import java.util.Map;
 public class MessageUpdateStrategy {
     private static final Map<String, Map<String, Long>> strategyHolder = new HashMap<>();
 
-//    private static final String DAY_PERCENT = "dayPercent";
-//    private static final String UPDATE_SLOWDOWN = "updateSlowdown";
     private static final String START_TIME = "startTime";
     private static final String STOP_TIME = "stopTime";
 
