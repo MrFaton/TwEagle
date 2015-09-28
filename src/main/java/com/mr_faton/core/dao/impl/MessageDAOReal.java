@@ -1,7 +1,6 @@
 package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import org.apache.log4j.Logger;
 
@@ -114,7 +113,7 @@ public class MessageDAOReal implements MessageDAO {
                 "tweet = 1 AND " +
                 "owner_male = ? AND " +//1
                 "posted_date = ? AND " +//2
-                "synonymised = 1 AND " +
+                "synonymized = 1 AND " +
                 "posted = 0 " +
                 "LIMIT 1;";
 
@@ -160,7 +159,7 @@ public class MessageDAOReal implements MessageDAO {
                 "owner_male = ? AND " +//1
                 "posted_date >= ? AND " +//2
                 "posted_date <= ? AND " +//3
-                "synonymised = 1 AND " +
+                "synonymized = 1 AND " +
                 "posted = 0 " +
                 "LIMIT 1;";
 
@@ -223,7 +222,7 @@ public class MessageDAOReal implements MessageDAO {
                 "SELECT * FROM tweagle.messages WHERE " +
                 "tweet = 1 AND " +
                 "owner_male = ? AND " +//1
-                "synonymised = 1 AND " +
+                "synonymized = 1 AND " +
                 "posted = 0 " +
                 "LIMIT 1;";
 
@@ -231,7 +230,7 @@ public class MessageDAOReal implements MessageDAO {
 
         Connection connection = dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet = null;
+        ResultSet resultSet;
 
         preparedStatement = connection.prepareStatement(SQL);
 
@@ -260,7 +259,7 @@ public class MessageDAOReal implements MessageDAO {
 
         Connection connection = dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet = null;
+        ResultSet resultSet;
 
         preparedStatement = connection.prepareStatement(SQL);
 

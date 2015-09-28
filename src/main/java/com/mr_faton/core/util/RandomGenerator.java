@@ -11,4 +11,8 @@ public class RandomGenerator {
     public static int getNumber(int min_number, int max_number) {
         return min_number + (int) (Math.random() * ((max_number - min_number) + 1));
     }
+
+    public static boolean getRandomBoolean() {
+        return new Random().nextBoolean();
+    }
 }

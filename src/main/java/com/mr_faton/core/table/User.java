@@ -9,8 +9,8 @@ public class User {
     private String name;
     private String password;
     private String email;
-    private Date creationDate;
     private boolean male;
+    private Date creationDate;
 
     private int messages;
     private int following;

@@ -18,6 +18,7 @@ public class MessageUpdateStrategy {
 
     private static final String START_TIME = "startTime";
     private static final String STOP_TIME = "stopTime";
+    private static final String FIXED_RANGE = "fixedRange";
 
     private static final int MIN_DAY_PERCENT = 5;
     private static final int MAX_DAY_PERCENT = 80;
@@ -51,7 +52,7 @@ public class MessageUpdateStrategy {
         appStopTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR")));
         appStopTime.set(Calendar.MINUTE, 0);
 
-        long startUserTime = evalStartTime(appStartTime.getTimeInMillis(), appStopTime.getTimeInMillis(), dayPercent);
+        long startUserTime = evalStartTime(appStopTime.getTimeInMillis(), dayPercent);
         long stopUserTime = evalStopTime(startUserTime, appStopTime.getTimeInMillis(), slowdownPercent);
 
         Map<String, Long> timeParameters = new HashMap<>(2, 1f);
@@ -61,10 +62,11 @@ public class MessageUpdateStrategy {
         strategyHolder.put(userName, timeParameters);
     }
 
-    private static long evalStartTime(long appStartTime, long appStopTime, int dayPercent) {
-        long totalWorkPeriod = appStopTime - appStartTime;
+    private static long evalStartTime(long appStopTime, int dayPercent) {
+        long currentTime = System.currentTimeMillis();
+        long totalWorkPeriod = appStopTime - currentTime;
         long offset =  totalWorkPeriod * dayPercent / 100;
-        return appStartTime + offset;
+        return currentTime + offset;
     }
 
     private static long evalStopTime(long userStartTime, long appStopTime, int slowdownPercent) {
@@ -72,6 +74,5 @@ public class MessageUpdateStrategy {
         long offset = workPeriod * slowdownPercent / 100;
         return userStartTime + offset;
     }
-
 }
 /*TODO test and debug this class*/

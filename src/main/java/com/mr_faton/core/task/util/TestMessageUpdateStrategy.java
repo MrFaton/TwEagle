@@ -3,6 +3,7 @@ package com.mr_faton.core.task.util;
 import com.mr_faton.core.util.SettingsHolder;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * Description
@@ -19,6 +20,12 @@ public class TestMessageUpdateStrategy {
             long to = MessageUpdateStrategy.getStopTimeForUser(name);
             long total = (to - from) / 1000 / 60;
             System.out.println(name + " => " + from + " - " + to + " = " + total + " total min");
+
+            Calendar calFrom = Calendar.getInstance();
+            Calendar calTo = Calendar.getInstance();
+            calFrom.setTimeInMillis(from);
+            calTo.setTimeInMillis(to);
+            System.out.printf("%tH:%<tM:%<tS - %tH:%<tM:%<tS\n", calFrom, calTo);
         }
     }
 }

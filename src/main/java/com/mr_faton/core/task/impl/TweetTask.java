@@ -5,12 +5,14 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.PostedMessageDAO;
 import com.mr_faton.core.dao.TweetUserDAO;
 import com.mr_faton.core.dao.UserDAO;
+import com.mr_faton.core.exception.LimitExhausted;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.table.PostedMessage;
 import com.mr_faton.core.table.TweetUser;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.task.Task;
+import com.mr_faton.core.task.util.MessageUpdateStrategy;
 import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
@@ -20,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Description
@@ -145,11 +148,7 @@ public class TweetTask implements Task {
         logger.info("post tweet");
 
         try {
-            int appLimit = twitterAPI.getAppLimit(tweetUser.getName());
-            if (appLimit == 0) {
-                logger.warn("application limit was exhausted");
-                return;
-            }
+
 
             User user = userDAO.getUserByName(tweetUser.getName());
 
@@ -169,6 +168,8 @@ public class TweetTask implements Task {
             PostedMessage postedMessage = createPostedMessage(messageId, message);
             postedMessageDAO.savePostedMessage(postedMessage);
 
+        } catch (LimitExhausted limitExhausted) {
+            logger.warn(limitExhausted.getMessage());
         } catch (TwitterException e) {
             logger.warn("exception while posting tweet", e);
             tweetUser.setTweet(false);
@@ -193,57 +194,65 @@ public class TweetTask implements Task {
         creationDate.setTime(user.getCreationDate());
 
         int lifeMonth = TimeWizard.monthDiff(creationDate);
+        lifeMonth++;
+        if (lifeMonth >= 12) lifeMonth = 12;
+        int maxPost = lifeMonth * 4;
+        return RandomGenerator.getNumberFromZeroToRequirement(maxPost);
 
-        switch (lifeMonth) {
-            case 0: {
-                return RandomGenerator.getNumberFromZeroToRequirement(4);
-            }
-            case 1: {
-                return RandomGenerator.getNumberFromZeroToRequirement(8);
-            }
-            case 2: {
-                return RandomGenerator.getNumberFromZeroToRequirement(12);
-            }
-            case 3: {
-                return RandomGenerator.getNumberFromZeroToRequirement(16);
-            }
-            case 4: {
-                return RandomGenerator.getNumberFromZeroToRequirement(20);
-            }
-            case 5: {
-                return RandomGenerator.getNumberFromZeroToRequirement(24);
-            }
-            case 6: {
-                return RandomGenerator.getNumberFromZeroToRequirement(28);
-            }
-            case 7: {
-                return RandomGenerator.getNumberFromZeroToRequirement(32);
-            }
-            case 8: {
-                return RandomGenerator.getNumberFromZeroToRequirement(36);
-            }
-            case 9: {
-                return RandomGenerator.getNumberFromZeroToRequirement(40);
-            }
-            case 10: {
-                return RandomGenerator.getNumberFromZeroToRequirement(44);
-            }
-            case 11: {
-                return RandomGenerator.getNumberFromZeroToRequirement(48);
-            }
-            default: {
-                return RandomGenerator.getNumberFromZeroToRequirement(52);
-            }
-        }
+//        switch (lifeMonth) {
+//            case 0: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(4);
+//            }
+//            case 1: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(8);
+//            }
+//            case 2: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(12);
+//            }
+//            case 3: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(16);
+//            }
+//            case 4: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(20);
+//            }
+//            case 5: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(24);
+//            }
+//            case 6: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(28);
+//            }
+//            case 7: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(32);
+//            }
+//            case 8: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(36);
+//            }
+//            case 9: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(40);
+//            }
+//            case 10: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(44);
+//            }
+//            case 11: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(48);
+//            }
+//            default: {
+//                return RandomGenerator.getNumberFromZeroToRequirement(52);
+//            }
+//        }
 
 
 //        return 3;
     }
 
+
+/*TODO debug*/
     private long evalNextTweetTime(TweetUser tweetUser) {
         logger.debug("evaluate next tweet time for tweetUser " + tweetUser.getName());
         int curTweets = tweetUser.getCurTweets();
         int maxTweets = tweetUser.getMaxTweets();
+
+        if (curTweets == 0) return MessageUpdateStrategy.getStartTimeForUser(tweetUser.getName());
 
         int tempCurTweets =  curTweets + 1;
 
@@ -251,10 +260,27 @@ public class TweetTask implements Task {
             return Long.MAX_VALUE;
         }
 
-        int min = 10;
-        int max = 90;
-        int rnd = RandomGenerator.getNumber(min, max);
-        return rnd * 1000 + System.currentTimeMillis();
+        final int maxDistancePercent = 50;
+
+        long startUserTime = MessageUpdateStrategy.getStartTimeForUser(tweetUser.getName());
+        long stopUserTime = MessageUpdateStrategy.getStopTimeForUser(tweetUser.getName());
+        long fixedRange = (stopUserTime - startUserTime) / tweetUser.getMaxTweets();
+        int fixedRangePercent = RandomGenerator.getNumberFromZeroToRequirement(maxDistancePercent);
+        long floatRange = (fixedRange * fixedRangePercent / 100);
+
+        long fixedNextTimePosting = (fixedRange * curTweets) + startUserTime;
+        boolean plus = RandomGenerator.getRandomBoolean();
+
+        return plus ? (fixedNextTimePosting + floatRange):(fixedNextTimePosting - floatRange);
+
+
+
+
+
+//        int min = 10;
+//        int max = 90;
+//        int rnd = RandomGenerator.getNumber(min, max);
+//        return rnd * 1000 + System.currentTimeMillis();
     }
 
     private PostedMessage createPostedMessage(long messageId, Message message) {

@@ -16,5 +16,5 @@ public interface TweetUserDAO {
     void updateUser(TweetUser user) throws SQLException;
     void updateUserList(List<TweetUser> userList) throws SQLException;
 
-    void addUser(TweetUser user) throws SQLException;
+    void addUser(String userName) throws SQLException;
 }
