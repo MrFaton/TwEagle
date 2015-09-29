@@ -64,7 +64,7 @@ public class TransactionManagerReal extends TransactionManagerBase {
 
 
     @Override
-    public void doInTransaction(Command command) {
+    public void doInTransaction(Command command) throws Exception{
         logger.debug("start transaction");
         Connection connection = null;
         try {
@@ -84,8 +84,10 @@ public class TransactionManagerReal extends TransactionManagerBase {
                     logger.debug("roll back connection");
                 } catch (SQLException e) {
                     logger.warn("exception while rollback connection", e);
+                    throw e;
                 }
             }
+            throw ex;
         } finally {
             if (connection != null) {
                 try {

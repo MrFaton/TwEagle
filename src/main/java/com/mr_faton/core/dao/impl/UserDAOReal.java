@@ -29,6 +29,7 @@ public class UserDAOReal implements UserDAO {
 
     @Override
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
+        logger.debug("get user by name " + name);
         final String SQL = "" +
                 "SELECT * FROM tweagle.users WHERE name = ?;";
         Connection connection = dataSource.getConnection();
@@ -49,6 +50,7 @@ public class UserDAOReal implements UserDAO {
 
     @Override
     public List<User> getUserList() throws SQLException, NoSuchEntityException {
+        logger.debug("get all users");
         final String SQL = "" +
                 "SELECT * FROM tweagle.users;";
         List<User> userList = new ArrayList<>();
@@ -66,6 +68,7 @@ public class UserDAOReal implements UserDAO {
 
     @Override
     public void updateUser(User user) throws SQLException {
+        logger.debug("update user " + user);
         final String SQL = "" +
                 "UPDATE tweagle.users SET " +
                 "name=?, " +//1
@@ -104,6 +107,7 @@ public class UserDAOReal implements UserDAO {
 
     @Override
     public void updateUserList(List<User> userList) throws SQLException {
+        logger.debug("update user list " + userList);
         final String SQL = "" +
                 "UPDATE tweagle.users SET " +
                 "name=?, " +//1
@@ -145,6 +149,7 @@ public class UserDAOReal implements UserDAO {
 
     @Override
     public void addUser(User user) throws SQLException {
+        logger.debug("add user " + user);
         final String SQL = "" +
                 "INSERT INTO tweagle.users (" +
                 "name, " +//1

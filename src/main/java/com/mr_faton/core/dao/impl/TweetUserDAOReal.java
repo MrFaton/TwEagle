@@ -29,6 +29,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
 
     @Override
     public TweetUser getUserForTweet() throws SQLException, NoSuchEntityException {
+        logger.debug("get user for posting tweets");
         final String SQL = "" +
                 "SELECT * FROM tweagle.tweet_users WHERE " +
                 "is_tweet = 1 AND " +
@@ -49,6 +50,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
 
     @Override
     public List<TweetUser> getUserList() throws SQLException, NoSuchEntityException {
+        logger.debug("get tweet users");
         final String SQL = "SELECT * FROM tweagle.tweet_users;";
         List<TweetUser> tweetUserList = new ArrayList<>();
         Connection connection = dataSource.getConnection();
@@ -65,6 +67,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
 
     @Override
     public void updateUser(TweetUser user) throws SQLException {
+        logger.debug("update tweet user");
         final String SQL = "" +
                 "UPDATE tweagle.tweet_users SET " +
                 "is_tweet=?, cur_tweet=?, max_tweet=?, next_tweet=?, last_upd=? WHERE name=?;";
@@ -83,6 +86,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
 
     @Override
     public void updateUserList(List<TweetUser> userList) throws SQLException {
+        logger.debug("update tweet user list");
         final String SQL = "" +
                 "UPDATE tweagle.tweet_users SET " +
                 "is_tweet=?, cur_tweet=?, max_tweet=?, next_tweet=?, last_upd=? WHERE name=?;";
@@ -104,6 +108,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
 
     @Override
     public void addUser(String userName) throws SQLException {
+        logger.debug("add user to tweet users");
         final String SQL = "" +
                 "INSERT INTO tweagle.tweet_users (name) VALUES (?);";
         Connection connection = dataSource. getConnection();

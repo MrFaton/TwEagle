@@ -61,7 +61,7 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public void updatePostedMessage(Message message) throws SQLException {
-        logger.debug("set posted to true for the TwitterMessage with id " + message.getId());
+        logger.debug("change posted status for message with id " + message.getId());
         final String SQL = "" +
                 "UPDATE tweagle.messages SET posted = 1 WHERE id = ?;";
 
@@ -107,7 +107,7 @@ public class MessageDAOReal implements MessageDAO {
 
 
     private Message getTweetFirstTry(boolean male) throws SQLException{
-        logger.debug("get message - First try");
+        logger.debug("get tweet - First try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
                 "tweet = 1 AND " +
@@ -122,9 +122,7 @@ public class MessageDAOReal implements MessageDAO {
 
 
         Connection connection = dataSource.getConnection();
-        logger.debug("connection " + connection);
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        logger.debug("prepared statement ");
         ResultSet resultSet = null;
 
         preparedStatement.setBoolean(1, male);
@@ -152,7 +150,7 @@ public class MessageDAOReal implements MessageDAO {
     }
 
     private Message getTweetSecondTry(boolean male) throws SQLException {
-        logger.debug("get TwitterMessage - Second Try");
+        logger.debug("get tweet - Second Try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
                 "tweet = 1 AND " +
@@ -217,7 +215,7 @@ public class MessageDAOReal implements MessageDAO {
     }
 
     private Message getTweetThirdTry(boolean male) throws SQLException {
-        logger.debug("get TwitterMessage - Third try");
+        logger.debug("get tweet - Third try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
                 "tweet = 1 AND " +
@@ -251,7 +249,7 @@ public class MessageDAOReal implements MessageDAO {
     }
 
     private Message getAnyTweet(boolean male) throws SQLException {
-        logger.debug("get TwitterMessage - Any TwitterMessage");
+        logger.debug("get tweet - any");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE tweet = 1 AND owner_male = ? LIMIT 1;";
 

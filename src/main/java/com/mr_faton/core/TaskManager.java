@@ -100,7 +100,7 @@ public class TaskManager implements Runnable {
 
 
 
-    private void updateAllTasks() {
+    private void updateAllTasks() throws Exception {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
@@ -111,7 +111,7 @@ public class TaskManager implements Runnable {
         });
     }
 
-    private void setDailyParams() {
+    private void setDailyParams() throws Exception {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {

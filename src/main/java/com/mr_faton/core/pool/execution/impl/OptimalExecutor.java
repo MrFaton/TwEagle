@@ -41,14 +41,18 @@ public class OptimalExecutor implements ExecutionPool {
         pool.execute(new Runnable() {
             @Override
             public void run() {
-                transactionManager.doInTransaction(new Command() {
-                    @Override
-                    public void doCommands() throws Exception {
-                        task.execute();
-                        task.save();
-                        task.update();
-                    }
-                });
+                try {
+                    transactionManager.doInTransaction(new Command() {
+                        @Override
+                        public void doCommands() throws Exception {
+                            task.execute();
+                            task.save();
+                            task.update();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

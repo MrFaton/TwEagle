@@ -110,4 +110,9 @@ public class User {
     public void setAccessTokenSecret(String accessTokenSecret) {
         this.accessTokenSecret = accessTokenSecret;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

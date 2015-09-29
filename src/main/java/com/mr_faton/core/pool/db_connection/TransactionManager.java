@@ -5,7 +5,7 @@ import com.mr_faton.core.util.Command;
 import javax.sql.DataSource;
 
 public interface TransactionManager extends DataSource{
-    void doInTransaction(Command command);
+    void doInTransaction(Command command) throws Exception;
 
     void shutDown();
 }
