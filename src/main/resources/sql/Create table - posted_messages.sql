@@ -5,8 +5,8 @@ CREATE TABLE tweagle.posted_messages
   message     VARCHAR(150)       NOT NULL,
   message_id  BIGINT             NOT NULL,
   tweet       BOOLEAN            NOT NULL,
-  owner       VARCHAR(20)        NOT NULL,
-  recipient   VARCHAR(20),
+  owner       VARCHAR(25)        NOT NULL,
+  recipient   VARCHAR(25),
   posted_date TIMESTAMP          NOT NULL,
   PRIMARY KEY (id)
 );

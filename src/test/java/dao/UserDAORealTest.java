@@ -13,8 +13,11 @@ import org.junit.internal.ExactComparisonCriteria;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -86,6 +89,147 @@ public class UserDAORealTest {
                 Assert.assertNotNull("user list null", userList);
                 int listSize = userList.size();
                 Assert.assertTrue("list size less then expected", listSize >= 2);
+            }
+        });
+    }
+
+    @Test
+    public void updateUserTest() throws Exception {
+        final String pushingPassword = "567";
+        final int pushingMessages = 7777;
+        final User user = new User();
+        user.setName("UserDAOReal1");
+        user.setPassword(pushingPassword);
+        user.setEmail("test@email.com");
+        user.setMale(false);
+        user.setCreationDate(new Date(System.currentTimeMillis()));
+        user.setMessages(pushingMessages);
+        user.setFollowing(123);
+        user.setFollowers(456);
+        user.setConsumerKey("111");
+        user.setConsumerSecret("222");
+        user.setAccessToken("333");
+        user.setAccessTokenSecret("444");
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                userDAO.updateUser(user);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                final String SQL = "" +
+                        "SELECT * FROM tweagle.users WHERE name = 'UserDAOReal1';";
+                Connection connection = transactionManager.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(SQL);
+
+                if (resultSet.next()) {
+                    String takenPassword = resultSet.getString("password");
+                    Assert.assertEquals(pushingPassword, takenPassword);
+
+                    int takenMessages = resultSet.getInt("messages");
+                    Assert.assertEquals(pushingMessages, takenMessages);
+                } else {
+                    Assert.fail("result set must be not null");
+                }
+            }
+        });
+    }
+
+    @Test
+    public void updateUserListTest() throws Exception {
+        final String pushingPassword = "9999";
+        final int pushingMessages = 8888;
+        final User user = new User();
+        user.setName("UserDAOReal2");
+        user.setPassword(pushingPassword);
+        user.setEmail("test@email.com");
+        user.setMale(false);
+        user.setCreationDate(new Date(System.currentTimeMillis()));
+        user.setMessages(pushingMessages);
+        user.setFollowing(123);
+        user.setFollowers(456);
+        user.setConsumerKey("111");
+        user.setConsumerSecret("222");
+        user.setAccessToken("333");
+        user.setAccessTokenSecret("444");
+
+        final List<User> userList = new ArrayList<>();
+        userList.add(user);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                userDAO.updateUserList(userList);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                final String SQL = "" +
+                        "SELECT * FROM tweagle.users WHERE name = 'UserDAOReal2';";
+                Connection connection = transactionManager.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(SQL);
+
+                if (resultSet.next()) {
+                    String takenPassword = resultSet.getString("password");
+                    Assert.assertEquals(pushingPassword, takenPassword);
+
+                    int takenMessages = resultSet.getInt("messages");
+                    Assert.assertEquals(pushingMessages, takenMessages);
+                } else {
+                    Assert.fail("result set must be not null");
+                }
+            }
+        });
+    }
+
+    @Test
+    public void addUserTest() throws Exception {
+        String pushingName = "UserDAOReal777";
+        final int pusingMessages = 1111111111;
+        final User user = new User();
+        user.setName(pushingName);
+        user.setPassword("123456789");
+        user.setEmail("test@email.com");
+        user.setMale(false);
+        user.setCreationDate(new Date(System.currentTimeMillis()));
+        user.setMessages(pusingMessages);
+        user.setFollowing(123);
+        user.setFollowers(456);
+        user.setConsumerKey("111");
+        user.setConsumerSecret("222");
+        user.setAccessToken("333");
+        user.setAccessTokenSecret("444");
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                userDAO.addUser(user);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                final String SQL = "" +
+                        "SELECT * FROM tweagle.users WHERE name = 'UserDAOReal777';";
+                Connection connection = transactionManager.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(SQL);
+
+                if (resultSet.next()) {
+                    int takenMessages = resultSet.getInt("messages");
+                    Assert.assertEquals(pusingMessages, takenMessages);
+                } else {
+                    Assert.fail("result set must be not null");
+                }
             }
         });
     }
