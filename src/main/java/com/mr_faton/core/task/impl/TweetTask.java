@@ -152,7 +152,8 @@ public class TweetTask implements Task {
 
             User user = userDAO.getUserByName(tweetUser.getName());
 
-            Message message = messageDAO.getTweet(user.isMale());
+            /*TODO resolve*/
+            Message message = null;/*messageDAO.getTweet(user.isMale());*/
             long messageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
 
             logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + messageId + " " +

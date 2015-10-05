@@ -1,6 +1,7 @@
 package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import org.apache.log4j.Logger;
 
@@ -30,83 +31,7 @@ public class MessageDAOReal implements MessageDAO {
     }
 
     @Override
-    public Message getTweet(boolean male) throws SQLException {
-        logger.debug("get tweet");
-
-
-
-
-        //******* FIRST TRY *******
-        Message message = getTweetFirstTry(male);
-        if (message != null) {
-            return message;
-        }
-
-        //******* SECOND TRY *******
-        message = getTweetSecondTry(male);
-        if (message != null) {
-            return message;
-        }
-
-        //******* THIRD TRY *******
-        message = getTweetThirdTry(male);
-        if (message != null) {
-            return message;
-        }
-
-        //******* GET ANY TwitterMessage *******
-        message = getAnyTweet(male);
-        return message;
-    }
-
-    @Override
-    public void updatePostedMessage(Message message) throws SQLException {
-        logger.debug("change posted status for message with id " + message.getId());
-        final String SQL = "" +
-                "UPDATE tweagle.messages SET posted = 1 WHERE id = ?;";
-
-        Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-
-        preparedStatement.setInt(1, message.getId());
-
-        preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-    }
-
-
-
-
-
-
-
-
-
-
-    private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
-        Message message = new Message();
-
-        message.setId(resultSet.getInt("id"));
-        message.setMessage(resultSet.getString("message"));
-        message.setTweet(resultSet.getBoolean("tweet"));
-
-        message.setOwner(resultSet.getString("owner"));
-        message.setOwnerMale(resultSet.getBoolean("owner_male"));
-
-        message.setRecipient(resultSet.getString("recipient"));
-        message.setRecipientMale(resultSet.getBoolean("recipient_male"));
-
-        message.setPostedDate(resultSet.getDate("posted_date"));
-
-        message.setSynonymized(resultSet.getBoolean("synonymized"));
-        message.setPosted(resultSet.getBoolean("posted"));
-
-        return message;
-    }
-
-
-    private Message getTweetFirstTry(boolean male) throws SQLException{
+    public Message getTweetFirstTry(boolean male) throws SQLException, NoSuchEntityException{
         logger.debug("get tweet - First try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
@@ -141,15 +66,17 @@ public class MessageDAOReal implements MessageDAO {
                         " with date " + String.format("%td-%<tm-%<tY", passedDate));
                 break;
             }
+
         }
 
         resultSet.close();
         preparedStatement.close();
 
+        if (message == null) throw new NoSuchEntityException("tweet not found at the first try");
         return message;
     }
-
-    private Message getTweetSecondTry(boolean male) throws SQLException {
+    @Override
+    public Message getTweetSecondTry(boolean male) throws SQLException, NoSuchEntityException {
         logger.debug("get tweet - Second Try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
@@ -211,10 +138,12 @@ public class MessageDAOReal implements MessageDAO {
         }
         resultSet.close();
         preparedStatement.close();
+
+        if (message == null) throw new NoSuchEntityException("tweet not found at the second try");
         return message;
     }
-
-    private Message getTweetThirdTry(boolean male) throws SQLException {
+    @Override
+    public Message getTweetThirdTry(boolean male) throws SQLException, NoSuchEntityException {
         logger.debug("get tweet - Third try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
@@ -245,10 +174,11 @@ public class MessageDAOReal implements MessageDAO {
         resultSet.close();
         preparedStatement.close();
 
+        if (message == null) throw new NoSuchEntityException("tweet not found at the third try");
         return message;
     }
-
-    private Message getAnyTweet(boolean male) throws SQLException {
+    @Override
+    public Message getAnyTweet(boolean male) throws SQLException {
         logger.debug("get tweet - any");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE tweet = 1 AND owner_male = ? LIMIT 1;";
@@ -273,6 +203,45 @@ public class MessageDAOReal implements MessageDAO {
 
         resultSet.close();
         preparedStatement.close();
+
+        return message;
+    }
+
+
+    @Override
+    public void updatePostedMessage(Message message) throws SQLException {
+        logger.debug("change posted status for message with id " + message.getId());
+        final String SQL = "" +
+                "UPDATE tweagle.messages SET posted = 1 WHERE id = ?;";
+
+        Connection connection = dataSource.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
+
+        preparedStatement.setInt(1, message.getId());
+
+        preparedStatement.executeUpdate();
+
+        preparedStatement.close();
+    }
+
+
+    private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
+        Message message = new Message();
+
+        message.setId(resultSet.getInt("id"));
+        message.setMessage(resultSet.getString("message"));
+        message.setTweet(resultSet.getBoolean("tweet"));
+
+        message.setOwner(resultSet.getString("owner"));
+        message.setOwnerMale(resultSet.getBoolean("owner_male"));
+
+        message.setRecipient(resultSet.getString("recipient"));
+        message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+
+        message.setPostedDate(resultSet.getDate("posted_date"));
+
+        message.setSynonymized(resultSet.getBoolean("synonymized"));
+        message.setPosted(resultSet.getBoolean("posted"));
 
         return message;
     }

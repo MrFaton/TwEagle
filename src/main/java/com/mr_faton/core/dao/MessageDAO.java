@@ -10,6 +10,10 @@ import java.sql.SQLException;
  * Created by Mr_Faton on 18.09.2015.
  */
 public interface MessageDAO {
-    Message getTweet(boolean male) throws SQLException;
+    Message getTweetFirstTry(boolean male) throws SQLException, NoSuchEntityException;
+    Message getTweetSecondTry(boolean male) throws SQLException, NoSuchEntityException;
+    Message getTweetThirdTry(boolean male) throws SQLException, NoSuchEntityException;
+    Message getAnyTweet(boolean male) throws SQLException;
+
     void updatePostedMessage(Message message) throws SQLException;
 }

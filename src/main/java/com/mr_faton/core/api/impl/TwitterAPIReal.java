@@ -91,6 +91,11 @@ public class TwitterAPIReal implements TwitterAPI{
         String accessToken = user.getAccessToken();
         String accessTokenSecret = user.getAccessTokenSecret();
 
+        System.out.println("consumer key=" + consumerKey);
+        System.out.println("consumer secret=" + consumerSecret);
+        System.out.println("access token=" + accessToken);
+        System.out.println("access token secret=" + accessTokenSecret);
+
         Twitter twitter = new TwitterFactory().getInstance();
         twitter.setOAuthConsumer(consumerKey, consumerSecret);
         twitter.setOAuthAccessToken(new AccessToken(accessToken, accessTokenSecret));
