@@ -35,7 +35,7 @@ public class OptimalExecutor implements ExecutionPool {
     }
 
     @Override
-    public void execute(final Task task) throws Exception {
+    public void execute(final Task task) {
         logger.debug("execute " + task);
 
         pool.execute(new Runnable() {
@@ -51,7 +51,22 @@ public class OptimalExecutor implements ExecutionPool {
                         }
                     });
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.warn("exception during executing task", e);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void execute(final Command command) {
+        logger.debug("execute command");
+        pool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    command.doCommands();
+                } catch (Exception e) {
+                    logger.warn("exception during executing command", e);
                 }
             }
         });
@@ -63,5 +78,10 @@ public class OptimalExecutor implements ExecutionPool {
         if (pool != null) {
             pool.shutdown();
         }
+    }
+
+    public int getLargestPoolSize() {
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) pool;
+        return threadPoolExecutor.getLargestPoolSize();
     }
 }

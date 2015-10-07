@@ -5,7 +5,7 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.PostedMessageDAO;
 import com.mr_faton.core.dao.TweetUserDAO;
 import com.mr_faton.core.dao.UserDAO;
-import com.mr_faton.core.exception.LimitExhausted;
+import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.table.PostedMessage;
@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Description
@@ -152,8 +151,20 @@ public class TweetTask implements Task {
 
             User user = userDAO.getUserByName(tweetUser.getName());
 
-            /*TODO resolve*/
-            Message message = null;/*messageDAO.getTweet(user.isMale());*/
+            Message message;
+            try {
+                message = messageDAO.getTweetFirstTry(user.isMale());
+            } catch (NoSuchEntityException ex) {
+                try {
+                    message = messageDAO.getTweetSecondTry(user.isMale());
+                } catch (NoSuchEntityException exc) {
+                    try {
+                        message = messageDAO.getTweetThirdTry(user.isMale());
+                    } catch (NoSuchEntityException exce) {
+                        message = messageDAO.getAnyTweet(user.isMale());
+                    }
+                }
+            }
             long messageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
 
             logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + messageId + " " +
@@ -169,8 +180,8 @@ public class TweetTask implements Task {
             PostedMessage postedMessage = createPostedMessage(messageId, message);
             postedMessageDAO.savePostedMessage(postedMessage);
 
-        } catch (LimitExhausted limitExhausted) {
-            logger.warn(limitExhausted.getMessage());
+        } catch (LimitExhaustedException limitExhaustedException) {
+            logger.warn(limitExhaustedException.getMessage());
         } catch (TwitterException e) {
             logger.warn("exception while posting tweet", e);
             tweetUser.setTweet(false);

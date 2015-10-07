@@ -2,13 +2,14 @@ package com.mr_faton.core.api.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
 import com.mr_faton.core.dao.UserDAO;
-import com.mr_faton.core.exception.LimitExhausted;
+import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import org.apache.log4j.Logger;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,7 +58,11 @@ public class TwitterAPIReal implements TwitterAPI{
         logger.debug("tweet: " + text + ", id: " + id + " was deleted");
     }
 
-
+    @Override
+    public ResponseList<Status> getUserTimeLine(String donorUserName, Paging paging, int messagesPerPage, String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
+        /*TODO done*/
+        return null;
+    }
 
     private int getAppLimit(String userName) throws TwitterException, SQLException, NoSuchEntityException {
         logger.debug("get application limit status for user " + userName);
@@ -108,7 +113,7 @@ public class TwitterAPIReal implements TwitterAPI{
         int appLimit = getAppLimit(userName);
         if (appLimit == 0) {
             logger.warn("application limit was exhausted");
-            throw new LimitExhausted("application limit was exhausted");
+            throw new LimitExhaustedException("application limit was exhausted");
         }
     }
 }

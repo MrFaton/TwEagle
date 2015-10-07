@@ -12,6 +12,10 @@ public class RandomGenerator {
         return min_number + (int) (Math.random() * ((max_number - min_number) + 1));
     }
 
+    public static long getNumber(long min_number, long max_number) {
+        return min_number + (long) (Math.random() * ((max_number - min_number) + 1));
+    }
+
     public static boolean getRandomBoolean() {
         return new Random().nextBoolean();
     }

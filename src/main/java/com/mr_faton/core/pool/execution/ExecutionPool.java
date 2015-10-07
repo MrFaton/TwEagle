@@ -1,6 +1,7 @@
 package com.mr_faton.core.pool.execution;
 
 import com.mr_faton.core.task.Task;
+import com.mr_faton.core.util.Command;
 
 /**
  * Description
@@ -10,6 +11,7 @@ import com.mr_faton.core.task.Task;
  * @version 1.1
  */
 public interface ExecutionPool {
-    void execute(Task task) throws Exception;
+    void execute(Task task);
+    void execute(Command command);
     void shutDown();
 }
