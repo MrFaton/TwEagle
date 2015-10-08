@@ -33,8 +33,6 @@ import java.util.List;
 public class TweetTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.TweetTask");
-    private boolean status = true;
-    private TweetUser tweetUser = null;
 
     private final TwitterAPI twitterAPI;
     private final TweetUserDAO tweetUserDAO;
@@ -42,6 +40,10 @@ public class TweetTask implements Task {
     private final PostedMessageDAO postedMessageDAO;
     private final UserDAO userDAO;
 
+    private boolean status = true;
+    private TweetUser tweetUser = null;
+    private Message message = null;
+    private long postedMessageId = 0;
 
 
     public TweetTask(
@@ -95,6 +97,8 @@ public class TweetTask implements Task {
     @Override
     public void update() throws SQLException {
         logger.debug("update task");
+        message = null;
+        postedMessageId = 0;
         try {
             tweetUser = tweetUserDAO.getUserForTweet();
         } catch (SQLException e) {
@@ -111,6 +115,12 @@ public class TweetTask implements Task {
     @Override
     public void save() throws SQLException {
         logger.debug("save used tweetUser into db");
+
+        messageDAO.updatePostedMessage(message);
+
+        PostedMessage postedMessage = createPostedMessage(postedMessageId, message);
+        postedMessageDAO.savePostedMessage(postedMessage);
+
         try {
             tweetUserDAO.updateUser(tweetUser);
         } catch (SQLException e) {
@@ -151,23 +161,22 @@ public class TweetTask implements Task {
 
             User user = userDAO.getUserByName(tweetUser.getName());
 
-            Message message;
             try {
                 message = messageDAO.getTweetFirstTry(user.isMale());
-            } catch (NoSuchEntityException ex) {
+            } catch (NoSuchEntityException entityEx1) {
                 try {
                     message = messageDAO.getTweetSecondTry(user.isMale());
-                } catch (NoSuchEntityException exc) {
+                } catch (NoSuchEntityException entityEx2) {
                     try {
                         message = messageDAO.getTweetThirdTry(user.isMale());
-                    } catch (NoSuchEntityException exce) {
+                    } catch (NoSuchEntityException entityEx3) {
                         message = messageDAO.getAnyTweet(user.isMale());
                     }
                 }
             }
-            long messageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
+            postedMessageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
 
-            logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + messageId + " " +
+            logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + postedMessageId + " " +
                     "and text: " + message.getMessage());
 
 
@@ -175,10 +184,6 @@ public class TweetTask implements Task {
             currentTweets++;
             tweetUser.setCurTweets(currentTweets);
 
-            messageDAO.updatePostedMessage(message);
-
-            PostedMessage postedMessage = createPostedMessage(messageId, message);
-            postedMessageDAO.savePostedMessage(postedMessage);
 
         } catch (LimitExhaustedException limitExhaustedException) {
             logger.warn(limitExhaustedException.getMessage());

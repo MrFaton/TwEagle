@@ -2,7 +2,7 @@ package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.dao.impl.DonorUserDAO;
+import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.exception.DataSequenceReachedException;
 import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
@@ -75,6 +75,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public void setStatus(boolean status) {
+        logger.info("status changed to " + (status ? "on":"off"));
         this.status = status;
     }
 
@@ -85,23 +86,31 @@ public class MessageParseTask implements Task {
 
     @Override
     public void setNextTime() {
+        logger.debug("<=");
         nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
+        logger.debug("next time is set to " + String.format("%td-%<tm-%<tY", new Date(nextTime)));
     }
 
     @Override
     public void update() throws SQLException {
+        logger.debug("<=");
         if (donorUser == null) {
             try {
                 donorUser = donorUserDAO.getDonorForMessage();
+                searchedPage = 0;
+                logger.debug("donorUser updated to " + donorUser.getName());
             } catch (NoSuchEntityException ex) {
                 logger.debug("no donorUser to parse messages");
                 nextTime = Long.MAX_VALUE;
             }
+        } else {
+            logger.debug("donorUser = " + donorUser.getName() + ", so don't need to update it");
         }
     }
 
     @Override
     public void save() throws SQLException {
+        logger.debug("<=");
         messageDAO.saveMessageList(messageList);
         messageList.clear();
     }
@@ -125,10 +134,10 @@ public class MessageParseTask implements Task {
                 searchedPage++;
 
                 handleUserTimeLineList(statusList);
+                logger.info("collected " + messageList.size() + " messages");
             }
         } catch (DataSequenceReachedException lastTweetEx) {
             donorUser = null;
-            searchedPage = 0;
         } catch (LimitExhaustedException limitEx) {
             logger.debug("twitter limits exceeded, so continue next time");
         } catch (TwitterException twitterEx) {
@@ -142,6 +151,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public void setDailyParams() throws SQLException {
+        logger.debug("set next time like daily params");
         setNextTime();
     }
 
@@ -184,9 +194,6 @@ public class MessageParseTask implements Task {
     private boolean mentionValidator(String mention) {
         int firstIndex = mention.indexOf(MENTION_PARAM);
         int lastIndex = mention.lastIndexOf(MENTION_PARAM);
-        if (firstIndex == lastIndex) {
-            return true;
-        }
-        return false;
+        return firstIndex == lastIndex;
     }
 }

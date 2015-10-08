@@ -14,7 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.*;
-import java.util.Calendar;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Description
@@ -177,6 +178,45 @@ public class MessageDAORealTest {
                     Assert.assertTrue(resultSet.getBoolean("posted"));
                 } else {
                     Assert.fail("result set must have next");
+                }
+            }
+        });
+    }
+
+    @Test
+    public void saveMessageListTest() throws Exception {
+        final String SQL = "" +
+                "SELECT owner FROM tweagle.messages WHERE owner = 'MessageDAOReal44';";
+
+        Message message = new Message();
+        message.setMessage("testing");
+        message.setTweet(true);
+        message.setOwner("MessageDAOReal44");
+        message.setOwnerMale(true);
+        message.setPostedDate(new java.util.Date());
+
+        final List<Message> messageList = new ArrayList<>();
+        messageList.add(message);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.saveMessageList(messageList);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                Connection connection = transactionManager.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(SQL);
+
+                if (resultSet.next()) {
+                    String takenOwnerName = resultSet.getString("owner");
+                    Assert.assertEquals("must equal", "MessageDAOReal44", takenOwnerName);
+                } else {
+                    Assert.fail("resultSet must have next");
                 }
             }
         });

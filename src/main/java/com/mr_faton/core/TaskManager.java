@@ -152,7 +152,11 @@ public class TaskManager implements Runnable {
                 nextTask = task;
             }
         }
-        if (nextTask == null || minTaskTime == Long.MAX_VALUE) throw new NoSuchEntityException();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, APP_STOP_HOUR);
+        long endOfWorkDay = calendar.getTimeInMillis();
+        if (nextTask == null || minTaskTime == Long.MAX_VALUE || nextTask.getTime() >= endOfWorkDay)
+            throw new NoSuchEntityException();
         return nextTask;
     }
 

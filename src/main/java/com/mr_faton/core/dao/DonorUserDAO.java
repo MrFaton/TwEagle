@@ -1,4 +1,4 @@
-package com.mr_faton.core.dao.impl;
+package com.mr_faton.core.dao;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.DonorUser;

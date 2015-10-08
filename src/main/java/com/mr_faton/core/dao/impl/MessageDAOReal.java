@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Description
@@ -224,6 +225,29 @@ public class MessageDAOReal implements MessageDAO {
         preparedStatement.close();
     }
 
+    @Override
+    public void saveMessageList(List<Message> messageList) throws SQLException {
+        logger.debug("save " + messageList.size() + " collected messages");
+        final String SQL = "" +
+                "INSERT INTO tweagle.messages " +
+                "(message, tweet, owner, owner_male, recipient, posted_date) VALUES (?, ?, ?, ?, ?, ?);";
+
+        Connection connection = dataSource.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
+
+        for (Message message : messageList) {
+            preparedStatement.setString(1, message.getMessage());
+            preparedStatement.setBoolean(2, message.isTweet());
+            preparedStatement.setString(3, message.getOwner());
+            preparedStatement.setBoolean(4, message.isOwnerMale());
+            preparedStatement.setString(5, message.getRecipient());
+            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
+
+            preparedStatement.addBatch();
+        }
+        preparedStatement.executeBatch();
+        preparedStatement.close();
+    }
 
     private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
         Message message = new Message();
