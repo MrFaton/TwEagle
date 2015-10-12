@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
@@ -61,7 +60,7 @@ public class PostedMessageDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                postedMessageDAO.savePostedMessage(postedMessage);
+                postedMessageDAO.save(postedMessage);
             }
         });
 

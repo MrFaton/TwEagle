@@ -2,19 +2,15 @@ package dao;
 
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.dao.impl.UserDAOReal;
-import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 import org.junit.*;
-import org.junit.internal.ExactComparisonCriteria;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
@@ -114,7 +110,7 @@ public class UserDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                userDAO.updateUser(user);
+                userDAO.update(user);
             }
         });
 
@@ -164,7 +160,7 @@ public class UserDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                userDAO.updateUserList(userList);
+                userDAO.update(userList);
             }
         });
 

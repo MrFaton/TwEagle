@@ -66,7 +66,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
     }
 
     @Override
-    public void updateUser(TweetUser user) throws SQLException {
+    public void update(TweetUser user) throws SQLException {
         logger.debug("update tweet user");
         final String SQL = "" +
                 "UPDATE tweagle.tweet_users SET " +
@@ -85,7 +85,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
     }
 
     @Override
-    public void updateUserList(List<TweetUser> userList) throws SQLException {
+    public void update(List<TweetUser> userList) throws SQLException {
         logger.debug("update tweet user list");
         final String SQL = "" +
                 "UPDATE tweagle.tweet_users SET " +

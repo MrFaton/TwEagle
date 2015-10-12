@@ -28,7 +28,7 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
     }
 
     @Override
-    public void savePostedMessage(PostedMessage postedMessage) throws SQLException {
+    public void save(PostedMessage postedMessage) throws SQLException {
         logger.debug("save posted message");
         final String SQL = "" +
                 "INSERT INTO tweagle.posted_messages (message, message_id, tweet, owner, recipient, posted_date) " +

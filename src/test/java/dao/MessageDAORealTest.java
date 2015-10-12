@@ -2,7 +2,6 @@ package dao;
 
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.impl.MessageDAOReal;
-import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
 import com.mr_faton.core.table.Message;
@@ -201,7 +200,7 @@ public class MessageDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                messageDAO.saveMessageList(messageList);
+                messageDAO.save(messageList);
             }
         });
 

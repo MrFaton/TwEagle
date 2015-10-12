@@ -13,8 +13,11 @@ public interface UserDAO {
     User getUserByName(String name) throws SQLException, NoSuchEntityException;
     List<User> getUserList() throws SQLException, NoSuchEntityException;
 
-    void updateUser(User user) throws SQLException;
-    void updateUserList(List<User> userList) throws SQLException;
 
-    void addUser(User user) throws SQLException;
+    // INSERTS - UPDATES
+    void save(User user) throws SQLException;
+    void save(List<User> userList) throws SQLException;
+
+    void update(User user) throws SQLException;
+    void update(List<User> userList) throws SQLException;
 }

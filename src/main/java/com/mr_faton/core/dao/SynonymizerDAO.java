@@ -8,4 +8,5 @@ package com.mr_faton.core.dao;
  * @since 12.10.2015
  */
 public interface SynonymizerDAO {
+
 }

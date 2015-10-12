@@ -111,7 +111,7 @@ public class MessageParseTask implements Task {
     @Override
     public void save() throws SQLException {
         logger.debug("<=");
-        messageDAO.saveMessageList(messageList);
+        messageDAO.save(messageList);
         messageList.clear();
     }
 

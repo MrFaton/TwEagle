@@ -119,10 +119,10 @@ public class TweetTask implements Task {
         messageDAO.updatePostedMessage(message);
 
         PostedMessage postedMessage = createPostedMessage(postedMessageId, message);
-        postedMessageDAO.savePostedMessage(postedMessage);
+        postedMessageDAO.save(postedMessage);
 
         try {
-            tweetUserDAO.updateUser(tweetUser);
+            tweetUserDAO.update(tweetUser);
         } catch (SQLException e) {
             logger.warn("exception during saving updated tweetUser in db");
             throw e;
@@ -143,7 +143,7 @@ public class TweetTask implements Task {
                     tweetUser.setLastUpdateDay(curDay);
                 }
             }
-            tweetUserDAO.updateUserList(tweetUserList);
+            tweetUserDAO.update(tweetUserList);
         } catch (SQLException e) {
             logger.warn("exception while updating tweet tweetUser list", e);
             throw e;

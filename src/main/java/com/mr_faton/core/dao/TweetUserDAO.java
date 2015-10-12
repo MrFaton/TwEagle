@@ -13,8 +13,13 @@ public interface TweetUserDAO {
     TweetUser getUserForTweet() throws SQLException, NoSuchEntityException;
     List<TweetUser> getUserList() throws SQLException, NoSuchEntityException;
 
-    void updateUser(TweetUser user) throws SQLException;
-    void updateUserList(List<TweetUser> userList) throws SQLException;
 
-    void addUser(String userName) throws SQLException;
+
+
+    // INSERTS - UPDATES
+    void save(TweetUser tweetUser) throws SQLException;
+    void save(List<TweetUser> tweetUserList) throws SQLException;
+
+    void update(TweetUser user) throws SQLException;
+    void update(List<TweetUser> userList) throws SQLException;
 }

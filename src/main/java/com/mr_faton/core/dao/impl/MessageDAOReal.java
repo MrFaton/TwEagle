@@ -226,7 +226,7 @@ public class MessageDAOReal implements MessageDAO {
     }
 
     @Override
-    public void saveMessageList(List<Message> messageList) throws SQLException {
+    public void save(List<Message> messageList) throws SQLException {
         logger.debug("save " + messageList.size() + " collected messages");
         final String SQL = "" +
                 "INSERT INTO tweagle.messages " +

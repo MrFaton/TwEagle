@@ -108,7 +108,7 @@ public class TweetUserDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                tweetUserDAO.updateUser(tweetUser);
+                tweetUserDAO.update(tweetUser);
             }
         });
 
@@ -148,7 +148,7 @@ public class TweetUserDAORealTest {
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                tweetUserDAO.updateUserList(tweetUserList);
+                tweetUserDAO.update(tweetUserList);
             }
         });
 

@@ -67,7 +67,7 @@ public class UserDAOReal implements UserDAO {
     }
 
     @Override
-    public void updateUser(User user) throws SQLException {
+    public void update(User user) throws SQLException {
         logger.debug("update user " + user);
         final String SQL = "" +
                 "UPDATE tweagle.users SET " +
@@ -106,7 +106,7 @@ public class UserDAOReal implements UserDAO {
     }
 
     @Override
-    public void updateUserList(List<User> userList) throws SQLException {
+    public void update(List<User> userList) throws SQLException {
         logger.debug("update user list " + userList);
         final String SQL = "" +
                 "UPDATE tweagle.users SET " +
