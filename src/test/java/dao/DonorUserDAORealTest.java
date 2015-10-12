@@ -8,6 +8,7 @@ import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.Connection;
 
@@ -50,5 +51,15 @@ public class DonorUserDAORealTest {
         });
         transactionManager.shutDown();
     }
-    /*TODO done*/
+
+
+    @Test
+    public void getDonorForMessage() throws Exception{
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                donorUserDAO.getDonorForMessage();
+            }
+        });
+    }
 }

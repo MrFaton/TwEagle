@@ -19,4 +19,8 @@ public interface MessageDAO {
     void updatePostedMessage(Message message) throws SQLException;
 
     void saveMessageList(List<Message> messageList) throws SQLException;
+
+    List<Message> getUnSynonymizedMessages(int limit) throws SQLException;
+
+    void updateSynonymizedMessages(List<Message> messageList) throws SQLException;
 }
