@@ -74,4 +74,9 @@ public class DonorUser {
     public void setTakeFollowersDate(Date takeFollowersDate) {
         this.takeFollowersDate = takeFollowersDate;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

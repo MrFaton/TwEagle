@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -20,6 +21,13 @@ import java.util.List;
 public class MessageDAOReal implements MessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.MessageDAOReal");
+    private static final String SQL_SAVE = "" +
+            "INSERT INTO tweagle.messages " +
+            "(message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymized, posted) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String SQL_UPDATE = "" +
+            "UPDATE tweagle.messages SET message = ?, tweet = ?, owner = ?, owner_male = ?, recipient = ?, " +
+            "recipient_male = ?, posted_date = ?, synonymized = ?, posted = ? WHERE id = ?;";
 
     private static final int DEEP_YEARS_SEARCH = 3;
     private static final int DEEP_DAYS_SEARCH = 3;
@@ -36,12 +44,7 @@ public class MessageDAOReal implements MessageDAO {
         logger.debug("get tweet - First try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
-                "tweet = 1 AND " +
-                "owner_male = ? AND " +//1
-                "posted_date = ? AND " +//2
-                "synonymized = 1 AND " +
-                "posted = 0 " +
-                "LIMIT 1;";
+                "tweet = 1 AND owner_male = ? AND posted_date = ? AND synonymized = 1 AND posted = 0 LIMIT 1;";
 
         Calendar calendar = Calendar.getInstance();
         Message message = null;
@@ -126,7 +129,7 @@ public class MessageDAOReal implements MessageDAO {
                 if (resultSet.next()) {
                     message = getMessageByResultSet(resultSet);
                     logger.info("found tweet at the second try in general cycle №" + counter +
-                            " and inner cycle №" + doubleCounter + "between dates " +
+                            " and inner cycle №" + doubleCounter + " between dates " +
                             String.format("%td-%<tm-%<tY", passedMinDay) + " " +
                             "and " +
                             String.format("%td-%<tm-%<tY", passedMaxDay));
@@ -210,43 +213,23 @@ public class MessageDAOReal implements MessageDAO {
 
 
     @Override
-    public void updatePostedMessage(Message message) throws SQLException {
-        logger.debug("change posted status for message with id " + message.getId());
+    public List<Message> getUnSynonymizedMessages(int limit) throws SQLException, NoSuchEntityException {
         final String SQL = "" +
-                "UPDATE tweagle.messages SET posted = 1 WHERE id = ?;";
-
+                "SELECT * FROM tweagle.messages WHERE synonymized = 0 LIMIT " + limit + ";";
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(SQL);
 
-        preparedStatement.setInt(1, message.getId());
-
-        preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-    }
-
-    @Override
-    public void save(List<Message> messageList) throws SQLException {
-        logger.debug("save " + messageList.size() + " collected messages");
-        final String SQL = "" +
-                "INSERT INTO tweagle.messages " +
-                "(message, tweet, owner, owner_male, recipient, posted_date) VALUES (?, ?, ?, ?, ?, ?);";
-
-        Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-
-        for (Message message : messageList) {
-            preparedStatement.setString(1, message.getMessage());
-            preparedStatement.setBoolean(2, message.isTweet());
-            preparedStatement.setString(3, message.getOwner());
-            preparedStatement.setBoolean(4, message.isOwnerMale());
-            preparedStatement.setString(5, message.getRecipient());
-            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
-
-            preparedStatement.addBatch();
+        List<Message> unsynonymizedMessages = new ArrayList<>();
+        while (resultSet.next()) {
+            unsynonymizedMessages.add(getMessageByResultSet(resultSet));
         }
-        preparedStatement.executeBatch();
-        preparedStatement.close();
+
+        resultSet.close();
+        statement.close();
+
+        if (unsynonymizedMessages.isEmpty()) throw new NoSuchEntityException("no unsynonymized messages");
+        return unsynonymizedMessages;
     }
 
     private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
@@ -268,5 +251,112 @@ public class MessageDAOReal implements MessageDAO {
         message.setPosted(resultSet.getBoolean("posted"));
 
         return message;
+    }
+
+
+    // INSERTS - UPDATES
+    @Override
+    public void save(Message message) throws SQLException {
+        logger.debug("save message " + message);
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
+            preparedStatement.setString(1, message.getMessage());
+            preparedStatement.setBoolean(2, message.isTweet());
+            preparedStatement.setString(3, message.getOwner());
+            preparedStatement.setBoolean(4, message.isOwnerMale());
+            if (message.getRecipient() != null) {
+                preparedStatement.setString(5, message.getRecipient());
+                preparedStatement.setBoolean(6, message.isRecipientMale());
+            } else {
+                preparedStatement.setNull(5, Types.VARCHAR);
+                preparedStatement.setNull(6, Types.BOOLEAN);
+            }
+            preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
+            preparedStatement.setBoolean(8, message.isSynonymized());
+            preparedStatement.setBoolean(9, message.isPosted());
+
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void save(List<Message> messageList) throws SQLException {
+        logger.debug("save " + messageList.size() + " messages");
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
+            for (Message message : messageList) {
+                preparedStatement.setString(1, message.getMessage());
+                preparedStatement.setBoolean(2, message.isTweet());
+                preparedStatement.setString(3, message.getOwner());
+                preparedStatement.setBoolean(4, message.isOwnerMale());
+                if (message.getRecipient() != null) {
+                    preparedStatement.setString(5, message.getRecipient());
+                    preparedStatement.setBoolean(6, message.isRecipientMale());
+                } else {
+                    preparedStatement.setNull(5, Types.VARCHAR);
+                    preparedStatement.setNull(6, Types.BOOLEAN);
+                }
+                preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
+                preparedStatement.setBoolean(8, message.isSynonymized());
+                preparedStatement.setBoolean(9, message.isPosted());
+
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+        }
+    }
+
+
+    @Override
+    public void update(Message message) throws SQLException {
+        logger.debug("update message " + message);
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
+            preparedStatement.setString(1, message.getMessage());
+            preparedStatement.setBoolean(2, message.isTweet());
+            preparedStatement.setString(3, message.getOwner());
+            preparedStatement.setBoolean(4, message.isOwnerMale());
+            if (message.getRecipient() != null) {
+                preparedStatement.setString(5, message.getRecipient());
+                preparedStatement.setBoolean(6, message.isRecipientMale());
+            } else {
+                preparedStatement.setNull(5, Types.VARCHAR);
+                preparedStatement.setNull(6, Types.BOOLEAN);
+            }
+            preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
+            preparedStatement.setBoolean(8, message.isSynonymized());
+            preparedStatement.setBoolean(9, message.isPosted());
+            preparedStatement.setInt(10, message.getId());
+
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void update(List<Message> messageList) throws SQLException {
+        logger.debug("update " + messageList.size() + " messages");
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
+            for (Message message : messageList) {
+                preparedStatement.setString(1, message.getMessage());
+                preparedStatement.setBoolean(2, message.isTweet());
+                preparedStatement.setString(3, message.getOwner());
+                preparedStatement.setBoolean(4, message.isOwnerMale());
+                if (message.getRecipient() != null) {
+                    preparedStatement.setString(5, message.getRecipient());
+                    preparedStatement.setBoolean(6, message.isRecipientMale());
+                } else {
+                    preparedStatement.setNull(5, Types.VARCHAR);
+                    preparedStatement.setNull(6, Types.BOOLEAN);
+                }
+                preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
+                preparedStatement.setBoolean(8, message.isSynonymized());
+                preparedStatement.setBoolean(9, message.isPosted());
+                preparedStatement.setInt(10, message.getId());
+
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+        }
     }
 }

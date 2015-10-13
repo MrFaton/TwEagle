@@ -3,84 +3,43 @@ package dao;
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.impl.MessageDAOReal;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
-import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.util.Command;
-import com.mr_faton.core.util.SettingsHolder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import util.Counter;
 
-import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import javax.xml.transform.Result;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Description
  *
  * @author Mr_Faton
- * @since 05.10.2015
+ * @version 1.0
+ * @since 13.10.2015
  */
 public class MessageDAORealTest {
+    private static final String BASE_NAME = "MessageDAOReal";
     private static TransactionManager transactionManager;
     private static MessageDAO messageDAO;
 
     @BeforeClass
-    public static void generalSetUp() throws Exception {
-        SettingsHolder.loadSettings();
-        transactionManager = new TransactionManagerReal();
+    public static void setUp() throws Exception {
+        transactionManager = TransactionMenagerHolder.getTransactionManager();
         messageDAO = new MessageDAOReal(transactionManager);
-
-        final String getTweetSql = "" +
-                "INSERT INTO tweagle.messages (message, tweet, owner, owner_male, posted_date, synonymized) VALUES " +
-                "(?, ?, ?, ?, ?, ?);";
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                Calendar calendar;
-                Connection connection = transactionManager.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(getTweetSql);
-
-                // For First Try
-                preparedStatement.setString(1, "Test for get tweet first try");
-                preparedStatement.setBoolean(2, true);
-                preparedStatement.setString(3, "MessageDAOReal1");
-                preparedStatement.setBoolean(4, true);
-                calendar = Calendar.getInstance();
-                calendar.add(Calendar.YEAR, -3);
-                preparedStatement.setDate(5, new Date(calendar.getTimeInMillis()));
-                preparedStatement.setBoolean(6, true);
-                preparedStatement.addBatch();
-
-                // For second try
-                preparedStatement.setString(1, "Test for get tweet second try");
-                preparedStatement.setBoolean(2, true);
-                preparedStatement.setString(3, "MessageDAOReal2");
-                preparedStatement.setBoolean(4, true);
-                calendar = Calendar.getInstance();
-                calendar.add(Calendar.YEAR, -2);
-                calendar.add(Calendar.DAY_OF_MONTH, -3);
-                preparedStatement.setDate(5, new Date(calendar.getTimeInMillis()));
-                preparedStatement.setBoolean(6, true);
-                preparedStatement.addBatch();
-
-                // For update posted message
-                preparedStatement.setString(1, "Test for update posted message");
-                preparedStatement.setBoolean(2, true);
-                preparedStatement.setString(3, "MessageDAOReal3");
-                preparedStatement.setBoolean(4, true);
-                preparedStatement.setString(5, "2000-10-10");
-                preparedStatement.setBoolean(6, true);
-                preparedStatement.addBatch();
-
-                preparedStatement.executeBatch();
-            }
-        });
     }
 
     @AfterClass
-    public static void generalTearDown() throws Exception {
+    public static void tearDown() throws Exception {
         final String SQL = "" +
                 "DELETE FROM tweagle.messages WHERE owner LIKE 'MessageDAOReal%';";
         transactionManager.doInTransaction(new Command() {
@@ -89,113 +48,175 @@ public class MessageDAORealTest {
                 transactionManager.getConnection().createStatement().executeUpdate(SQL);
             }
         });
-
-        if (transactionManager != null) transactionManager.shutDown();
     }
 
 
     @Test
     public void getTweetFirstTry() throws Exception {
+        final Message message = createMessage();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -3);
+        message.setPostedDate(new Date(calendar.getTimeInMillis()));
+
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                messageDAO.getTweetFirstTry(true);
+                messageDAO.save(message);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.getTweetFirstTry(message.isOwnerMale());
             }
         });
     }
     @Test
     public void getTweetSecondTry() throws Exception {
+        final Message message = createMessage();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -3);
+        calendar.add(Calendar.DAY_OF_MONTH, -3);
+
+        message.setPostedDate(new Date(calendar.getTimeInMillis()));
+
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                messageDAO.getTweetSecondTry(true);
+                messageDAO.save(message);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.getTweetSecondTry(message.isOwnerMale());
             }
         });
     }
     @Test
     public void getTweetThirdTry() throws Exception {
+        final Message message = createMessage();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -5);
+        message.setPostedDate(new Date(calendar.getTimeInMillis()));
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                messageDAO.getTweetThirdTry(true);
+                messageDAO.save(message);
+            }
+        });
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.getTweetThirdTry(message.isOwnerMale());
             }
         });
     }
     @Test
     public void getAnyTweet() throws Exception {
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                messageDAO.getAnyTweet(true);
-            }
-        });
-    }
-
-
-
-
-    @Test
-    public void updatePostedMessage() throws Exception {
-        final int[] id = new int[1];
-        final String SQL1 = "" +
-                "SELECT id FROM tweagle.messages WHERE owner = 'MessageDAOReal3';";
-        final String SQL2 = "" +
-                "SELECT posted FROM tweagle.messages WHERE owner = 'MessageDAOReal3';";
+        final Message message = createMessage();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -6);
+        message.setPostedDate(new Date(calendar.getTimeInMillis()));
 
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                Connection connection = transactionManager.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(SQL1);
-                if (resultSet.next()) {
-                    id[0] = resultSet.getInt("id");
-                } else {
-                    Assert.fail("result set must have next");
-                }
-            }
-        });
-
-        final Message message = new Message();
-        message.setId(id[0]);
-        message.setOwner("MessageDAOReal3");
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                messageDAO.updatePostedMessage(message);
+                messageDAO.save(message);
             }
         });
 
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
-                Connection connection = transactionManager.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(SQL2);
-
-                if (resultSet.next()) {
-                    Assert.assertTrue(resultSet.getBoolean("posted"));
-                } else {
-                    Assert.fail("result set must have next");
-                }
+                messageDAO.getAnyTweet(message.isOwnerMale());
             }
         });
     }
 
     @Test
-    public void saveMessageListTest() throws Exception {
+    public void getUnSynonymizedMessages() throws Exception {
+        final List<Message> messageList = new ArrayList<>(3);
+        final Message message1 = createMessage();
+        final Message message2 = createMessage();
+
+        message1.setSynonymized(false);
+        message2.setSynonymized(false);
+
+        messageList.add(message1);
+        messageList.add(message2);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.save(messageList);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                int expectedSize = 2;
+                List<Message> takenMessages = messageDAO.getUnSynonymizedMessages(expectedSize);
+                Assert.assertEquals(expectedSize, takenMessages.size());
+            }
+        });
+    }
+
+
+    @Test
+    public void saveAndUpdate() throws Exception {
+        final Message message = createMessage();
         final String SQL = "" +
-                "SELECT owner FROM tweagle.messages WHERE owner = 'MessageDAOReal44';";
+                "SELECT id FROM tweagle.messages WHERE owner = '" + message.getOwner() + "';";
 
-        Message message = new Message();
-        message.setMessage("testing");
-        message.setTweet(true);
-        message.setOwner("MessageDAOReal44");
-        message.setOwnerMale(true);
-        message.setPostedDate(new java.util.Date());
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.save(message);
+            }
+        });
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                Connection connection = transactionManager.getConnection();
+                try (Statement statement = connection.createStatement();
+                     ResultSet resultSet = statement.executeQuery(SQL)) {
+                    if (resultSet.next()) {
+                        message.setId(resultSet.getInt("id"));
+                    } else {
+                        Assert.fail();
+                    }
+                }
+            }
+        });
 
-        final List<Message> messageList = new ArrayList<>();
-        messageList.add(message);
+        message.setPosted(true);
+        message.setSynonymized(false);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.update(message);
+            }
+        });
+    }
+
+    @Test
+    public void saveAndUpdateList() throws Exception {
+        final Message message1 = createMessage();
+        final Message message2 = createMessage();
+
+        final String SQL1 = "" +
+                "SELECT id FROM tweagle.messages WHERE owner = '" + message1.getOwner() + "';";
+        final String SQL2 = "" +
+                "SELECT id FROM tweagle.messages WHERE owner = '" + message2.getOwner() + "';";
+
+        final List<Message> messageList = new ArrayList<>(3);
+        messageList.add(message1);
+        messageList.add(message2);
 
         transactionManager.doInTransaction(new Command() {
             @Override
@@ -208,16 +229,55 @@ public class MessageDAORealTest {
             @Override
             public void doCommands() throws Exception {
                 Connection connection = transactionManager.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(SQL);
-
-                if (resultSet.next()) {
-                    String takenOwnerName = resultSet.getString("owner");
-                    Assert.assertEquals("must equal", "MessageDAOReal44", takenOwnerName);
-                } else {
-                    Assert.fail("resultSet must have next");
+                try(Statement statement = connection.createStatement()) {
+                    ResultSet resultSet = statement.executeQuery(SQL1);
+                    if (resultSet.next()) {
+                        message1.setId(resultSet.getInt("id"));
+                    } else {
+                        Assert.fail();
+                    }
+                    resultSet = statement.executeQuery(SQL2);
+                    if (resultSet.next()) {
+                        message2.setId(resultSet.getInt("id"));
+                    } else {
+                        Assert.fail();
+                    }
                 }
             }
         });
+
+        message1.setPosted(true);
+        message1.setSynonymized(false);
+
+        message2.setPosted(true);
+        message2.setSynonymized(false);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                messageDAO.update(messageList);
+            }
+        });
+    }
+
+
+    private Message createMessage() {
+        Message message = new Message();
+
+        message.setMessage("Test");
+        message.setTweet(true);
+
+        message.setOwner(BASE_NAME + Counter.getNextNumber());
+        message.setOwnerMale(true);
+
+        message.setRecipient(null);
+        message.setRecipientMale(false);
+
+        message.setPostedDate(new Date());
+
+        message.setSynonymized(true);
+        message.setPosted(false);
+
+        return message;
     }
 }

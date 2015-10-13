@@ -19,11 +19,11 @@ public interface MessageDAO {
     Message getAnyTweet(boolean male) throws SQLException;
 
     //Get UnSynonymized message
-    List<Message> getUnSynonymizedMessages(int limit) throws SQLException;
+    List<Message> getUnSynonymizedMessages(int limit) throws SQLException, NoSuchEntityException;
 
 
     // INSERTS - UPDATES
-    void save(Message message) throws Exception;
+    void save(Message message) throws SQLException;
     void save(List<Message> messageList) throws SQLException;
 
     void update(Message message) throws SQLException;

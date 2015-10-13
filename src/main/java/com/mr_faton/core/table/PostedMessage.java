@@ -63,4 +63,9 @@ public class PostedMessage {
     public void setPostedDate(Date postedDate) {
         this.postedDate = postedDate;
     }
+
+    @Override
+    public String toString() {
+        return owner + ": " + message;
+    }
 }

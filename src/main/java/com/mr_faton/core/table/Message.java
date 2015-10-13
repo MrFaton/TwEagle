@@ -91,4 +91,9 @@ public class Message {
     public void setPosted(boolean posted) {
         this.posted = posted;
     }
+
+    @Override
+    public String toString() {
+        return owner + ": " + message;
+    }
 }

@@ -40,16 +40,9 @@ public class DonorUserDAOReal implements DonorUserDAO {
         final String SQL = "" +
                 "SELECT * FROM tweagle.donor_users WHERE take_messages = 0 LIMIT 1;";
         Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(SQL);
-        if (resultSet.next()) {
-            DonorUser donorUser = getDonorUser(resultSet);
-            resultSet.close();
-            statement.close();
-            return donorUser;
-        } else {
-            resultSet.close();
-            statement.close();
+        try(Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(SQL)) {
+            if (resultSet.next()) return getDonorUser(resultSet);
             throw new NoSuchEntityException("no donor to parse messages");
         }
     }
@@ -76,30 +69,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     @Override
     public void save(DonorUser donorUser) throws SQLException {
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE);
-
-        preparedStatement.setString(1, donorUser.getName());
-        preparedStatement.setBoolean(2, donorUser.isMale());
-
-        preparedStatement.setBoolean(3, donorUser.isTakeMessage());
-        preparedStatement.setBoolean(4, donorUser.isTakeFollowing());
-        preparedStatement.setBoolean(5, donorUser.isTakeFollowers());
-
-        preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
-        preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
-        preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
-
-
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
-    }
-
-    @Override
-    public void save(List<DonorUser> donorUserList) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE);
-
-        for (DonorUser donorUser : donorUserList) {
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             preparedStatement.setString(1, donorUser.getName());
             preparedStatement.setBoolean(2, donorUser.isMale());
 
@@ -107,15 +77,59 @@ public class DonorUserDAOReal implements DonorUserDAO {
             preparedStatement.setBoolean(4, donorUser.isTakeFollowing());
             preparedStatement.setBoolean(5, donorUser.isTakeFollowers());
 
-            preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
-            preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
-            preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+            if (donorUser.getTakeMessageDate() != null) {
+                preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+            } else {
+                preparedStatement.setNull(6, Types.DATE);
+            }
+            if (donorUser.getTakeFollowingDate() != null) {
+                preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+            } else {
+                preparedStatement.setNull(7, Types.DATE);
+            }
+            if (donorUser.getTakeFollowersDate() != null) {
+                preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+            } else {
+                preparedStatement.setNull(8, Types.DATE);
+            }
 
-            preparedStatement.addBatch();
+            preparedStatement.executeUpdate();
         }
+    }
 
-        preparedStatement.executeBatch();
-        preparedStatement.close();
+    @Override
+    public void save(List<DonorUser> donorUserList) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
+            for (DonorUser donorUser : donorUserList) {
+                preparedStatement.setString(1, donorUser.getName());
+                preparedStatement.setBoolean(2, donorUser.isMale());
+
+                preparedStatement.setBoolean(3, donorUser.isTakeMessage());
+                preparedStatement.setBoolean(4, donorUser.isTakeFollowing());
+                preparedStatement.setBoolean(5, donorUser.isTakeFollowers());
+
+                if (donorUser.getTakeMessageDate() != null) {
+                    preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                } else {
+                    preparedStatement.setNull(6, Types.DATE);
+                }
+                if (donorUser.getTakeFollowingDate() != null) {
+                    preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                } else {
+                    preparedStatement.setNull(7, Types.DATE);
+                }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    preparedStatement.setNull(8, Types.DATE);
+                }
+
+                preparedStatement.addBatch();
+            }
+
+            preparedStatement.executeBatch();
+        }
     }
 
 
@@ -123,40 +137,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     @Override
     public void update(DonorUser donorUser) throws SQLException {
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE);
-
-        preparedStatement.setBoolean(1, donorUser.isTakeMessage());
-        preparedStatement.setBoolean(2, donorUser.isTakeFollowing());
-        preparedStatement.setBoolean(3, donorUser.isTakeFollowers());
-
-        if (donorUser.getTakeMessageDate() != null) {
-            preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
-        } else {
-            preparedStatement.setNull(4, Types.DATE);
-        }
-        if (donorUser.getTakeFollowingDate() != null) {
-            preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
-        } else {
-            preparedStatement.setNull(5, Types.DATE);
-        }
-        if (donorUser.getTakeFollowersDate() != null) {
-            preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
-        } else {
-            preparedStatement.setNull(6, Types.DATE);
-        }
-
-        preparedStatement.setString(7, donorUser.getName());
-
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
-    }
-
-    @Override
-    public void update(List<DonorUser> donorUserList) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE);
-
-        for (DonorUser donorUser : donorUserList) {
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             preparedStatement.setBoolean(1, donorUser.isTakeMessage());
             preparedStatement.setBoolean(2, donorUser.isTakeFollowing());
             preparedStatement.setBoolean(3, donorUser.isTakeFollowers());
@@ -179,10 +160,41 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
             preparedStatement.setString(7, donorUser.getName());
 
-            preparedStatement.addBatch();
+            preparedStatement.executeUpdate();
         }
+    }
 
-        preparedStatement.executeBatch();
-        preparedStatement.close();
+    @Override
+    public void update(List<DonorUser> donorUserList) throws SQLException {
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
+            for (DonorUser donorUser : donorUserList) {
+                preparedStatement.setBoolean(1, donorUser.isTakeMessage());
+                preparedStatement.setBoolean(2, donorUser.isTakeFollowing());
+                preparedStatement.setBoolean(3, donorUser.isTakeFollowers());
+
+                if (donorUser.getTakeMessageDate() != null) {
+                    preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                } else {
+                    preparedStatement.setNull(4, Types.DATE);
+                }
+                if (donorUser.getTakeFollowingDate() != null) {
+                    preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                } else {
+                    preparedStatement.setNull(5, Types.DATE);
+                }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    preparedStatement.setNull(6, Types.DATE);
+                }
+
+                preparedStatement.setString(7, donorUser.getName());
+
+                preparedStatement.addBatch();
+            }
+
+            preparedStatement.executeBatch();
+        }
     }
 }

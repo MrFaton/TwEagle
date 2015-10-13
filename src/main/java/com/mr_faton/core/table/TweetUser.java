@@ -52,4 +52,9 @@ public class TweetUser {
     public void setLastUpdateDay(int lastUpdateDay) {
         this.lastUpdateDay = lastUpdateDay;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

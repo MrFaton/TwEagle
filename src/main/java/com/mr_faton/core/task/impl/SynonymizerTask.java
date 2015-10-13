@@ -64,12 +64,12 @@ public class SynonymizerTask implements Task{
 
     @Override
     public void update() throws SQLException {
-        messagesForSynonymize = messageDAO.getUnSynonymizedMessages(MESSAGE_LIMIT);
+
     }
 
     @Override
     public void save() throws SQLException {
-        messageDAO.updateSynonymizedMessages(messagesForSynonymize);
+
     }
 
     @Override

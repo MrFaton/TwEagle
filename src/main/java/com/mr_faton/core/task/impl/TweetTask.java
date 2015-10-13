@@ -112,11 +112,12 @@ public class TweetTask implements Task {
         }
     }
 
+    /*TODO not finished*/
     @Override
     public void save() throws SQLException {
         logger.debug("save used tweetUser into db");
 
-        messageDAO.updatePostedMessage(message);
+
 
         PostedMessage postedMessage = createPostedMessage(postedMessageId, message);
         postedMessageDAO.save(postedMessage);

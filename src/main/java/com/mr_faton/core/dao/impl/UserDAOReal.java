@@ -20,6 +20,15 @@ import java.util.List;
 public class UserDAOReal implements UserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.UserDAOReal");
+    private static final String SQL_SAVE = "" +
+            "INSERT INTO tweagle.users (name, password, email, male, creation_date, messages, following, followers, " +
+            "consumer_key, consumer_secret, access_token, access_token_secret) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String SQL_UPDATE = "" +
+            "UPDATE tweagle.users SET password = ?, email = ?, male = ?, creation_date = ?, " +
+            "messages = ?, following = ?, followers = ?, consumer_key = ?, consumer_secret = ?, access_token = ?, " +
+            "access_token_secret = ? WHERE name = ?;";
+
     private final DataSource dataSource;
 
     public UserDAOReal(DataSource dataSource) {
@@ -66,124 +75,8 @@ public class UserDAOReal implements UserDAO {
         return userList;
     }
 
-    @Override
-    public void update(User user) throws SQLException {
-        logger.debug("update user " + user);
-        final String SQL = "" +
-                "UPDATE tweagle.users SET " +
-                "name=?, " +//1
-                "password=?, " +//2
-                "email=?, " +//3
-                "male=?, " +//4
-                "creation_date=?, " +//5
-                "messages=?, " +//6
-                "following=?, " +//7
-                "followers=?, " +//8
-                "consumer_key=?, " +//9
-                "consumer_secret=?, " +//10
-                "access_token=?, " +//11
-                "access_token_secret=? " +//12
-                "WHERE name=?;";//13
 
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getPassword());
-            preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setBoolean(4, user.isMale());
-            preparedStatement.setDate(5, new java.sql.Date(user.getCreationDate().getTime()));
-            preparedStatement.setInt(6, user.getMessages());
-            preparedStatement.setInt(7, user.getFollowing());
-            preparedStatement.setInt(8, user.getFollowers());
-            preparedStatement.setString(9, user.getConsumerKey());
-            preparedStatement.setString(10, user.getConsumerSecret());
-            preparedStatement.setString(11, user.getAccessToken());
-            preparedStatement.setString(12, user.getAccessTokenSecret());
-            preparedStatement.setString(13, user.getName());
 
-            preparedStatement.executeUpdate();
-        }
-    }
-
-    @Override
-    public void update(List<User> userList) throws SQLException {
-        logger.debug("update user list " + userList);
-        final String SQL = "" +
-                "UPDATE tweagle.users SET " +
-                "name=?, " +//1
-                "password=?, " +//2
-                "email=?, " +//3
-                "male=?, " +//4
-                "creation_date=?, " +//5
-                "messages=?, " +//6
-                "following=?, " +//7
-                "followers=?, " +//8
-                "consumer_key=?, " +//9
-                "consumer_secret=?, " +//10
-                "access_token=?, " +//11
-                "access_token_secret=? " +//12
-                "WHERE name=?;";//13
-
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            for (User user : userList) {
-                preparedStatement.setString(1, user.getName());
-                preparedStatement.setString(2, user.getPassword());
-                preparedStatement.setString(3, user.getEmail());
-                preparedStatement.setBoolean(4, user.isMale());
-                preparedStatement.setDate(5, new java.sql.Date(user.getCreationDate().getTime()));
-                preparedStatement.setInt(6, user.getMessages());
-                preparedStatement.setInt(7, user.getFollowing());
-                preparedStatement.setInt(8, user.getFollowers());
-                preparedStatement.setString(9, user.getConsumerKey());
-                preparedStatement.setString(10, user.getConsumerSecret());
-                preparedStatement.setString(11, user.getAccessToken());
-                preparedStatement.setString(12, user.getAccessTokenSecret());
-                preparedStatement.setString(13, user.getName());
-
-                preparedStatement.addBatch();
-            }
-            preparedStatement.executeBatch();
-        }
-    }
-
-    @Override
-    public void addUser(User user) throws SQLException {
-        logger.debug("add user " + user);
-        final String SQL = "" +
-                "INSERT INTO tweagle.users (" +
-                "name, " +//1
-                "password, " +//2
-                "email, " +//3
-                "male, " +//4
-                "creation_date, " +//5
-                "messages, " +//6
-                "following, " +//7
-                "followers, " +//8
-                "consumer_key, " +//9
-                "consumer_secret, " +//10
-                "access_token, " +//11
-                "access_token_secret) " +//12
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getPassword());
-            preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setBoolean(4, user.isMale());
-            preparedStatement.setDate(5, new java.sql.Date(user.getCreationDate().getTime()));
-            preparedStatement.setInt(6, user.getMessages());
-            preparedStatement.setInt(7, user.getFollowing());
-            preparedStatement.setInt(8, user.getFollowers());
-            preparedStatement.setString(9, user.getConsumerKey());
-            preparedStatement.setString(10, user.getConsumerSecret());
-            preparedStatement.setString(11, user.getAccessToken());
-            preparedStatement.setString(12, user.getAccessTokenSecret());
-
-            preparedStatement.executeUpdate();
-        }
-    }
 
     private User getUser(ResultSet resultSet) throws SQLException {
         User user = new User();
@@ -201,5 +94,103 @@ public class UserDAOReal implements UserDAO {
         user.setAccessTokenSecret(resultSet.getString("access_token_secret"));
 
         return user;
+    }
+
+    // INSERTS - UPDATES
+    @Override
+    public void save(User user) throws SQLException {
+        logger.debug("save user " + user);
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
+
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getPassword());
+            preparedStatement.setString(3, user.getEmail());
+            preparedStatement.setBoolean(4, user.isMale());
+            preparedStatement.setDate(5, new java.sql.Date(user.getCreationDate().getTime()));
+            preparedStatement.setInt(6, user.getMessages());
+            preparedStatement.setInt(7, user.getFollowing());
+            preparedStatement.setInt(8, user.getFollowers());
+            preparedStatement.setString(9, user.getConsumerKey());
+            preparedStatement.setString(10, user.getConsumerSecret());
+            preparedStatement.setString(11, user.getAccessToken());
+            preparedStatement.setString(12, user.getAccessTokenSecret());
+
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void save(List<User> userList) throws SQLException {
+        logger.debug("save " + userList.size() + " users");
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
+            for (User user : userList) {
+                preparedStatement.setString(1, user.getName());
+                preparedStatement.setString(2, user.getPassword());
+                preparedStatement.setString(3, user.getEmail());
+                preparedStatement.setBoolean(4, user.isMale());
+                preparedStatement.setDate(5, new java.sql.Date(user.getCreationDate().getTime()));
+                preparedStatement.setInt(6, user.getMessages());
+                preparedStatement.setInt(7, user.getFollowing());
+                preparedStatement.setInt(8, user.getFollowers());
+                preparedStatement.setString(9, user.getConsumerKey());
+                preparedStatement.setString(10, user.getConsumerSecret());
+                preparedStatement.setString(11, user.getAccessToken());
+                preparedStatement.setString(12, user.getAccessTokenSecret());
+
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+        }
+    }
+
+
+
+    @Override
+    public void update(User user) throws SQLException {
+        logger.debug("update user " + user);
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
+            preparedStatement.setString(1, user.getPassword());
+            preparedStatement.setString(2, user.getEmail());
+            preparedStatement.setBoolean(3, user.isMale());
+            preparedStatement.setDate(4, new java.sql.Date(user.getCreationDate().getTime()));
+            preparedStatement.setInt(5, user.getMessages());
+            preparedStatement.setInt(6, user.getFollowing());
+            preparedStatement.setInt(7, user.getFollowers());
+            preparedStatement.setString(8, user.getConsumerKey());
+            preparedStatement.setString(9, user.getConsumerSecret());
+            preparedStatement.setString(10, user.getAccessToken());
+            preparedStatement.setString(11, user.getAccessTokenSecret());
+            preparedStatement.setString(12, user.getName());
+
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void update(List<User> userList) throws SQLException {
+        logger.debug("update " + userList.size() + " users");
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
+            for (User user : userList) {
+                preparedStatement.setString(1, user.getPassword());
+                preparedStatement.setString(2, user.getEmail());
+                preparedStatement.setBoolean(3, user.isMale());
+                preparedStatement.setDate(4, new java.sql.Date(user.getCreationDate().getTime()));
+                preparedStatement.setInt(5, user.getMessages());
+                preparedStatement.setInt(6, user.getFollowing());
+                preparedStatement.setInt(7, user.getFollowers());
+                preparedStatement.setString(8, user.getConsumerKey());
+                preparedStatement.setString(9, user.getConsumerSecret());
+                preparedStatement.setString(10, user.getAccessToken());
+                preparedStatement.setString(11, user.getAccessTokenSecret());
+                preparedStatement.setString(12, user.getName());
+
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
+        }
     }
 }
