@@ -1,8 +1,8 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
-import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.DonorUserDAO;
+import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.exception.DataSequenceReachedException;
 import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
@@ -33,14 +33,14 @@ public class MessageParseTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.MessageParseTask");
 
-    private static final int MIN_DELAY = 40 * 60 * 1000; //minutes
-    private static final int MAX_DELAY = 80 * 60 * 1000; //minutes
+    private static final int MIN_DELAY = 2 * 60 * 1000; //minutes
+    private static final int MAX_DELAY = 5 * 60 * 1000; //minutes
     private static final String SOURCE_USER = "Mr_Faton";
     private static final String MESSAGE_lANG = "ru";
     private static final String COMMERCIAL_PARAM = "http";
     private static final String MENTION_PARAM = "@";
     private static final int MESSAGES_PER_PAGE = 200;
-    private static final int PAGES_PER_ONE_SEARCH = 25;
+    private static final int PAGES_PER_ONE_SEARCH = 10;
     private static final int DEPTH_SEARCH_IN_YEAR = 3; //max deep = 3 years old
     private static final List<Message> messageList = new ArrayList<>();
 
@@ -52,7 +52,8 @@ public class MessageParseTask implements Task {
     private long nextTime = 0;
     private Date maxOldDate;
     private DonorUser donorUser = null;
-    private int searchedPage = 0;
+    private int searchedPage = 1;
+    private boolean hasMoreDonorUsers = true;
 
     public MessageParseTask(
             TwitterAPI twitterAPI,
@@ -87,8 +88,13 @@ public class MessageParseTask implements Task {
     @Override
     public void setNextTime() {
         logger.debug("set next time");
-        nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
-        logger.debug("next time is set to " + String.format("%td-%<tm-%<tY", new Date(nextTime)));
+        if (hasMoreDonorUsers) {
+            nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
+            logger.debug("next time is set to " + String.format("%td-%<tm-%<tY %<tH:%<tM:%<tS", new Date(nextTime)));
+        } else {
+            nextTime = Long.MAX_VALUE;
+        }
+
     }
 
     @Override
@@ -97,11 +103,16 @@ public class MessageParseTask implements Task {
         if (donorUser == null) {
             try {
                 donorUser = donorUserDAO.getDonorForMessage();
-                searchedPage = 0;
+                searchedPage = 1;
                 logger.debug("donorUser updated to " + donorUser.getName());
+
+                donorUser.setTakeMessage(true);
+                donorUser.setTakeMessageDate(new Date());
+
+                donorUserDAO.update(donorUser);
             } catch (NoSuchEntityException ex) {
                 logger.debug("no donorUser to parse messages");
-                nextTime = Long.MAX_VALUE;
+                hasMoreDonorUsers = false;
             }
         } else {
             logger.debug("donorUser = " + donorUser.getName() + ", so don't need to update it");
@@ -133,7 +144,6 @@ public class MessageParseTask implements Task {
                 searchedPage++;
 
                 handleUserTimeLineList(statusList);
-                logger.info("collected " + messageList.size() + " messages");
             }
         } catch (DataSequenceReachedException lastTweetEx) {
             donorUser = null;
@@ -160,8 +170,12 @@ public class MessageParseTask implements Task {
     }
 
     private void handleUserTimeLineList (ResponseList<Status> statusList) throws DataSequenceReachedException{
-        for (Status status : statusList) {
+        if (statusList.size() == 0) {
+            logger.debug("response status list = 0, stop handle this user");
+            throw new DataSequenceReachedException();
+        }
 
+        for (Status status : statusList) {
             Date statusDate = status.getCreatedAt();
             if (maxOldDate.after(statusDate)) throw new DataSequenceReachedException();
             if (!MESSAGE_lANG.equals(status.getLang())) continue;

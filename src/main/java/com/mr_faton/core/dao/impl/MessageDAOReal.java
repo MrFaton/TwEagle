@@ -292,9 +292,12 @@ public class MessageDAOReal implements MessageDAO {
                 preparedStatement.setBoolean(4, message.isOwnerMale());
                 if (message.getRecipient() != null) {
                     preparedStatement.setString(5, message.getRecipient());
-                    preparedStatement.setBoolean(6, message.isRecipientMale());
                 } else {
                     preparedStatement.setNull(5, Types.VARCHAR);
+                }
+                if (message.isRecipientMale() != null) {
+                    preparedStatement.setBoolean(6, message.isRecipientMale());
+                } else {
                     preparedStatement.setNull(6, Types.BOOLEAN);
                 }
                 preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));

@@ -14,7 +14,7 @@ public class Message {
     private boolean ownerMale;
 
     private String recipient;
-    private boolean recipientMale;
+    private Boolean recipientMale;
 
     private Date postedDate;
 
@@ -64,10 +64,10 @@ public class Message {
         this.recipient = recipient;
     }
 
-    public boolean isRecipientMale() {
+    public Boolean isRecipientMale() {
         return recipientMale;
     }
-    public void setRecipientMale(boolean recipientMale) {
+    public void setRecipientMale(Boolean recipientMale) {
         this.recipientMale = recipientMale;
     }
 

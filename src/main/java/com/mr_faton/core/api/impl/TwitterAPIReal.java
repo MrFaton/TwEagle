@@ -9,7 +9,6 @@ import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +21,7 @@ public class TwitterAPIReal implements TwitterAPI{
 
 
     public TwitterAPIReal(UserDAO userDAO) {
-        logger.info("constructor");
+        logger.debug("constructor");
         this.userDAO = userDAO;
     }
 
@@ -63,7 +62,7 @@ public class TwitterAPIReal implements TwitterAPI{
             String donorUserName,
             Paging paging,
             String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
-        logger.debug("get response list for user " + donorUserName + " and pages " + paging.getPage() + "/" + paging.getCount());
+        logger.debug("get messages from donor " + donorUserName + ", page " + paging.getPage() + " messages per page " + paging.getCount());
         canWork(sourceUserName);
         return getTwitter(sourceUserName).getUserTimeline(donorUserName, paging);
     }
@@ -115,7 +114,6 @@ public class TwitterAPIReal implements TwitterAPI{
 
     private void canWork(String userName) throws NoSuchEntityException, SQLException, TwitterException {
         int appLimit = getAppLimit(userName);
-        logger.debug(appLimit + " app requests left");
         if (appLimit == 0) {
             logger.warn("application limit was exhausted");
             throw new LimitExhaustedException("application limit was exhausted");
