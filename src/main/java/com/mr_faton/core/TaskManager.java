@@ -9,8 +9,8 @@ import com.mr_faton.core.util.SettingsHolder;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 
-import java.util.*;
-import java.util.concurrent.ThreadFactory;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Description
@@ -66,7 +66,6 @@ public class TaskManager implements Runnable {
             long sleepTime;
 
             while (state) {
-                logger.debug("new loop");
                 int curHour = TimeWizard.getCurHour();
                 if (curHour <= APP_START_HOUR && curHour >= APP_STOP_HOUR) {
                     logger.info("out of work period");
@@ -83,7 +82,7 @@ public class TaskManager implements Runnable {
                     idle(getSleepTimeForNextPeriod());
                     continue;
                 }
-
+                logger.info("next task is " + task);
 
                 taskTime = task.getTime();
                 sleepTime = taskTime - System.currentTimeMillis();
@@ -144,8 +143,8 @@ public class TaskManager implements Runnable {
     }
 
     private void idle(final long sleepTime) throws InterruptedException {
-        logger.debug("sleep for " + TimeWizard.convertToIdle(sleepTime) + " " +
-                "work begin in " + TimeWizard.convertToFuture(sleepTime));
+        logger.info("the next task will be executed in " + TimeWizard.convertToFuture(sleepTime) + ", " +
+                "idle period is " + TimeWizard.convertToIdle(sleepTime));
         Thread.sleep(sleepTime);
     }
 
@@ -166,10 +165,6 @@ public class TaskManager implements Runnable {
         if (nextTask == null || minTaskTime == Long.MAX_VALUE || nextTask.getTime() >= endOfWorkDay)
             throw new NoSuchEntityException();
         return nextTask;
-    }
-
-    public void addTaskToList(Task task) {
-        taskList.add(task);
     }
 
     public void shutDown() {

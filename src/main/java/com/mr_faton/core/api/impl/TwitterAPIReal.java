@@ -62,7 +62,7 @@ public class TwitterAPIReal implements TwitterAPI{
             String donorUserName,
             Paging paging,
             String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
-        logger.debug("get messages from donor " + donorUserName + ", page " + paging.getPage() + " messages per page " + paging.getCount());
+        logger.debug("get messages from donor " + donorUserName + ", page " + paging.getPage());
         canWork(sourceUserName);
         return getTwitter(sourceUserName).getUserTimeline(donorUserName, paging);
     }
@@ -72,7 +72,7 @@ public class TwitterAPIReal implements TwitterAPI{
         Twitter twitter = getTwitter(userName);
         Map<String, RateLimitStatus> rateLimitStatus = twitter.getRateLimitStatus();
         int remainLimit = rateLimitStatus.get(APP_LIMIT).getRemaining();
-        logger.debug(remainLimit + " twitter queries left");
+        logger.info(remainLimit + " twitter queries left");
         return remainLimit;
     }
 

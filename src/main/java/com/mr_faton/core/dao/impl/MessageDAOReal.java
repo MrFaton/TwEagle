@@ -258,7 +258,7 @@ public class MessageDAOReal implements MessageDAO {
     // INSERTS - UPDATES
     @Override
     public void save(Message message) throws SQLException {
-        logger.debug("save message " + message);
+        logger.info("save message " + message);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             preparedStatement.setString(1, message.getMessage());
@@ -282,7 +282,7 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public void save(List<Message> messageList) throws SQLException {
-        logger.debug("save " + messageList.size() + " messages");
+        logger.info("save " + messageList.size() + " messages");
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             for (Message message : messageList) {
@@ -313,7 +313,7 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public void update(Message message) throws SQLException {
-        logger.debug("update message " + message);
+        logger.info("update message " + message);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             preparedStatement.setString(1, message.getMessage());
@@ -338,7 +338,7 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public void update(List<Message> messageList) throws SQLException {
-        logger.debug("update " + messageList.size() + " messages");
+        logger.info("update " + messageList.size() + " messages");
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             for (Message message : messageList) {

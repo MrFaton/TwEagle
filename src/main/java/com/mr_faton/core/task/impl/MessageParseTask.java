@@ -10,6 +10,7 @@ import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
+import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import twitter4j.Paging;
 import twitter4j.ResponseList;
@@ -26,7 +27,7 @@ import java.util.List;
  * Description
  *
  * @author Mr_Faton
- * @version 1.0
+ * @version 4.6
  * @since 07.10.2015
  */
 public class MessageParseTask implements Task {
@@ -90,7 +91,7 @@ public class MessageParseTask implements Task {
         logger.debug("set next time");
         if (hasMoreDonorUsers) {
             nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
-            logger.debug("next time is set to " + String.format("%td-%<tm-%<tY %<tH:%<tM:%<tS", new Date(nextTime)));
+            logger.debug("next time is set to " + TimeWizard.convertToFuture(nextTime));
         } else {
             nextTime = Long.MAX_VALUE;
         }
@@ -100,6 +101,7 @@ public class MessageParseTask implements Task {
     @Override
     public void update() throws SQLException {
         logger.debug("update");
+        if (!hasMoreDonorUsers) return;
         if (donorUser == null) {
             try {
                 donorUser = donorUserDAO.getDonorForMessage();
@@ -122,17 +124,15 @@ public class MessageParseTask implements Task {
     @Override
     public void save() throws SQLException {
         logger.debug("save");
+        if (messageList.size() == 0) return;
         messageDAO.save(messageList);
         messageList.clear();
     }
 
     @Override
     public void execute() {
-        logger.debug("collect messages");
-        if (donorUser == null) {
-            logger.warn("donor user can't be null");
-            return;
-        }
+        logger.info("collect messages");
+        if (donorUser == null) return;
 
         try {
             for (int counter = 0; counter < PAGES_PER_ONE_SEARCH; counter++) {
