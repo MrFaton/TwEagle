@@ -68,6 +68,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
     @Override
     public void save(DonorUser donorUser) throws SQLException {
+        logger.debug("save donor user " + donorUser);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             preparedStatement.setString(1, donorUser.getName());
@@ -99,6 +100,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
     @Override
     public void save(List<DonorUser> donorUserList) throws SQLException {
+        logger.debug("save " + donorUserList.size() + " donor users");
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             for (DonorUser donorUser : donorUserList) {
@@ -136,6 +138,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
     @Override
     public void update(DonorUser donorUser) throws SQLException {
+        logger.debug("update donor user " + donorUser);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             preparedStatement.setBoolean(1, donorUser.isTakeMessage());
@@ -166,6 +169,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
     @Override
     public void update(List<DonorUser> donorUserList) throws SQLException {
+        logger.debug("update " + donorUserList.size() + " donor users");
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             for (DonorUser donorUser : donorUserList) {

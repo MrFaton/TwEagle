@@ -10,6 +10,7 @@ import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Description
@@ -21,17 +22,22 @@ import java.util.*;
 public class TaskManager implements Runnable {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.TaskManager");
-    private static final List<Task> taskList = new ArrayList<>();
-    private boolean state = true;
+
     private static int APP_START_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_START_HOUR"));
     private static int APP_STOP_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR"));
+
+    private final List<Task> taskList;
+    private boolean state = true;
+
 
     private final ExecutionPool executionPool;
     private final TransactionManager transactionManager;
 
-    public TaskManager(ExecutionPool executionPool, TransactionManager transactionManager) {
+    public TaskManager(ExecutionPool executionPool, TransactionManager transactionManager, List<Task> taskList) {
+        logger.debug("constructor");
         this.executionPool = executionPool;
         this.transactionManager = transactionManager;
+        this.taskList = taskList;
     }
 
     public boolean getState() {
@@ -39,6 +45,7 @@ public class TaskManager implements Runnable {
     }
 
     public void setState(boolean state) {
+        logger.debug("status changed to " + state);
         this.state = state;
     }
 
@@ -86,6 +93,8 @@ public class TaskManager implements Runnable {
 
                 task.setNextTime();
                 executionPool.execute(task);
+
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             }
 
         } catch (InterruptedException ex) {
@@ -99,6 +108,16 @@ public class TaskManager implements Runnable {
 
 
 
+    private void setDailyParams() throws Exception {
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                for (Task task : taskList) {
+                    task.setDailyParams();
+                }
+            }
+        });
+    }
 
     private void updateAllTasks() throws Exception {
         transactionManager.doInTransaction(new Command() {
@@ -106,17 +125,6 @@ public class TaskManager implements Runnable {
             public void doCommands() throws Exception {
                 for (Task task : taskList) {
                     task.update();
-                }
-            }
-        });
-    }
-
-    private void setDailyParams() throws Exception {
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                for (Task task : taskList) {
-                    task.setDailyParams();
                 }
             }
         });

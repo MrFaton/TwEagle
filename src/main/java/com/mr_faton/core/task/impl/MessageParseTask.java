@@ -75,7 +75,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public void setStatus(boolean status) {
-        logger.info("status changed to " + (status ? "on":"off"));
+        logger.info("status changed to " + status);
         this.status = status;
     }
 
@@ -86,14 +86,14 @@ public class MessageParseTask implements Task {
 
     @Override
     public void setNextTime() {
-        logger.debug("<=");
+        logger.debug("set next time");
         nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
         logger.debug("next time is set to " + String.format("%td-%<tm-%<tY", new Date(nextTime)));
     }
 
     @Override
     public void update() throws SQLException {
-        logger.debug("<=");
+        logger.debug("update");
         if (donorUser == null) {
             try {
                 donorUser = donorUserDAO.getDonorForMessage();
@@ -110,7 +110,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public void save() throws SQLException {
-        logger.debug("<=");
+        logger.debug("save");
         messageDAO.save(messageList);
         messageList.clear();
     }
@@ -127,8 +127,7 @@ public class MessageParseTask implements Task {
             for (int counter = 0; counter < PAGES_PER_ONE_SEARCH; counter++) {
                 ResponseList<Status> statusList = twitterAPI.getUserTimeLine(
                         donorUser.getName(),
-                        new Paging(searchedPage),
-                        MESSAGES_PER_PAGE,
+                        new Paging(searchedPage, MESSAGES_PER_PAGE),
                         SOURCE_USER);
 
                 searchedPage++;

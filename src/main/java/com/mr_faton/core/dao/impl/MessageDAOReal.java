@@ -214,6 +214,7 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public List<Message> getUnSynonymizedMessages(int limit) throws SQLException, NoSuchEntityException {
+        logger.debug("get UnSynonymized Messages");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE synonymized = 0 LIMIT " + limit + ";";
         Connection connection = dataSource.getConnection();

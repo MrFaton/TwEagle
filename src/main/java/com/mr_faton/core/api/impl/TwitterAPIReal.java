@@ -28,7 +28,7 @@ public class TwitterAPIReal implements TwitterAPI{
 
     @Override
     public long postTweet(String userName, String tweet) throws TwitterException, SQLException, NoSuchEntityException {
-        logger.debug("post tweet for user " + userName);
+        logger.debug("post tweet for user " + userName + " with text " + tweet);
         canWork(userName);
         Twitter twitter = getTwitter(userName);
         Status status = twitter.updateStatus(tweet);
@@ -59,9 +59,13 @@ public class TwitterAPIReal implements TwitterAPI{
     }
 
     @Override
-    public ResponseList<Status> getUserTimeLine(String donorUserName, Paging paging, int messagesPerPage, String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
-        /*TODO done*/
-        return null;
+    public ResponseList<Status> getUserTimeLine(
+            String donorUserName,
+            Paging paging,
+            String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
+        logger.debug("get response list for user " + donorUserName + " and pages " + paging.getPage() + "/" + paging.getCount());
+        canWork(sourceUserName);
+        return getTwitter(sourceUserName).getUserTimeline(donorUserName, paging);
     }
 
     private int getAppLimit(String userName) throws TwitterException, SQLException, NoSuchEntityException {
@@ -111,6 +115,7 @@ public class TwitterAPIReal implements TwitterAPI{
 
     private void canWork(String userName) throws NoSuchEntityException, SQLException, TwitterException {
         int appLimit = getAppLimit(userName);
+        logger.debug(appLimit + " app requests left");
         if (appLimit == 0) {
             logger.warn("application limit was exhausted");
             throw new LimitExhaustedException("application limit was exhausted");

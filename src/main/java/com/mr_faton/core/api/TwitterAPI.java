@@ -15,6 +15,6 @@ public interface TwitterAPI{
 
     void deleteLastTweet(String userName) throws TwitterException, SQLException, NoSuchEntityException;
 
-    ResponseList<Status> getUserTimeLine(String donorUserName, Paging paging, int messagesPerPage, String sourceUserName)
+    ResponseList<Status> getUserTimeLine(String donorUserName, Paging paging, String sourceUserName)
             throws TwitterException, SQLException, NoSuchEntityException;
 }

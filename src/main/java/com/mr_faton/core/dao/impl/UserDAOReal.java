@@ -86,7 +86,7 @@ public class UserDAOReal implements UserDAO {
         user.setMale(resultSet.getBoolean("male"));
         user.setCreationDate(resultSet.getDate("creation_date"));
         user.setMessages(resultSet.getInt("messages"));
-        user.setFollowers(resultSet.getInt("following"));
+        user.setFollowing(resultSet.getInt("following"));
         user.setFollowers(resultSet.getInt("followers"));
         user.setConsumerKey(resultSet.getString("consumer_key"));
         user.setConsumerSecret(resultSet.getString("consumer_secret"));
