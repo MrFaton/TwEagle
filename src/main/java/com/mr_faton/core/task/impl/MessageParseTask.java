@@ -34,8 +34,8 @@ public class MessageParseTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.MessageParseTask");
 
-    private static final int MIN_DELAY = 2 * 60 * 1000; //minutes
-    private static final int MAX_DELAY = 5 * 60 * 1000; //minutes
+    private static final int MIN_DELAY = 10 * 60 * 1000; //minutes
+    private static final int MAX_DELAY = 45 * 60 * 1000; //minutes
     private static final String SOURCE_USER = "Mr_Faton";
     private static final String MESSAGE_lANG = "ru";
     private static final String COMMERCIAL_PARAM = "http";
