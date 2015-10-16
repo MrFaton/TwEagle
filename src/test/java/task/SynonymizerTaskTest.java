@@ -4,7 +4,7 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.SynonymizerDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
-import com.mr_faton.core.task.impl.SynonymizerTask;
+import com.mr_faton.core.task.impl.SynonymizerTask_Old;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +42,7 @@ public class SynonymizerTaskTest {
         when(synonymizerDAO.getSynonyms(anyString())).thenReturn(synonymList);
         when(messageDAO.getUnSynonymizedMessages(anyInt())).thenReturn(messageList);
 
-        SynonymizerTask synonymizerTask = new SynonymizerTask(messageDAO, synonymizerDAO);
+        SynonymizerTask_Old synonymizerTask = new SynonymizerTask_Old(messageDAO, synonymizerDAO);
 
         synonymizerTask.update();
         synonymizerTask.execute();
