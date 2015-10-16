@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,9 +44,7 @@ public class SynonymizerDAOReal implements SynonymizerDAO {
 
                 String rowSynonyms = resultSet.getString("synonyms");
                 String[] synonymTokens = rowSynonyms.split(",");
-                for (String synonym : synonymTokens) {
-                    synonymList.add(synonym);
-                }
+                Collections.addAll(synonymList, synonymTokens);
 
                 return synonymList;
             } else {
