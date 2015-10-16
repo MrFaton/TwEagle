@@ -25,18 +25,19 @@ import java.util.List;
 public class SynonymizerTask implements Task{
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.SynonymizerTask");
-    private static final int MESSAGE_LIMIT = 10;
+    private static final int MESSAGE_LIMIT = 10; //how many messages select from db
     private static final int MIN_DELAY = 40 * 60 * 1000; //minutes
     private static final int MAX_DELAY = 80 * 60 * 1000; //minutes
-    private static final int MIN_SYN_WORD_LENGTH = 3;
+    private static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
 
     private final MessageDAO messageDAO;
     private final SynonymizerDAO synonymizerDAO;
 
     private boolean status = true;
     private long nextTime = 0;
-    private List<Message> messagesForSynonymize;
-    private boolean hasMoreMessages = true;
+    private List<Message> messagesForSynonymize; //messages who will be synonymized
+    private List<Message> synonymizedMessages = new ArrayList<>(MESSAGE_LIMIT + 1); //synonymized messages
+    private boolean hasMoreMessages = true; //if db says that no messages for synonymized, then turn it to false
 
 
 
@@ -47,18 +48,29 @@ public class SynonymizerTask implements Task{
     }
 
 
-
+    /**
+     * Method return work status.
+     * @return Work status of task.
+     */
     @Override
     public boolean getStatus() {
         return status;
     }
 
+    /**
+     * Change task's work status.
+     * @param status for change task's work status (true - task is enable, fals - task is disable).
+     */
     @Override
     public void setStatus(boolean status) {
         logger.info("status changed to " + status);
         this.status = status;
     }
 
+    /**
+     * Method returns the desired execution time for the task or Long.MAX_VALUE if the execution is not required.
+     * @return desired execution time for the task.
+     */
     @Override
     public long getTime() {
         return nextTime;
@@ -78,7 +90,7 @@ public class SynonymizerTask implements Task{
     @Override
     public void update() throws SQLException {
         logger.debug("update");
-        if (messagesForSynonymize != null) messagesForSynonymize.clear();
+        synonymizedMessages.clear();
         try {
             messagesForSynonymize = messageDAO.getUnSynonymizedMessages(MESSAGE_LIMIT);
         } catch (NoSuchEntityException e) {
@@ -90,18 +102,29 @@ public class SynonymizerTask implements Task{
     @Override
     public void save() throws SQLException {
         logger.debug("save");
-        if (messagesForSynonymize == null || messagesForSynonymize.size() == 0) return;
-        messageDAO.update(messagesForSynonymize);
+        if (synonymizedMessages == null || synonymizedMessages.size() == 0) return;
+        messageDAO.update(synonymizedMessages);
     }
 
     @Override
     public void execute() {
         logger.info("synonymize messages");
         if (messagesForSynonymize == null || messagesForSynonymize.size() == 0) return;
-        for (Message message : messagesForSynonymize) {
-            List<String> wordList = getWordList(message);
-//            List<String> synonymizedWordList =
+        try {
+            for (Message message : messagesForSynonymize) {
+                List<String> wordList = getWordList(message);
+                List<String> synonymizedWordList = getSynonymizedWordList(wordList);
+                StringBuilder text = new StringBuilder();
+                for (String word : synonymizedWordList) {
+                    text.append(word).append(" ");
+                }
+                message.setMessage(text.substring(0, text.lastIndexOf(" ")));
+                synonymizedMessages.add(message);
+            }
+        } catch (SQLException sqlEx) {
+            logger.warn("exception", sqlEx);
         }
+
     }
 
     @Override
@@ -125,19 +148,36 @@ public class SynonymizerTask implements Task{
     }
 
     private List<String> getSynonymizedWordList(List<String> wordList) throws SQLException {
-        for (String word : wordList) {
-            if (word.contains("@") || word.contains("_")) continue;
+        for (int counter = 0; counter < wordList.size(); counter++) {
+            String word = wordList.get(counter);
+
+            if (word.contains("@") || word.contains("_") || word.length() <= MIN_SYN_WORD_LENGTH) continue;
+
             int punctuationMarkPosition = recognizePunctuationMarksPosition(word);
             if (punctuationMarkPosition == 0) continue;
+            String wordPart;
+            String punctuationPart;
+            if (punctuationMarkPosition < 0) {
+                wordPart = word;
+                punctuationPart = "";
+            } else {
+                wordPart = word.substring(0, punctuationMarkPosition);
+                punctuationPart = word.substring(punctuationMarkPosition, word.length());
+            }
+
             List<String> synonymList;
             try {
-                synonymList = synonymizerDAO.getSynonyms(word);
+                synonymList = synonymizerDAO.getSynonyms(wordPart);
             } catch (NoSuchEntityException entityEx) {
                 continue;
             }
-            word = getRandomSynonym(synonymList);
+
+            String synonym = getRandomSynonym(synonymList);
+            String newWord = synonym + punctuationPart;
+
+            wordList.set(counter, newWord);
         }
-        return null;
+        return wordList;
     }
 
     private static int recognizePunctuationMarksPosition(String word) {
@@ -146,17 +186,11 @@ public class SynonymizerTask implements Task{
                 return counter;
             }
         }
-        return word.length() - 1;
+        return -1;
     }
 
     private String getRandomSynonym(@NotNull List<String> synonymList) {
         int position = RandomGenerator.getNumberFromZeroToRequirement(synonymList.size() - 1);
         return synonymList.get(position);
-    }
-
-    public static void main(String[] args) {
-        String word = "hi";
-        int position = recognizePunctuationMarksPosition(word);
-        System.out.println(position);
     }
 }
