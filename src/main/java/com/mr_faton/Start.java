@@ -1,6 +1,5 @@
-package com.mr_faton.core;
+package com.mr_faton;
 
-import com.mr_faton.TwEagle;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.util.SettingsHolder;
 

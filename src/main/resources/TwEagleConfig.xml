@@ -41,7 +41,7 @@
         <constructor-arg name="messageDAO" ref="messageDAO"/>
         <constructor-arg name="twitterAPI" ref="twitterAPI"/>
     </bean>
-    <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask_Old">
+    <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask">
         <constructor-arg name="messageDAO" ref="messageDAO"/>
         <constructor-arg name="synonymizerDAO" ref="synonymizerDAO"/>
     </bean>
@@ -53,7 +53,7 @@
         <constructor-arg name="taskList">
             <list>
                 <!--<ref bean="messageParseTask"/>-->
-                <!--<ref bean="synonymizerTask"/>-->
+                <ref bean="synonymizerTask"/>
             </list>
         </constructor-arg>
     </bean>

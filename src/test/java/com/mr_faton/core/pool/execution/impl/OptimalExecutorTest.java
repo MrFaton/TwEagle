@@ -1,12 +1,10 @@
-package pool.execution;
+package com.mr_faton.core.pool.execution.impl;
 
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
 import com.mr_faton.core.pool.execution.ExecutionPool;
-import com.mr_faton.core.pool.execution.impl.OptimalExecutor;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.SettingsHolder;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

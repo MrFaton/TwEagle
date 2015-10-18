@@ -6,7 +6,6 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
-import com.sun.istack.internal.NotNull;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -192,7 +191,7 @@ public class SynonymizerTask_Old implements Task{
         return -1;
     }
 
-    private String getRandomSynonym(@NotNull List<String> synonymList) {
+    private String getRandomSynonym(List<String> synonymList) {
         int position = RandomGenerator.getNumberFromZeroToRequirement(synonymList.size() - 1);
         return synonymList.get(position);
     }

@@ -5,13 +5,11 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description
@@ -51,6 +49,22 @@ public class SynonymizerDAOReal implements SynonymizerDAO {
                 logger.debug("no synonyms for word " + word);
                 throw new NoSuchEntityException();
             }
+        }
+    }
+
+    @Override
+    public void addWords(Map<String, String> wordsMap) throws SQLException {
+        logger.debug("add " + wordsMap.size() + " to db");
+        final String SQL = "" +
+                "INSERT INTO tweagle.synonyms (word, synonyms) VALUES (?, ?);";
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            for (Map.Entry<String, String> entry : wordsMap.entrySet()) {
+                preparedStatement.setString(1, entry.getKey());
+                preparedStatement.setString(2, entry.getValue());
+                preparedStatement.addBatch();
+            }
+            preparedStatement.executeBatch();
         }
     }
 }

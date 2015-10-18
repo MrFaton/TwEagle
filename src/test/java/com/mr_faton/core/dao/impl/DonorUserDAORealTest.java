@@ -1,7 +1,6 @@
-package dao;
+package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.DonorUserDAO;
-import com.mr_faton.core.dao.impl.DonorUserDAOReal;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.util.Command;

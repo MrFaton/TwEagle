@@ -1,4 +1,4 @@
-package dao;
+package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;

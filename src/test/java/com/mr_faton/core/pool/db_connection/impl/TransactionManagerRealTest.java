@@ -1,7 +1,6 @@
-package pool.db_connection;
+package com.mr_faton.core.pool.db_connection.impl;
 
 import com.mr_faton.core.pool.db_connection.TransactionManager;
-import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 import org.junit.AfterClass;

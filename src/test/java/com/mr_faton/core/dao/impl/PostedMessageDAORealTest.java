@@ -1,8 +1,6 @@
-package dao;
+package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.PostedMessageDAO;
-import com.mr_faton.core.dao.impl.MessageDAOReal;
-import com.mr_faton.core.dao.impl.PostedMessageDAOReal;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.PostedMessage;
 import com.mr_faton.core.util.Command;

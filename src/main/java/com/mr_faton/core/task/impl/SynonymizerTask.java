@@ -6,7 +6,6 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
-import com.sun.istack.internal.NotNull;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -24,12 +23,12 @@ import java.util.List;
 public class SynonymizerTask implements Task{
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.SynonymizerTask");
-    private static final int MESSAGE_LIMIT = 10; //how many messages select from db
-    private static final int MIN_DELAY = 1 * 60 * 1000; //minutes
-    private static final int MAX_DELAY = 2 * 60 * 1000; //minutes
-    private static final int MIN_SYN_PERCENT = 20;
-    private static final int MAX_SYN_PERCENT = 80;
-    private static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
+    public static final int MESSAGE_LIMIT = 10; //how many messages select from db
+    public static final int MIN_DELAY = 1 * 60 * 1000; //minutes
+    public static final int MAX_DELAY = 2 * 60 * 1000; //minutes
+    public static final int MIN_SYN_PERCENT = 20;
+    public static final int MAX_SYN_PERCENT = 80;
+    public static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
 
     private final MessageDAO messageDAO;
     private final SynonymizerDAO synonymizerDAO;
@@ -106,28 +105,29 @@ public class SynonymizerTask implements Task{
         messageDAO.update(synonymizedMessages);
     }
 
+
+
     @Override
     public void execute() {
         logger.info("synonymize messages");
         if (messagesForSynonymize == null || messagesForSynonymize.size() == 0) return;
         try {
             for (Message message : messagesForSynonymize) {
-                List<String> wordList = getWordList(message);
+                logger.debug("original message=" + message.getMessage());
+                List<String> wordList = getWordList(message.getMessage());
                 try {
                     List<Integer> positionsOfPassableReplacements = getPositionsOfPassableReplacement(wordList);
+                    logger.debug("possible replacements = " + positionsOfPassableReplacements.size());
                     int replacementsNumber = getReplacementsNumber(positionsOfPassableReplacements);
-
+                    logger.debug("actual replacements = " + replacementsNumber);
+                    replaceSynonyms(replacementsNumber, positionsOfPassableReplacements, wordList);
 
                 } catch (NoSuchEntityException entityEx) {
                     logger.debug("message has no one word to replace by synonym");
                 }
 
-
-
-
-                List<String> synonymizedWordList = getSynonymizedWordList(wordList);
                 StringBuilder text = new StringBuilder();
-                for (String word : synonymizedWordList) {
+                for (String word : wordList) {
                     text.append(word).append(" ");
                 }
                 String newMessage = text.substring(0, text.lastIndexOf(" "));
@@ -137,12 +137,15 @@ public class SynonymizerTask implements Task{
                 }
                 message.setSynonymized(true);
                 synonymizedMessages.add(message);
+                logger.debug("synonymized message=" + message.getMessage());
             }
         } catch (SQLException sqlEx) {
             logger.warn("exception", sqlEx);
         }
 
     }
+
+
 
     @Override
     public void setDailyParams() throws SQLException {
@@ -156,48 +159,18 @@ public class SynonymizerTask implements Task{
     }
 
 
-    private List<String> getWordList(Message message) {
+
+
+    //Tested
+    List<String> getWordList(String message) {
         List<String> wordList = new ArrayList<>();
-        String rowWords = message.getMessage();
-        String[] wordTokens = rowWords.split(" ");
+        String[] wordTokens = message.split(" ");
         Collections.addAll(wordList, wordTokens);
         return wordList;
     }
 
-    private List<String> getSynonymizedWordList(List<String> wordList) throws SQLException {
-        for (int counter = 0; counter < wordList.size(); counter++) {
-            String word = wordList.get(counter);
-
-            if (word.contains("@") || word.contains("_") || word.length() <= MIN_SYN_WORD_LENGTH) continue;
-
-            int punctuationMarkPosition = recognizePunctuationMarksPosition(word);
-            if (punctuationMarkPosition == 0) continue;
-            String wordPart;
-            String punctuationPart;
-            if (punctuationMarkPosition < 0) {
-                wordPart = word;
-                punctuationPart = "";
-            } else {
-                wordPart = word.substring(0, punctuationMarkPosition);
-                punctuationPart = word.substring(punctuationMarkPosition, word.length());
-            }
-
-            List<String> synonymList;
-            try {
-                synonymList = synonymizerDAO.getSynonyms(wordPart);
-            } catch (NoSuchEntityException entityEx) {
-                continue;
-            }
-
-            String synonym = getRandomSynonym(synonymList);
-            String newWord = synonym + punctuationPart;
-
-            wordList.set(counter, newWord);
-        }
-        return wordList;
-    }
-
-    private int recognizePunctuationMarksPosition(String word) {
+    //Tested
+    int recognizePunctuationMarksPosition(String word) {
         for (int counter = 0; counter < word.length(); counter++) {
             if (!Character.isLetter(word.charAt(counter))) {
                 return counter;
@@ -206,55 +179,72 @@ public class SynonymizerTask implements Task{
         return -1;
     }
 
-    private String getRandomSynonym(@NotNull List<String> synonymList) {
-        int position = RandomGenerator.getNumberFromZeroToRequirement(synonymList.size() - 1);
-        return synonymList.get(position);
-    }
-
-    private List<Integer> getPositionsOfPassableReplacement(List<String> wordsList) throws NoSuchEntityException {
+    //Tested
+    List<Integer> getPositionsOfPassableReplacement(List<String> wordsList) throws NoSuchEntityException {
         List<Integer> passableReplacements = new ArrayList<>();
         for (int i = 0; i < wordsList.size(); i++) {
             String word = wordsList.get(i);
             if (word.contains("@") || word.contains("_") || word.length() <= MIN_SYN_WORD_LENGTH) continue;
             int punctuation = recognizePunctuationMarksPosition(word);
-            if (punctuation <= MIN_SYN_WORD_LENGTH) continue;
+            if (punctuation >= 0 && punctuation <= MIN_SYN_WORD_LENGTH) continue;
             passableReplacements.add(i);
         }
         if (passableReplacements.isEmpty()) throw new NoSuchEntityException();
         return passableReplacements;
     }
 
-    private int getReplacementsNumber(List<Integer> positionsOfPassableReplacements) {
-        int randomPercent = RandomGenerator.getNumber(MIN_SYN_PERCENT, MAX_SYN_PERCENT);
-        int passableReplacementsNumber = positionsOfPassableReplacements.size();
-        return (int) ((double)passableReplacementsNumber / (double)100 * (double)randomPercent);
+    //Tested
+    String getRandomSynonym(List<String> synonymList) {
+        if (synonymList.size() == 1) return synonymList.get(0);
+        int position = RandomGenerator.getNumberFromZeroToRequirement(synonymList.size() - 1);
+        return synonymList.get(position);
     }
 
-    private void replaceSynonyms(List<String> wordList, int replacementsNumber, List<Integer> passableReplacementsList) throws SQLException {
-        int currentReplacementNum = 0;
-        while (currentReplacementNum < replacementsNumber && !passableReplacementsList.isEmpty()) {
+    //Tested
+    int getReplacementsNumber(List<Integer> positionsOfPassableReplacements) {
+        int randomPercent = RandomGenerator.getNumber(MIN_SYN_PERCENT, MAX_SYN_PERCENT);
+        logger.debug("random percent for message = " + randomPercent);
+        int passableReplacementsNumber = positionsOfPassableReplacements.size();
+        return (int) Math.round((double)passableReplacementsNumber / (double)100 * (double)randomPercent);
+    }
 
-            int indexOfReplacementWordIndex = RandomGenerator.getNumberFromZeroToRequirement(passableReplacementsList.size() - 1);
+    //Tested
+    void replaceSynonyms(int replacementsNumber, List<Integer> positionsOfPassableReplacements, List<String> wordList) throws SQLException {
+        int doneReplacements = 0;
+        while (doneReplacements < replacementsNumber && !positionsOfPassableReplacements.isEmpty()) {
 
-            int replacementWordIndex = passableReplacementsList.get(indexOfReplacementWordIndex);
+            int indexOfReplacementWordIndex = RandomGenerator.getNumberFromZeroToRequirement(positionsOfPassableReplacements.size() - 1);
+
+            int replacementWordIndex = positionsOfPassableReplacements.get(indexOfReplacementWordIndex);
 
             String replacementWord = wordList.get(replacementWordIndex);
 
-            /*TODO stoped here*/
+            int punctuationIndex = recognizePunctuationMarksPosition(replacementWord);
+            String replacementWordPart;
+            String punctuationPart;
+            if (punctuationIndex == -1) {
+                replacementWordPart = replacementWord;
+                punctuationPart = "";
+            } else {
+                replacementWordPart = replacementWord.substring(0, punctuationIndex);
+                punctuationPart = replacementWord.substring(punctuationIndex, replacementWord.length());
+            }
 
-            List<String> synonyms = getSynonymList(replacementWord);//4.6
-            System.out.println("replaceSynonyms -> synonyms=" + synonyms);
-
-            passableReplacementsList.remove(indexOfReplacementWordIndex);//4.7
-            if (synonyms.isEmpty()) {//4.8
+            List<String> synonyms;
+            try {
+                synonyms = synonymizerDAO.getSynonyms(replacementWordPart);
+            } catch (NoSuchEntityException e) {
+                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
                 continue;
             }
-            String synonym = getSynonym(synonyms);//4.9
-            System.out.println("replaceSynonyms -> synonym=" + synonym);
+            String synonym = getRandomSynonym(synonyms);
+            String synonymizedWord = synonym + punctuationPart;
 
-            wordList.set(replacementWordIndex, synonym);//4.10
-            currentReplacementNum++;
-            System.out.println("replaceSynonyms -> currentReplacementNum=" + currentReplacementNum);
+            wordList.set(replacementWordIndex, synonymizedWord);
+
+            positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
+
+            doneReplacements++;
         }
     }
 }

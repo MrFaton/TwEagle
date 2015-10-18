@@ -2,8 +2,6 @@ package com.mr_faton.core.dao;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
-import com.mr_faton.core.table.TweetUser;
-import com.sun.xml.internal.ws.api.model.MEP;
 
 import java.sql.SQLException;
 import java.util.List;

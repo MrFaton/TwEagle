@@ -1,7 +1,6 @@
-package dao;
+package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.dao.impl.MessageDAOReal;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.util.Command;
@@ -11,7 +10,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import util.Counter;
 
-import javax.xml.transform.Result;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
