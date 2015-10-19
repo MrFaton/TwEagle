@@ -1,7 +1,7 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.dao.SynonymizerDAO;
+import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import org.junit.Before;
@@ -29,14 +29,14 @@ import static org.mockito.Mockito.when;
  */
 public class SynonymizerTaskTest {
     private MessageDAO messageDAO;
-    private SynonymizerDAO synonymizerDAO;
+    private SynonymDAO synonymDAO;
     private SynonymizerTask synonymizerTask;
 
     @Before
     public void setUp() {
         messageDAO = mock(MessageDAO.class);
-        synonymizerDAO = mock(SynonymizerDAO.class);
-        synonymizerTask = new SynonymizerTask(messageDAO, synonymizerDAO);
+        synonymDAO = mock(SynonymDAO.class);
+        synonymizerTask = new SynonymizerTask(messageDAO, synonymDAO);
     }
 
 
@@ -95,7 +95,7 @@ public class SynonymizerTaskTest {
         List<String> synonymList = Arrays.asList("syn1", "syn2", "syn3");
         List<String> wordList = synonymizerTask.getWordList(text);
 
-        when(synonymizerDAO.getSynonyms(anyString())).thenReturn(synonymList);
+        when(synonymDAO.getSynonyms(anyString())).thenReturn(synonymList);
 
         synonymizerTask.replaceSynonyms(replacementsNumber, positionsOfPassableReplacements, wordList);
 
@@ -123,7 +123,7 @@ public class SynonymizerTaskTest {
         List<String> synonymList = Arrays.asList("syn1", "syn2", "syn3");
 
         when(messageDAO.getUnSynonymizedMessages(anyInt())).thenReturn(Collections.singletonList(message));
-        when(synonymizerDAO.getSynonyms(anyString())).thenReturn(synonymList);
+        when(synonymDAO.getSynonyms(anyString())).thenReturn(synonymList);
 
         synonymizerTask.update();
         synonymizerTask.execute();
@@ -143,7 +143,7 @@ public class SynonymizerTaskTest {
 
 //    @Test
 //    public void execute() throws SQLException, NoSuchEntityException {
-//        SynonymizerDAO synonymizerDAO = mock(SynonymizerDAO.class);
+//        SynonymDAO synonymDAO = mock(SynonymDAO.class);
 //        MessageDAO messageDAO = mock(MessageDAO.class);
 //
 //        List<String> synonymList = new ArrayList<>(4);
@@ -157,10 +157,10 @@ public class SynonymizerTaskTest {
 //        List<Message> messageList = new ArrayList<>(2);
 //        messageList.add(message);
 //
-//        when(synonymizerDAO.getSynonyms(anyString())).thenReturn(synonymList);
+//        when(synonymDAO.getSynonyms(anyString())).thenReturn(synonymList);
 //        when(messageDAO.getUnSynonymizedMessages(anyInt())).thenReturn(messageList);
 //
-//        SynonymizerTask_Old synonymizerTask = new SynonymizerTask_Old(messageDAO, synonymizerDAO);
+//        SynonymizerTask_Old synonymizerTask = new SynonymizerTask_Old(messageDAO, synonymDAO);
 //
 //        synonymizerTask.update();
 //        synonymizerTask.execute();
@@ -171,7 +171,7 @@ public class SynonymizerTaskTest {
 
 //    @Test
 //    public void execute2() throws SQLException, NoSuchEntityException {
-//        SynonymizerDAO synonymizerDAO = Mockito.mock(SynonymizerDAO.class);
+//        SynonymDAO synonymDAO = Mockito.mock(SynonymDAO.class);
 //        MessageDAO messageDAO = Mockito.mock(MessageDAO.class);
 //
 //        List<String> oneList = new ArrayList<>(4);
@@ -195,13 +195,13 @@ public class SynonymizerTaskTest {
 //
 //        System.out.println(messageList);
 //
-//        Mockito.when(synonymizerDAO.getSynonyms("oone")).thenReturn(oneList);
-//        Mockito.when(synonymizerDAO.getSynonyms("ttwo")).thenReturn(twoList);
-//        Mockito.when(synonymizerDAO.getSynonyms("tthree")).thenReturn(threeList);
+//        Mockito.when(synonymDAO.getSynonyms("oone")).thenReturn(oneList);
+//        Mockito.when(synonymDAO.getSynonyms("ttwo")).thenReturn(twoList);
+//        Mockito.when(synonymDAO.getSynonyms("tthree")).thenReturn(threeList);
 //
 //        Mockito.when(messageDAO.getUnSynonymizedMessages(10)).thenReturn(messageList);
 //
-//        SynonymizerTask synonymizerTask = new SynonymizerTask(messageDAO, synonymizerDAO);
+//        SynonymizerTask synonymizerTask = new SynonymizerTask(messageDAO, synonymDAO);
 //
 //        synonymizerTask.update();
 //        synonymizerTask.execute();

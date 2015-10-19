@@ -1,7 +1,7 @@
 package com.mr_faton.core.dao.util;
 
 import com.mr_faton.core.context.AppContext;
-import com.mr_faton.core.dao.SynonymizerDAO;
+import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
@@ -14,7 +14,7 @@ import java.util.*;
 public class SynonymAdder {
     private static final String FILE_PATH = "C:\\Synonym.txt";
     private static final int MAX_WORD_STR_LENGTH = 35;
-    private static final int MAX_SYNONYM_STR_LENGTH = 90;
+    private static final int MAX_SYNONYM_STR_LENGTH = 60;
     private static final String DELIMITER_OLD = "|";
     private static final String DELIMITER_NEW = ",";
     private static final List<String> BAD_WORDS = Arrays.asList("Ant", "(", ")");
@@ -23,20 +23,20 @@ public class SynonymAdder {
     private static int LINE_NUM = 1_262_744;
 
     private final TransactionManager transactionManager;
-    private final SynonymizerDAO synonymizerDAO;
+    private final SynonymDAO synonymDAO;
 
-    public SynonymAdder(TransactionManager transactionManager, SynonymizerDAO synonymizerDAO) {
+    public SynonymAdder(TransactionManager transactionManager, SynonymDAO synonymDAO) {
         this.transactionManager = transactionManager;
-        this.synonymizerDAO = synonymizerDAO;
+        this.synonymDAO = synonymDAO;
     }
 
 
     public static void main(String[] args) throws Exception {
         SettingsHolder.loadSettings();
         TransactionManager transactionManager = (TransactionManager) AppContext.getBeanByName("transactionManager");
-        SynonymizerDAO synonymizerDAO = (SynonymizerDAO) AppContext.getBeanByName("synonymizerDAO");
+        SynonymDAO synonymDAO = (SynonymDAO) AppContext.getBeanByName("synonymDAO");
 
-        final SynonymAdder synonymAdder = new SynonymAdder(transactionManager, synonymizerDAO);
+        final SynonymAdder synonymAdder = new SynonymAdder(transactionManager, synonymDAO);
 
         transactionManager.doInTransaction(new Command() {
             @Override
@@ -91,7 +91,7 @@ public class SynonymAdder {
                         System.out.println(PROGRESS + "%");
                     }
                 }
-                synonymizerDAO.addWords(wordsMap);
+                synonymDAO.addWords(wordsMap);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

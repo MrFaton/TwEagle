@@ -25,7 +25,7 @@
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal">
         <constructor-arg name="dataSource" ref="transactionManager"/>
     </bean>
-    <bean id="synonymizerDAO" class="com.mr_faton.core.dao.impl.SynonymizerDAOReal">
+    <bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal">
         <constructor-arg name="dataSource" ref="transactionManager"/>
     </bean>
 
@@ -43,7 +43,7 @@
     </bean>
     <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask">
         <constructor-arg name="messageDAO" ref="messageDAO"/>
-        <constructor-arg name="synonymizerDAO" ref="synonymizerDAO"/>
+        <constructor-arg name="synonymDAO" ref="synonymDAO"/>
     </bean>
 
     <!-- Task Manager-->

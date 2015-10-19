@@ -1,7 +1,7 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.dao.SynonymizerDAO;
+import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
@@ -27,11 +27,11 @@ public class SynonymizerTask implements Task{
     public static final int MIN_DELAY = 1 * 60 * 1000; //minutes
     public static final int MAX_DELAY = 2 * 60 * 1000; //minutes
     public static final int MIN_SYN_PERCENT = 20;
-    public static final int MAX_SYN_PERCENT = 80;
+    public static final int MAX_SYN_PERCENT = 60;
     public static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
 
     private final MessageDAO messageDAO;
-    private final SynonymizerDAO synonymizerDAO;
+    private final SynonymDAO synonymDAO;
 
     private boolean status = true;
     private long nextTime = 0;
@@ -41,10 +41,10 @@ public class SynonymizerTask implements Task{
 
 
 
-    public SynonymizerTask(MessageDAO messageDAO, SynonymizerDAO synonymizerDAO) {
+    public SynonymizerTask(MessageDAO messageDAO, SynonymDAO synonymDAO) {
         logger.debug("constructor");
         this.messageDAO = messageDAO;
-        this.synonymizerDAO = synonymizerDAO;
+        this.synonymDAO = synonymDAO;
     }
 
 
@@ -232,7 +232,7 @@ public class SynonymizerTask implements Task{
 
             List<String> synonyms;
             try {
-                synonyms = synonymizerDAO.getSynonyms(replacementWordPart);
+                synonyms = synonymDAO.getSynonyms(replacementWordPart);
             } catch (NoSuchEntityException e) {
                 positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
                 continue;
