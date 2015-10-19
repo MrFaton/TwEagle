@@ -3,6 +3,7 @@ package com.mr_faton.core.dao.util;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
+import com.mr_faton.core.table.Synonym;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 
@@ -48,7 +49,7 @@ public class SynonymAdder {
 
 
     public void addWordsFromFile() {
-        Map<String, String> wordsMap = new HashMap<>();
+        List<Synonym> synonymList = new ArrayList<>();
         String line = null;
         String word = null;
         String synonyms = null;
@@ -83,7 +84,7 @@ public class SynonymAdder {
 
                     synonyms = synonyms.replace(DELIMITER_OLD, DELIMITER_NEW);
 
-                    wordsMap.put(word, synonyms);
+                    synonymList.add(createSynonym(word, synonyms));
 
                     int currentProgress = (int) (((double)CURRENT_LINE / (double)LINE_NUM) * 100);
                     if (currentProgress != PROGRESS) {
@@ -91,7 +92,7 @@ public class SynonymAdder {
                         System.out.println(PROGRESS + "%");
                     }
                 }
-                synonymDAO.addWords(wordsMap);
+                synonymDAO.save(synonymList);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -101,5 +102,18 @@ public class SynonymAdder {
             System.err.println("synonyms=" + synonyms);
             e.printStackTrace();
         }
+    }
+
+    private Synonym createSynonym(String word, String synonyms) {
+        Synonym synonym = new Synonym();
+
+        synonym.setWord(word);
+        List<String> synonymList = new ArrayList<>();
+        String[] rowSynonyms = synonyms.split(DELIMITER_NEW);
+        Collections.addAll(synonymList, rowSynonyms);
+        synonym.setSynonyms(synonymList);
+        synonym.setUsed(0);
+
+        return synonym;
     }
 }

@@ -4,6 +4,7 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
+import com.mr_faton.core.table.Synonym;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
 import org.apache.log4j.Logger;
@@ -232,7 +233,11 @@ public class SynonymizerTask implements Task{
 
             List<String> synonyms;
             try {
-                synonyms = synonymDAO.getSynonyms(replacementWordPart);
+                Synonym synonym = synonymDAO.getSynonym(replacementWordPart);
+                synonyms = synonym.getSynonyms();
+                int usedCount = synonym.getUsed();
+                synonym.setUsed(++usedCount);
+                synonymDAO.update(synonym);
             } catch (NoSuchEntityException e) {
                 positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
                 continue;

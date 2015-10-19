@@ -4,6 +4,7 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
+import com.mr_faton.core.table.Synonym;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,16 +93,17 @@ public class SynonymizerTaskTest {
         int replacementsNumber = 3;
         List<Integer> positionsOfPassableReplacements = new ArrayList<>();
         Collections.addAll(positionsOfPassableReplacements, 0, 3, 5, 8, 10);
-        List<String> synonymList = Arrays.asList("syn1", "syn2", "syn3");
         List<String> wordList = synonymizerTask.getWordList(text);
 
-        when(synonymDAO.getSynonyms(anyString())).thenReturn(synonymList);
+        Synonym synonym = createSynonym();
+
+        when(synonymDAO.getSynonym(anyString())).thenReturn(synonym);
 
         synonymizerTask.replaceSynonyms(replacementsNumber, positionsOfPassableReplacements, wordList);
 
         int foundReplacements = 0;
         for (String updatedWord : wordList) {
-            for (String availableSynonym : synonymList) {
+            for (String availableSynonym : synonym.getSynonyms()) {
                 if (updatedWord.contains(availableSynonym)) {
                     foundReplacements++;
                     break;
@@ -120,10 +122,11 @@ public class SynonymizerTaskTest {
         message.setOwner("Test");
         message.setMessage(text);
         message.setSynonymized(false);
-        List<String> synonymList = Arrays.asList("syn1", "syn2", "syn3");
+
+        Synonym synonymObj = createSynonym();
 
         when(messageDAO.getUnSynonymizedMessages(anyInt())).thenReturn(Collections.singletonList(message));
-        when(synonymDAO.getSynonyms(anyString())).thenReturn(synonymList);
+        when(synonymDAO.getSynonym(anyString())).thenReturn(synonymObj);
 
         synonymizerTask.update();
         synonymizerTask.execute();
@@ -131,13 +134,24 @@ public class SynonymizerTaskTest {
         boolean success = false;
 
         String updatedText = message.getMessage();
-        for (String synonym : synonymList) {
+        for (String synonym : synonymObj.getSynonyms()) {
             if (updatedText.contains(synonym) && message.isSynonymized()) {
                 success = true;
                 break;
             }
         }
         assertTrue(success);
+    }
+
+    private Synonym createSynonym() {
+        Synonym synonym = new Synonym();
+
+        synonym.setWord("Test");
+        List<String> synonymList = Arrays.asList("syn1", "syn2", "syn3");
+        synonym.setSynonyms(synonymList);
+        synonym.setUsed(0);
+
+        return synonym;
     }
 
 
