@@ -5,14 +5,19 @@ import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.Synonym;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import util.Counter;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -34,17 +39,39 @@ public class SynonymDAORealTest {
         synonymDAO = new SynonymDAOReal(transactionManager);
     }
 
-//    @AfterClass
-//    public static void tearDown() throws Exception {
-//        final String SQL = "" +
-//                "DELETE FROM tweagle.synonyms WHERE word LIKE 'DonorUserDAOReal%';";
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                transactionManager.getConnection().createStatement().executeUpdate(SQL);
-//            }
-//        });
-//    }
+    @AfterClass
+    public static void tearDown() throws Exception {
+        final String SQL = "" +
+                "DELETE FROM tweagle.synonyms WHERE word LIKE 'SynonymDAOReal%';";
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                transactionManager.getConnection().createStatement().executeUpdate(SQL);
+            }
+        });
+    }
+
+
+    @Test
+    public void getSynonyms() throws Exception {
+        final Synonym synonym = createSynonym();
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                synonymDAO.save(synonym);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                Synonym takenSynonym = synonymDAO.getSynonym(synonym.getWord());
+                assertEquals(synonym.getSynonyms().get(0), takenSynonym.getSynonyms().get(0));
+            }
+        });
+    }
+
 
     private Synonym createSynonym() {
         Synonym synonym = new Synonym();
@@ -100,25 +127,55 @@ public class SynonymDAORealTest {
         });
     }
 
+    @Test
+    public void saveAndUpdateList() throws Exception {
+        final Synonym synonym1 = createSynonym();
+        final Synonym synonym2 = createSynonym();
+        final List<Synonym> synonymList = Arrays.asList(synonym1, synonym2);
 
-//    @Test
-//    public void getSynonyms() throws Exception {
-//        final Map<String, String> wordMap = new HashMap<>();
-//        final String word = BASE_NAME + Counter.getNextNumber();
-//        wordMap.put(word, word + "+");
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                synonymDAO.addWords(wordMap);
-//            }
-//        });
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                assertEquals(word + "+", synonymDAO.getSynonyms(word).get(0));
-//            }
-//        });
-//    }
+        final String SQL1 = "" +
+                "SELECT id FROM tweagle.synonyms WHERE word = '" + synonym1.getWord() + "';";
+        final String SQL2 = "" +
+                "SELECT id FROM tweagle.synonyms WHERE word = '" + synonym2.getWord() + "';";
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                synonymDAO.save(synonymList);
+            }
+        });
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                Connection connection = transactionManager.getConnection();
+                try (Statement statement = connection.createStatement()) {
+                    try (ResultSet resultSet = statement.executeQuery(SQL1);) {
+                        if (resultSet.next()) {
+                            synonym1.setId(resultSet.getInt("id"));
+                        } else {
+                            fail();
+                        }
+                    }
+                    try (ResultSet resultSet = statement.executeQuery(SQL2)) {
+                        if (resultSet.next()) {
+                            synonym2.setId(resultSet.getInt("id"));
+                        } else {
+                            fail();
+                        }
+                    }
+                }
+            }
+        });
+
+        synonym1.setUsed(15);
+        synonym2.setUsed(20);
+
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                synonymDAO.update(synonymList);
+            }
+        });
+    }
 }
