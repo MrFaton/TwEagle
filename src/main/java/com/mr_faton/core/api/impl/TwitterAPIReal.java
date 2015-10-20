@@ -9,12 +9,14 @@ import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TwitterAPIReal implements TwitterAPI{
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.api.impl.TwitterAPIReal");
+    private final String USER_LANG = "ru";
+    private final Date USER_LAST_POST_DATE;
     private static final Map<String, Twitter> TWITTER_STORAGE = new ConcurrentHashMap<>();
     private final UserDAO userDAO;
     private static final String APP_LIMIT = "/application/rate_limit_status";
@@ -23,6 +25,9 @@ public class TwitterAPIReal implements TwitterAPI{
     public TwitterAPIReal(UserDAO userDAO) {
         logger.debug("constructor");
         this.userDAO = userDAO;
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -3);
+        USER_LAST_POST_DATE = new Date(calendar.getTimeInMillis());
     }
 
     @Override
@@ -64,7 +69,33 @@ public class TwitterAPIReal implements TwitterAPI{
             String sourceUserName) throws TwitterException, SQLException, NoSuchEntityException {
         logger.debug("get messages from donor " + donorUserName + ", page " + paging.getPage());
         canWork(sourceUserName);
-        return getTwitter(sourceUserName).getUserTimeline(donorUserName, paging);
+        Twitter twitter = getTwitter(sourceUserName);
+        try {
+            return twitter.getUserTimeline(donorUserName, paging);
+        } catch (TwitterException twitterEx) {
+            int statusCode = twitterEx.getStatusCode();
+            switch (statusCode) {
+                case 401: {
+                    User user = twitter.showUser(donorUserName);
+                    if (user.isProtected()) {
+                        logger.debug("twitter user " + donorUserName + " is protected for parse messages");
+                        logger.warn(donorUserName + ", ");
+                        return createDefaultResponseList();
+                    } else {
+                        throw twitterEx;
+                    }
+                }
+                case 404: {
+                    logger.debug("twitter user " + donorUserName + " not found");
+                    logger.warn(donorUserName + ", ");
+                    return createDefaultResponseList();
+                }
+                default: {
+                    throw twitterEx;
+                }
+            }
+        }
+
     }
 
     private int getAppLimit(String userName) throws TwitterException, SQLException, NoSuchEntityException {
@@ -117,6 +148,170 @@ public class TwitterAPIReal implements TwitterAPI{
         if (appLimit == 0) {
             logger.warn("application limit was exhausted");
             throw new LimitExhaustedException("application limit was exhausted");
+        }
+    }
+
+    private ResponseList<Status> createDefaultResponseList() {
+        return new ResponseList<Status>() {
+            @Override
+            public RateLimitStatus getRateLimitStatus() {
+                return null;
+            }
+
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                return false;
+            }
+
+            @Override
+            public Iterator<Status> iterator() {
+                return null;
+            }
+
+            @Override
+            public Object[] toArray() {
+                return new Object[0];
+            }
+
+            @Override
+            public <T> T[] toArray(T[] a) {
+                return null;
+            }
+
+            @Override
+            public boolean add(Status status) {
+                return false;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                return false;
+            }
+
+            @Override
+            public boolean containsAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(Collection<? extends Status> c) {
+                return false;
+            }
+
+            @Override
+            public boolean addAll(int index, Collection<? extends Status> c) {
+                return false;
+            }
+
+            @Override
+            public boolean removeAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public boolean retainAll(Collection<?> c) {
+                return false;
+            }
+
+            @Override
+            public void clear() {
+
+            }
+
+            @Override
+            public Status get(int index) {
+                return null;
+            }
+
+            @Override
+            public Status set(int index, Status element) {
+                return null;
+            }
+
+            @Override
+            public void add(int index, Status element) {
+
+            }
+
+            @Override
+            public Status remove(int index) {
+                return null;
+            }
+
+            @Override
+            public int indexOf(Object o) {
+                return 0;
+            }
+
+            @Override
+            public int lastIndexOf(Object o) {
+                return 0;
+            }
+
+            @Override
+            public ListIterator<Status> listIterator() {
+                return null;
+            }
+
+            @Override
+            public ListIterator<Status> listIterator(int index) {
+                return null;
+            }
+
+            @Override
+            public List<Status> subList(int fromIndex, int toIndex) {
+                return null;
+            }
+
+            @Override
+            public int getAccessLevel() {
+                return 0;
+            }
+        };
+    }
+
+    private boolean twitterUserValidator(Twitter twitter, String donorName) throws TwitterException {
+        try {
+            User user = twitter.showUser(donorName);
+            if (user.isProtected()) {
+                logger.debug("bad donorUser " + donorName + ", because its protected");
+                logger.warn(donorName + ", ");
+                return false;
+            }
+            if (!USER_LANG.equals(user.getLang())) {
+                logger.debug("bad donorUser " + donorName + ", because its lang = " + user.getLang());
+                logger.warn(donorName + ", ");
+                return false;
+            }
+            if (USER_LAST_POST_DATE.after(user.getStatus().getCreatedAt())) {
+                logger.debug("bad donorUser " + donorName + ", because its last status update in " +
+                        String.format("%td.%<tm.%<tY", user.getStatus().getCreatedAt()));
+                logger.warn(donorName + ", ");
+                return false;
+            }
+            return true;
+        } catch (TwitterException e) {
+            int statusCode = e.getStatusCode();
+            switch (statusCode) {
+                case 404: {
+                    logger.debug("bad donorUser " + donorName + ", because its not found");
+                    logger.warn(donorName + ", ");
+                    return false;
+                }
+                default: {
+                    throw e;
+                }
+            }
         }
     }
 }

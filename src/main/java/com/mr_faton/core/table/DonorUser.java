@@ -12,9 +12,6 @@ import java.util.Date;
 public class DonorUser {
     private String name;
     private boolean male;
-    private boolean takeMessage;
-    private boolean takeFollowing;
-    private boolean takeFollowers;
     private Date takeMessageDate;
     private Date takeFollowingDate;
     private Date takeFollowersDate;
@@ -31,27 +28,6 @@ public class DonorUser {
     }
     public void setMale(boolean male) {
         this.male = male;
-    }
-
-    public boolean isTakeMessage() {
-        return takeMessage;
-    }
-    public void setTakeMessage(boolean takeMessage) {
-        this.takeMessage = takeMessage;
-    }
-
-    public boolean isTakeFollowing() {
-        return takeFollowing;
-    }
-    public void setTakeFollowing(boolean takeFollowing) {
-        this.takeFollowing = takeFollowing;
-    }
-
-    public boolean isTakeFollowers() {
-        return takeFollowers;
-    }
-    public void setTakeFollowers(boolean takeFollowers) {
-        this.takeFollowers = takeFollowers;
     }
 
     public Date getTakeMessageDate() {

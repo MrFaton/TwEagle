@@ -7,8 +7,7 @@ import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
-import java.util.Date;
+import java.util.List;
 
 /**
  * Description
@@ -21,11 +20,11 @@ public class DonorUserDAOReal implements DonorUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.donor_users (donor_name, is_male, take_messages, take_following, take_followers, " +
-            "take_messages_date, take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+            "INSERT INTO tweagle.donor_users (donor_name, is_male, take_messages_date, " +
+            "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.donor_users SET take_messages = ?, take_following = ?, take_followers = ?, " +
-            "take_messages_date = ?, take_following_date = ?, take_followers_date = ? WHERE donor_name = ?;";
+            "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +
+            "WHERE donor_name = ?;";
 
     private final DataSource dataSource;
 
@@ -38,7 +37,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get donorUser for parse messages");
         final String SQL = "" +
-                "SELECT * FROM tweagle.donor_users WHERE take_messages = 0 LIMIT 1;";
+                "SELECT * FROM tweagle.donor_users WHERE take_messages_date IS NULL LIMIT 1;";
         Connection connection = dataSource.getConnection();
         try(Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SQL)) {
@@ -52,9 +51,6 @@ public class DonorUserDAOReal implements DonorUserDAO {
         DonorUser donorUser = new DonorUser();
         donorUser.setName(resultSet.getString("donor_name"));
         donorUser.setMale(resultSet.getBoolean("is_male"));
-        donorUser.setTakeMessage(resultSet.getBoolean("take_messages"));
-        donorUser.setTakeFollowing(resultSet.getBoolean("take_following"));
-        donorUser.setTakeFollowers(resultSet.getBoolean("take_followers"));
         donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
         donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
         donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
