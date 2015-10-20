@@ -80,7 +80,7 @@ public class OptimalExecutor implements ExecutionPool {
         }
     }
 
-    public int getLargestPoolSize() {
+    int getLargestPoolSize() {
         ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) pool;
         return threadPoolExecutor.getLargestPoolSize();
     }

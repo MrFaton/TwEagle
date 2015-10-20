@@ -34,15 +34,15 @@ public class MessageParseTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.MessageParseTask");
 
-    private static final int MIN_DELAY = 10 * 60 * 1000; //minutes
-    private static final int MAX_DELAY = 45 * 60 * 1000; //minutes
-    private static final String SOURCE_USER = "Mr_Faton";
+    public static final int MIN_DELAY = 10 * 60 * 1000; //minutes
+    public static final int MAX_DELAY = 45 * 60 * 1000; //minutes
+    public static final String SOURCE_USER = "Mr_Faton";
+    public static final int MESSAGES_PER_PAGE = 200;
+    public static final int PAGES_PER_ONE_SEARCH = 10;
+    public static final int DEPTH_SEARCH_IN_YEAR = 3; //max deep = 3 years old
     private static final String MESSAGE_lANG = "ru";
     private static final String COMMERCIAL_PARAM = "http";
     private static final String MENTION_PARAM = "@";
-    private static final int MESSAGES_PER_PAGE = 200;
-    private static final int PAGES_PER_ONE_SEARCH = 10;
-    private static final int DEPTH_SEARCH_IN_YEAR = 3; //max deep = 3 years old
     private static final List<Message> messageList = new ArrayList<>();
 
     private final TwitterAPI twitterAPI;
@@ -129,6 +129,7 @@ public class MessageParseTask implements Task {
         messageList.clear();
     }
 
+
     @Override
     public void execute() {
         logger.info("collect messages");
@@ -158,6 +159,7 @@ public class MessageParseTask implements Task {
         }
     }
 
+
     @Override
     public void setDailyParams() throws SQLException {
         logger.debug("set next time like daily params");
@@ -169,7 +171,7 @@ public class MessageParseTask implements Task {
         return getClass().getSimpleName();
     }
 
-    private void handleUserTimeLineList (ResponseList<Status> statusList) throws DataSequenceReachedException{
+    void handleUserTimeLineList (ResponseList<Status> statusList) throws DataSequenceReachedException{
         if (statusList.size() == 0) {
             logger.debug("response status list = 0, stop handle this user");
             throw new DataSequenceReachedException();
@@ -204,7 +206,7 @@ public class MessageParseTask implements Task {
         }
     }
 
-    private boolean mentionValidator(String mention) {
+    boolean mentionValidator(String mention) {
         int firstIndex = mention.indexOf(MENTION_PARAM);
         int lastIndex = mention.lastIndexOf(MENTION_PARAM);
         return firstIndex == lastIndex;
