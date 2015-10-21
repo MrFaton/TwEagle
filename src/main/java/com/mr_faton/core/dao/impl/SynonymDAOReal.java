@@ -25,9 +25,9 @@ public class SynonymDAOReal implements SynonymDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.SynonymDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.synonyms (word, synonyms, used) VALUES (?, ?, ?);";
+            "INSERT IGNORE INTO tweagle.synonyms (word, synonyms, used) VALUES (?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.synonyms SET word = ?, synonyms = ?, used = ? WHERE id = ?;";
+            "UPDATE tweagle.synonyms SET synonyms = ?, used = ? WHERE word = ?;";
 
     private final DataSource dataSource;
 
@@ -58,7 +58,6 @@ public class SynonymDAOReal implements SynonymDAO {
     private Synonym createSynonym(final ResultSet resultSet) throws SQLException {
         Synonym synonym = new Synonym();
 
-        synonym.setId(resultSet.getInt("id"));
         synonym.setWord(resultSet.getString("word"));
 
         List<String> synonymList = new ArrayList<>();
@@ -108,10 +107,9 @@ public class SynonymDAOReal implements SynonymDAO {
         logger.info("update " + synonym);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            preparedStatement.setString(1, synonym.getWord());
-            preparedStatement.setString(2, synonym.getSynonymsAsString());
-            preparedStatement.setInt(3, synonym.getUsed());
-            preparedStatement.setInt(4, synonym.getId());
+            preparedStatement.setString(1, synonym.getSynonymsAsString());
+            preparedStatement.setInt(2, synonym.getUsed());
+            preparedStatement.setString(3, synonym.getWord());
 
             preparedStatement.executeUpdate();
         }
@@ -123,10 +121,9 @@ public class SynonymDAOReal implements SynonymDAO {
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             for (Synonym synonym : synonyms) {
-                preparedStatement.setString(1, synonym.getWord());
-                preparedStatement.setString(2, synonym.getSynonymsAsString());
-                preparedStatement.setInt(3, synonym.getUsed());
-                preparedStatement.setInt(4, synonym.getId());
+                preparedStatement.setString(1, synonym.getSynonymsAsString());
+                preparedStatement.setInt(2, synonym.getUsed());
+                preparedStatement.setString(3, synonym.getWord());
 
                 preparedStatement.addBatch();
             }

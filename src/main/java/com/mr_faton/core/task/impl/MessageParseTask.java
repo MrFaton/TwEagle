@@ -3,6 +3,7 @@ package com.mr_faton.core.task.impl;
 import com.mr_faton.core.api.TwitterAPI;
 import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.exception.BadUserException;
 import com.mr_faton.core.exception.DataSequenceReachedException;
 import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
@@ -34,8 +35,8 @@ public class MessageParseTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.MessageParseTask");
 
-    public static final int MIN_DELAY = 10 * 60 * 1000; //minutes
-    public static final int MAX_DELAY = 45 * 60 * 1000; //minutes
+    public static final int MIN_DELAY = 0 * 60 * 1000; //minutes
+    public static final int MAX_DELAY = 1 * 60 * 1000; //minutes
     public static final String SOURCE_USER = "Mr_Faton";
     public static final int MESSAGES_PER_PAGE = 200;
     public static final int PAGES_PER_ONE_SEARCH = 10;
@@ -108,7 +109,6 @@ public class MessageParseTask implements Task {
                 searchedPage = 1;
                 logger.debug("donorUser updated to " + donorUser.getName());
 
-                donorUser.setTakeMessage(true);
                 donorUser.setTakeMessageDate(new Date());
 
                 donorUserDAO.update(donorUser);
@@ -137,14 +137,21 @@ public class MessageParseTask implements Task {
 
         try {
             for (int counter = 0; counter < PAGES_PER_ONE_SEARCH; counter++) {
-                ResponseList<Status> statusList = twitterAPI.getUserTimeLine(
-                        donorUser.getName(),
-                        new Paging(searchedPage, MESSAGES_PER_PAGE),
-                        SOURCE_USER);
+                try {
+                    ResponseList<Status> statusList = twitterAPI.getUserTimeLine(
+                            donorUser.getName(),
+                            new Paging(searchedPage, MESSAGES_PER_PAGE),
+                            SOURCE_USER);
 
-                searchedPage++;
+                    searchedPage++;
 
-                handleUserTimeLineList(statusList);
+                    handleUserTimeLineList(statusList);
+                } catch (BadUserException badUserEx) {
+                    logger.debug(badUserEx.getMessage());
+                    donorUser = null;
+                    donorUserDAO.deleteUser(donorUser);
+                }
+
             }
         } catch (DataSequenceReachedException lastTweetEx) {
             donorUser = null;
@@ -186,17 +193,14 @@ public class MessageParseTask implements Task {
             String text = status.getText();
             if (text.contains(COMMERCIAL_PARAM)) continue;
 
-            boolean isTweet = true;
             String recipient = null;
             if (text.contains(MENTION_PARAM)) {
-                isTweet = false;
                 recipient = status.getInReplyToScreenName();
                 if (recipient == null || !mentionValidator(text)) continue;
             }
 
             Message message = new Message();
             message.setMessage(text);
-            message.setTweet(isTweet);
             message.setOwner(donorUser.getName());
             message.setOwnerMale(donorUser.isMale());
             message.setRecipient(recipient);

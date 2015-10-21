@@ -1,6 +1,7 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.dao.NotExistsSynonymDAO;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
@@ -33,6 +34,7 @@ public class SynonymizerTask implements Task{
 
     private final MessageDAO messageDAO;
     private final SynonymDAO synonymDAO;
+    private final NotExistsSynonymDAO notExistsSynonymDAO;
 
     private boolean status = true;
     private long nextTime = 0;
@@ -42,10 +44,11 @@ public class SynonymizerTask implements Task{
 
 
 
-    public SynonymizerTask(MessageDAO messageDAO, SynonymDAO synonymDAO) {
+    public SynonymizerTask(MessageDAO messageDAO, SynonymDAO synonymDAO, NotExistsSynonymDAO notExistsSynonymDAO) {
         logger.debug("constructor");
         this.messageDAO = messageDAO;
         this.synonymDAO = synonymDAO;
+        this.notExistsSynonymDAO = notExistsSynonymDAO;
     }
 
 
@@ -240,6 +243,7 @@ public class SynonymizerTask implements Task{
                 synonymDAO.update(synonym);
             } catch (NoSuchEntityException e) {
                 positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
+                notExistsSynonymDAO.addWord(replacementWordPart);
                 continue;
             }
             String synonym = getRandomSynonym(synonyms);

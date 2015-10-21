@@ -62,7 +62,7 @@ public class PostedMessageDAORealTest {
             }
         });
 
-        postedMessage.setTweet(false);
+        postedMessage.setRecipient("recipient1");
 
         transactionManager.doInTransaction(new Command() {
             @Override
@@ -108,9 +108,9 @@ public class PostedMessageDAORealTest {
             }
         });
 
-        postedMessage1.setTweet(false);
+        postedMessage1.setRecipient("recipient2");
         postedMessage1.setMessage("To-to1");
-        postedMessage2.setTweet(false);
+        postedMessage2.setRecipient("recipient2");
         postedMessage2.setMessage("To-to2");
 
         transactionManager.doInTransaction(new Command() {
@@ -148,7 +148,6 @@ public class PostedMessageDAORealTest {
 
         postedMessage.setMessage("Test posted message");
         postedMessage.setMessageId(new Random().nextInt(10_000));
-        postedMessage.setTweet(true);
         postedMessage.setOwner(BASE_NAME + Counter.getNextNumber());
         postedMessage.setRecipient(null);
         postedMessage.setPostedDate(new Date());

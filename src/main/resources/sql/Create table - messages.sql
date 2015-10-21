@@ -3,7 +3,6 @@ CREATE TABLE tweagle.messages
 (
   id             INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
   message        VARCHAR(150)       NOT NULL,
-  tweet          BOOLEAN            NOT NULL,
   owner          VARCHAR(25)        NOT NULL,
   owner_male     BOOLEAN            NOT NULL,
   recipient      VARCHAR(25),

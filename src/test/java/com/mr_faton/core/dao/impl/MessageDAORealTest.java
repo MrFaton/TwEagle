@@ -263,7 +263,6 @@ public class MessageDAORealTest {
         Message message = new Message();
 
         message.setMessage("Test");
-        message.setTweet(true);
 
         message.setOwner(BASE_NAME + Counter.getNextNumber());
         message.setOwnerMale(true);

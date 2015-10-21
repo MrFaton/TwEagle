@@ -23,10 +23,10 @@ public class MessageDAOReal implements MessageDAO {
             "com.mr_faton.core.dao.impl.MessageDAOReal");
     private static final String SQL_SAVE = "" +
             "INSERT INTO tweagle.messages " +
-            "(message, tweet, owner, owner_male, recipient, recipient_male, posted_date, synonymized, posted) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+            "(message, owner, owner_male, recipient, recipient_male, posted_date, synonymized, posted) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.messages SET message = ?, tweet = ?, owner = ?, owner_male = ?, recipient = ?, " +
+            "UPDATE tweagle.messages SET message = ?, owner = ?, owner_male = ?, recipient = ?, " +
             "recipient_male = ?, posted_date = ?, synonymized = ?, posted = ? WHERE id = ?;";
 
     private static final int DEEP_YEARS_SEARCH = 3;
@@ -44,38 +44,33 @@ public class MessageDAOReal implements MessageDAO {
         logger.debug("get tweet - First try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
-                "tweet = 1 AND owner_male = ? AND posted_date = ? AND synonymized = 1 AND posted = 0 LIMIT 1;";
+                "owner_male = ? AND recipient IS NULL AND posted_date = ? AND synonymized = 1 AND posted = 0 LIMIT 1;";
 
         Calendar calendar = Calendar.getInstance();
         Message message = null;
 
 
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet = null;
-
-        preparedStatement.setBoolean(1, male);
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            preparedStatement.setBoolean(1, male);
         /*parameter 2 (posted_date) set in for-cycle*/
 
-        for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
-            calendar.add(Calendar.YEAR, -1);
-            java.sql.Date passedDate = new Date(calendar.getTimeInMillis());
+            for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
+                calendar.add(Calendar.YEAR, -1);
+                java.sql.Date passedDate = new Date(calendar.getTimeInMillis());
 
-            preparedStatement.setDate(2, passedDate);
+                preparedStatement.setDate(2, passedDate);
 
-            resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                message = getMessageByResultSet(resultSet);
-                logger.info("found tweet at the first try in cycle №" + counter +
-                        " with date " + String.format("%td-%<tm-%<tY", passedDate));
-                break;
+                try(ResultSet resultSet = preparedStatement.executeQuery();) {
+                    if (resultSet.next()) {
+                        message = getMessageByResultSet(resultSet);
+                        logger.info("found tweet at the first try in cycle №" + counter +
+                                " with date " + String.format("%td-%<tm-%<tY", passedDate));
+                        break;
+                    }
+                }
             }
-
         }
-
-        resultSet.close();
-        preparedStatement.close();
-
         if (message == null) throw new NoSuchEntityException("tweet not found at the first try");
         return message;
     }
@@ -84,65 +79,53 @@ public class MessageDAOReal implements MessageDAO {
         logger.debug("get tweet - Second Try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
-                "tweet = 1 AND " +
-                "owner_male = ? AND " +//1
-                "posted_date >= ? AND " +//2
-                "posted_date <= ? AND " +//3
-                "synonymized = 1 AND " +
-                "posted = 0 " +
-                "LIMIT 1;";
+                "owner_male = ? AND recipient IS NULL AND posted_date >= ? AND posted_date <= ? AND synonymized = 1 AND " +
+                "posted = 0 LIMIT 1;";
 
         Message message = null;
 
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet = null;
-
-        preparedStatement = connection.prepareStatement(SQL);
-
-        preparedStatement.setBoolean(1, male);
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            preparedStatement.setBoolean(1, male);
         /*3 and 4 parameters (posted_date) set in for-cycle*/
 
-        Calendar calendar = Calendar.getInstance();
+            Calendar calendar = Calendar.getInstance();
+            for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
+                calendar.add(Calendar.YEAR, -1);
 
-        for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
-            calendar.add(Calendar.YEAR, -1);
+                Calendar minDay = Calendar.getInstance();
+                Calendar maxDay = Calendar.getInstance();
 
-            Calendar minDay = Calendar.getInstance();
-            Calendar maxDay = Calendar.getInstance();
+                minDay.setTimeInMillis(calendar.getTimeInMillis());
+                maxDay.setTimeInMillis(calendar.getTimeInMillis());
 
-            minDay.setTimeInMillis(calendar.getTimeInMillis());
-            maxDay.setTimeInMillis(calendar.getTimeInMillis());
+                for (int doubleCounter = 0; doubleCounter < DEEP_DAYS_SEARCH; doubleCounter++) {
+                    minDay.add(Calendar.DAY_OF_MONTH, -1);
+                    maxDay.add(Calendar.DAY_OF_MONTH, 1);
 
-            for (int doubleCounter = 0; doubleCounter < DEEP_DAYS_SEARCH; doubleCounter++) {
-                minDay.add(Calendar.DAY_OF_MONTH, -1);
-                maxDay.add(Calendar.DAY_OF_MONTH, 1);
+                    java.sql.Date passedMinDay = new Date(minDay.getTimeInMillis());
+                    java.sql.Date passedMaxDay = new Date(maxDay.getTimeInMillis());
 
-                java.sql.Date passedMinDay = new Date(minDay.getTimeInMillis());
-                java.sql.Date passedMaxDay = new Date(maxDay.getTimeInMillis());
+                    preparedStatement.setDate(2, passedMinDay);
+                    preparedStatement.setDate(3, passedMaxDay);
 
-                preparedStatement.setDate(2, passedMinDay);
-                preparedStatement.setDate(3, passedMaxDay);
-
-                resultSet = preparedStatement.executeQuery();
-
-                if (resultSet.next()) {
-                    message = getMessageByResultSet(resultSet);
-                    logger.info("found tweet at the second try in general cycle №" + counter +
-                            " and inner cycle №" + doubleCounter + " between dates " +
-                            String.format("%td-%<tm-%<tY", passedMinDay) + " " +
-                            "and " +
-                            String.format("%td-%<tm-%<tY", passedMaxDay));
+                    try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                        if (resultSet.next()) {
+                            message = getMessageByResultSet(resultSet);
+                            logger.info("found tweet at the second try in general cycle №" + counter +
+                                    " and inner cycle №" + doubleCounter + " between dates " +
+                                    String.format("%td-%<tm-%<tY", passedMinDay) + " " +
+                                    "and " +
+                                    String.format("%td-%<tm-%<tY", passedMaxDay));
+                            break;
+                        }
+                    }
+                }
+                if (message != null) {
                     break;
                 }
             }
-            if (message != null) {
-                break;
-            }
         }
-        resultSet.close();
-        preparedStatement.close();
-
         if (message == null) throw new NoSuchEntityException("tweet not found at the second try");
         return message;
     }
@@ -151,33 +134,21 @@ public class MessageDAOReal implements MessageDAO {
         logger.debug("get tweet - Third try");
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE " +
-                "tweet = 1 AND " +
-                "owner_male = ? AND " +//1
-                "synonymized = 1 AND " +
-                "posted = 0 " +
-                "LIMIT 1;";
+                "owner_male = ? AND recipient IS NULL AND synonymized = 1 AND posted = 0 LIMIT 1;";
 
         Message message = null;
 
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet;
-
-        preparedStatement = connection.prepareStatement(SQL);
-
-        preparedStatement.setBoolean(1, male);
-
-        resultSet = preparedStatement.executeQuery();
-
-        if (resultSet.next()) {
-            message = getMessageByResultSet(resultSet);
-            logger.info("found tweet at the third try, date " +
-                    String.format("%td-%<tm-%<tY", message.getPostedDate()));
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            preparedStatement.setBoolean(1, male);
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    message = getMessageByResultSet(resultSet);
+                    logger.info("found tweet at the third try, date " +
+                            String.format("%td-%<tm-%<tY", message.getPostedDate()));
+                }
+            }
         }
-
-        resultSet.close();
-        preparedStatement.close();
-
         if (message == null) throw new NoSuchEntityException("tweet not found at the third try");
         return message;
     }
@@ -185,29 +156,22 @@ public class MessageDAOReal implements MessageDAO {
     public Message getAnyTweet(boolean male) throws SQLException {
         logger.debug("get tweet - any");
         final String SQL = "" +
-                "SELECT * FROM tweagle.messages WHERE tweet = 1 AND owner_male = ? LIMIT 1;";
+                "SELECT * FROM tweagle.messages WHERE owner_male = ? AND recipient IS NULL LIMIT 1;";
 
         Message message = null;
 
         Connection connection = dataSource.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
-        ResultSet resultSet;
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            preparedStatement.setBoolean(1, male);
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    message = getMessageByResultSet(resultSet);
+                    logger.info("found tweet like any twitter message, date " +
+                            String.format("%td-%<tm-%<tY", message.getPostedDate()));
+                }
+            }
 
-        preparedStatement = connection.prepareStatement(SQL);
-
-        preparedStatement.setBoolean(1, male);
-
-        resultSet = preparedStatement.executeQuery();
-
-        if (resultSet.next()) {
-            message = getMessageByResultSet(resultSet);
-            logger.info("found tweet like any twitter message, date " +
-                    String.format("%td-%<tm-%<tY", message.getPostedDate()));
         }
-
-        resultSet.close();
-        preparedStatement.close();
-
         return message;
     }
 
@@ -218,19 +182,15 @@ public class MessageDAOReal implements MessageDAO {
         final String SQL = "" +
                 "SELECT * FROM tweagle.messages WHERE synonymized = 0 LIMIT " + limit + ";";
         Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(SQL);
-
-        List<Message> unsynonymizedMessages = new ArrayList<>();
-        while (resultSet.next()) {
-            unsynonymizedMessages.add(getMessageByResultSet(resultSet));
+        try(Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(SQL)) {
+            List<Message> unsynonymizedMessages = new ArrayList<>();
+            while (resultSet.next()) {
+                unsynonymizedMessages.add(getMessageByResultSet(resultSet));
+            }
+            if (unsynonymizedMessages.isEmpty()) throw new NoSuchEntityException("no unsynonymized messages");
+            return unsynonymizedMessages;
         }
-
-        resultSet.close();
-        statement.close();
-
-        if (unsynonymizedMessages.isEmpty()) throw new NoSuchEntityException("no unsynonymized messages");
-        return unsynonymizedMessages;
     }
 
     private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
@@ -238,7 +198,6 @@ public class MessageDAOReal implements MessageDAO {
 
         message.setId(resultSet.getInt("id"));
         message.setMessage(resultSet.getString("message"));
-        message.setTweet(resultSet.getBoolean("tweet"));
 
         message.setOwner(resultSet.getString("owner"));
         message.setOwnerMale(resultSet.getBoolean("owner_male"));
@@ -262,19 +221,18 @@ public class MessageDAOReal implements MessageDAO {
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             preparedStatement.setString(1, message.getMessage());
-            preparedStatement.setBoolean(2, message.isTweet());
-            preparedStatement.setString(3, message.getOwner());
-            preparedStatement.setBoolean(4, message.isOwnerMale());
+            preparedStatement.setString(2, message.getOwner());
+            preparedStatement.setBoolean(3, message.isOwnerMale());
             if (message.getRecipient() != null) {
-                preparedStatement.setString(5, message.getRecipient());
-                preparedStatement.setBoolean(6, message.isRecipientMale());
+                preparedStatement.setString(4, message.getRecipient());
+                preparedStatement.setBoolean(5, message.isRecipientMale());
             } else {
-                preparedStatement.setNull(5, Types.VARCHAR);
-                preparedStatement.setNull(6, Types.BOOLEAN);
+                preparedStatement.setNull(4, Types.VARCHAR);
+                preparedStatement.setNull(5, Types.BOOLEAN);
             }
-            preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
-            preparedStatement.setBoolean(8, message.isSynonymized());
-            preparedStatement.setBoolean(9, message.isPosted());
+            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
+            preparedStatement.setBoolean(7, message.isSynonymized());
+            preparedStatement.setBoolean(8, message.isPosted());
 
             preparedStatement.executeUpdate();
         }
@@ -287,22 +245,17 @@ public class MessageDAOReal implements MessageDAO {
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
             for (Message message : messageList) {
                 preparedStatement.setString(1, message.getMessage());
-                preparedStatement.setBoolean(2, message.isTweet());
-                preparedStatement.setString(3, message.getOwner());
-                preparedStatement.setBoolean(4, message.isOwnerMale());
+                preparedStatement.setString(2, message.getOwner());
+                preparedStatement.setBoolean(3, message.isOwnerMale());
                 if (message.getRecipient() != null) {
-                    preparedStatement.setString(5, message.getRecipient());
+                    preparedStatement.setString(4, message.getRecipient());
                 } else {
-                    preparedStatement.setNull(5, Types.VARCHAR);
+                    preparedStatement.setNull(4, Types.VARCHAR);
                 }
-                if (message.isRecipientMale() != null) {
-                    preparedStatement.setBoolean(6, message.isRecipientMale());
-                } else {
-                    preparedStatement.setNull(6, Types.BOOLEAN);
-                }
-                preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
-                preparedStatement.setBoolean(8, message.isSynonymized());
-                preparedStatement.setBoolean(9, message.isPosted());
+                preparedStatement.setNull(5, Types.BOOLEAN);
+                preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
+                preparedStatement.setBoolean(7, message.isSynonymized());
+                preparedStatement.setBoolean(8, message.isPosted());
 
                 preparedStatement.addBatch();
             }
@@ -317,20 +270,19 @@ public class MessageDAOReal implements MessageDAO {
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             preparedStatement.setString(1, message.getMessage());
-            preparedStatement.setBoolean(2, message.isTweet());
-            preparedStatement.setString(3, message.getOwner());
-            preparedStatement.setBoolean(4, message.isOwnerMale());
+            preparedStatement.setString(2, message.getOwner());
+            preparedStatement.setBoolean(3, message.isOwnerMale());
             if (message.getRecipient() != null) {
-                preparedStatement.setString(5, message.getRecipient());
-                preparedStatement.setBoolean(6, message.isRecipientMale());
+                preparedStatement.setString(4, message.getRecipient());
+                preparedStatement.setBoolean(5, message.isRecipientMale());
             } else {
-                preparedStatement.setNull(5, Types.VARCHAR);
-                preparedStatement.setNull(6, Types.BOOLEAN);
+                preparedStatement.setNull(4, Types.VARCHAR);
+                preparedStatement.setNull(5, Types.BOOLEAN);
             }
-            preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
-            preparedStatement.setBoolean(8, message.isSynonymized());
-            preparedStatement.setBoolean(9, message.isPosted());
-            preparedStatement.setInt(10, message.getId());
+            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
+            preparedStatement.setBoolean(7, message.isSynonymized());
+            preparedStatement.setBoolean(8, message.isPosted());
+            preparedStatement.setInt(9, message.getId());
 
             preparedStatement.executeUpdate();
         }
@@ -343,20 +295,19 @@ public class MessageDAOReal implements MessageDAO {
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             for (Message message : messageList) {
                 preparedStatement.setString(1, message.getMessage());
-                preparedStatement.setBoolean(2, message.isTweet());
-                preparedStatement.setString(3, message.getOwner());
-                preparedStatement.setBoolean(4, message.isOwnerMale());
+                preparedStatement.setString(2, message.getOwner());
+                preparedStatement.setBoolean(3, message.isOwnerMale());
                 if (message.getRecipient() != null) {
-                    preparedStatement.setString(5, message.getRecipient());
-                    preparedStatement.setBoolean(6, message.isRecipientMale());
+                    preparedStatement.setString(4, message.getRecipient());
+                    preparedStatement.setBoolean(5, message.isRecipientMale());
                 } else {
-                    preparedStatement.setNull(5, Types.VARCHAR);
-                    preparedStatement.setNull(6, Types.BOOLEAN);
+                    preparedStatement.setNull(4, Types.VARCHAR);
+                    preparedStatement.setNull(5, Types.BOOLEAN);
                 }
-                preparedStatement.setDate(7, new java.sql.Date(message.getPostedDate().getTime()));
-                preparedStatement.setBoolean(8, message.isSynonymized());
-                preparedStatement.setBoolean(9, message.isPosted());
-                preparedStatement.setInt(10, message.getId());
+                preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
+                preparedStatement.setBoolean(7, message.isSynonymized());
+                preparedStatement.setBoolean(8, message.isPosted());
+                preparedStatement.setInt(9, message.getId());
 
                 preparedStatement.addBatch();
             }

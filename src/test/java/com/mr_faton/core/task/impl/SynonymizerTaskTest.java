@@ -1,6 +1,7 @@
 package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
+import com.mr_faton.core.dao.NotExistsSynonymDAO;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
@@ -32,12 +33,14 @@ public class SynonymizerTaskTest {
     private MessageDAO messageDAO;
     private SynonymDAO synonymDAO;
     private SynonymizerTask synonymizerTask;
+    private NotExistsSynonymDAO notExistsSynonymDAO;
 
     @Before
     public void setUp() {
         messageDAO = mock(MessageDAO.class);
         synonymDAO = mock(SynonymDAO.class);
-        synonymizerTask = new SynonymizerTask(messageDAO, synonymDAO);
+        notExistsSynonymDAO = mock(NotExistsSynonymDAO.class);
+        synonymizerTask = new SynonymizerTask(messageDAO, synonymDAO, notExistsSynonymDAO);
     }
 
 

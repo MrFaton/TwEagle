@@ -10,15 +10,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import util.Counter;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Description
@@ -67,7 +63,7 @@ public class SynonymDAORealTest {
             @Override
             public void doCommands() throws Exception {
                 Synonym takenSynonym = synonymDAO.getSynonym(synonym.getWord());
-                assertEquals(synonym.getSynonyms().get(0), takenSynonym.getSynonyms().get(0));
+                assertEquals(synonym.getWord(), takenSynonym.getWord());
             }
         });
     }
@@ -94,26 +90,11 @@ public class SynonymDAORealTest {
     @Test
     public void saveAndUpdate() throws Exception {
         final Synonym synonym = createSynonym();
-        final String SQL = "" +
-                "SELECT id FROM tweagle.synonyms WHERE word = '" + synonym.getWord() + "';";
-
 
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
                 synonymDAO.save(synonym);
-            }
-        });
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                ResultSet resultSet = transactionManager.getConnection().createStatement().executeQuery(SQL);
-                if (resultSet.next()) {
-                    synonym.setId(resultSet.getInt("id"));
-                } else {
-                    fail("result set must have next");
-                }
             }
         });
 
@@ -133,38 +114,10 @@ public class SynonymDAORealTest {
         final Synonym synonym2 = createSynonym();
         final List<Synonym> synonymList = Arrays.asList(synonym1, synonym2);
 
-        final String SQL1 = "" +
-                "SELECT id FROM tweagle.synonyms WHERE word = '" + synonym1.getWord() + "';";
-        final String SQL2 = "" +
-                "SELECT id FROM tweagle.synonyms WHERE word = '" + synonym2.getWord() + "';";
-
         transactionManager.doInTransaction(new Command() {
             @Override
             public void doCommands() throws Exception {
                 synonymDAO.save(synonymList);
-            }
-        });
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                Connection connection = transactionManager.getConnection();
-                try (Statement statement = connection.createStatement()) {
-                    try (ResultSet resultSet = statement.executeQuery(SQL1);) {
-                        if (resultSet.next()) {
-                            synonym1.setId(resultSet.getInt("id"));
-                        } else {
-                            fail();
-                        }
-                    }
-                    try (ResultSet resultSet = statement.executeQuery(SQL2)) {
-                        if (resultSet.next()) {
-                            synonym2.setId(resultSet.getInt("id"));
-                        } else {
-                            fail();
-                        }
-                    }
-                }
             }
         });
 

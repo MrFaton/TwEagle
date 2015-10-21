@@ -52,7 +52,6 @@ public class MessageParseTaskTest {
         DonorUser extractedDonorUser = (DonorUser) donorUserField.get(messageParseTask);
 
         assertTrue(donorUser == extractedDonorUser);
-        assertTrue(donorUser.isTakeMessage());
     }
 
     @Test
@@ -134,12 +133,6 @@ public class MessageParseTaskTest {
         DonorUser donorUser = new DonorUser();
         donorUser.setName(BASE_NAME + Counter.getNextNumber());
         donorUser.setMale(true);
-        donorUser.setTakeMessage(false);
-        donorUser.setTakeFollowing(false);
-        donorUser.setTakeFollowers(false);
-        donorUser.setTakeMessageDate(null);
-        donorUser.setTakeFollowingDate(null);
-        donorUser.setTakeFollowersDate(null);
         return donorUser;
     }
 

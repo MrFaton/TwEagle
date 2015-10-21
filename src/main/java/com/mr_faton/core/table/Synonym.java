@@ -10,17 +10,9 @@ import java.util.List;
  * @since 19.10.2015
  */
 public class Synonym {
-    private int id;
     private String word;
     private List<String> synonyms;
     private int used;
-
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getWord() {
         return word;

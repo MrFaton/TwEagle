@@ -46,6 +46,17 @@ public class DonorUserDAOReal implements DonorUserDAO {
         }
     }
 
+    @Override
+    public void deleteUser(DonorUser donorUser) throws SQLException {
+        logger.debug("delete donor user " + donorUser);
+        final String SQL = "" +
+                "DELETE FROM tweagle.donor_users WHERE donor_name = ?;";
+        Connection connection = dataSource.getConnection();
+        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
+            preparedStatement.setString(1, donorUser.getName());
+            preparedStatement.executeUpdate();
+        }
+    }
 
     private DonorUser getDonorUser(final ResultSet resultSet) throws SQLException {
         DonorUser donorUser = new DonorUser();
@@ -70,24 +81,20 @@ public class DonorUserDAOReal implements DonorUserDAO {
             preparedStatement.setString(1, donorUser.getName());
             preparedStatement.setBoolean(2, donorUser.isMale());
 
-            preparedStatement.setBoolean(3, donorUser.isTakeMessage());
-            preparedStatement.setBoolean(4, donorUser.isTakeFollowing());
-            preparedStatement.setBoolean(5, donorUser.isTakeFollowers());
-
             if (donorUser.getTakeMessageDate() != null) {
-                preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
             } else {
-                preparedStatement.setNull(6, Types.DATE);
+                preparedStatement.setNull(3, Types.DATE);
             }
             if (donorUser.getTakeFollowingDate() != null) {
-                preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
             } else {
-                preparedStatement.setNull(7, Types.DATE);
+                preparedStatement.setNull(4, Types.DATE);
             }
             if (donorUser.getTakeFollowersDate() != null) {
-                preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
             } else {
-                preparedStatement.setNull(8, Types.DATE);
+                preparedStatement.setNull(5, Types.DATE);
             }
 
             preparedStatement.executeUpdate();
@@ -103,24 +110,20 @@ public class DonorUserDAOReal implements DonorUserDAO {
                 preparedStatement.setString(1, donorUser.getName());
                 preparedStatement.setBoolean(2, donorUser.isMale());
 
-                preparedStatement.setBoolean(3, donorUser.isTakeMessage());
-                preparedStatement.setBoolean(4, donorUser.isTakeFollowing());
-                preparedStatement.setBoolean(5, donorUser.isTakeFollowers());
-
                 if (donorUser.getTakeMessageDate() != null) {
-                    preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                    preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
-                    preparedStatement.setNull(6, Types.DATE);
+                    preparedStatement.setNull(3, Types.DATE);
                 }
                 if (donorUser.getTakeFollowingDate() != null) {
-                    preparedStatement.setDate(7, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                    preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
-                    preparedStatement.setNull(7, Types.DATE);
+                    preparedStatement.setNull(4, Types.DATE);
                 }
                 if (donorUser.getTakeFollowersDate() != null) {
-                    preparedStatement.setDate(8, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                    preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
                 } else {
-                    preparedStatement.setNull(8, Types.DATE);
+                    preparedStatement.setNull(5, Types.DATE);
                 }
 
                 preparedStatement.addBatch();
@@ -137,27 +140,23 @@ public class DonorUserDAOReal implements DonorUserDAO {
         logger.debug("update donor user " + donorUser);
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            preparedStatement.setBoolean(1, donorUser.isTakeMessage());
-            preparedStatement.setBoolean(2, donorUser.isTakeFollowing());
-            preparedStatement.setBoolean(3, donorUser.isTakeFollowers());
-
             if (donorUser.getTakeMessageDate() != null) {
-                preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                preparedStatement.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
             } else {
-                preparedStatement.setNull(4, Types.DATE);
+                preparedStatement.setNull(1, Types.DATE);
             }
             if (donorUser.getTakeFollowingDate() != null) {
-                preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                preparedStatement.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
             } else {
-                preparedStatement.setNull(5, Types.DATE);
+                preparedStatement.setNull(2, Types.DATE);
             }
             if (donorUser.getTakeFollowersDate() != null) {
-                preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
             } else {
-                preparedStatement.setNull(6, Types.DATE);
+                preparedStatement.setNull(3, Types.DATE);
             }
 
-            preparedStatement.setString(7, donorUser.getName());
+            preparedStatement.setString(4, donorUser.getName());
 
             preparedStatement.executeUpdate();
         }
@@ -169,27 +168,23 @@ public class DonorUserDAOReal implements DonorUserDAO {
         Connection connection = dataSource.getConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
             for (DonorUser donorUser : donorUserList) {
-                preparedStatement.setBoolean(1, donorUser.isTakeMessage());
-                preparedStatement.setBoolean(2, donorUser.isTakeFollowing());
-                preparedStatement.setBoolean(3, donorUser.isTakeFollowers());
-
                 if (donorUser.getTakeMessageDate() != null) {
-                    preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                    preparedStatement.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
-                    preparedStatement.setNull(4, Types.DATE);
+                    preparedStatement.setNull(1, Types.DATE);
                 }
                 if (donorUser.getTakeFollowingDate() != null) {
-                    preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                    preparedStatement.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
-                    preparedStatement.setNull(5, Types.DATE);
+                    preparedStatement.setNull(2, Types.DATE);
                 }
                 if (donorUser.getTakeFollowersDate() != null) {
-                    preparedStatement.setDate(6, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                    preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
                 } else {
-                    preparedStatement.setNull(6, Types.DATE);
+                    preparedStatement.setNull(3, Types.DATE);
                 }
 
-                preparedStatement.setString(7, donorUser.getName());
+                preparedStatement.setString(4, donorUser.getName());
 
                 preparedStatement.addBatch();
             }

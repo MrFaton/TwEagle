@@ -10,6 +10,7 @@ import org.junit.Test;
 import util.Counter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -59,6 +60,23 @@ public class DonorUserDAORealTest {
         });
     }
 
+    @Test
+    public void deleteDonorUser() throws Exception {
+        final DonorUser donorUser = createDonorUser();
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                donorUserDAO.save(donorUser);
+            }
+        });
+        transactionManager.doInTransaction(new Command() {
+            @Override
+            public void doCommands() throws Exception {
+                donorUserDAO.deleteUser(donorUser);
+            }
+        });
+    }
+
 
 
     @Test
@@ -71,8 +89,8 @@ public class DonorUserDAORealTest {
             }
         });
 
-        donorUser.setTakeMessage(true);
-        donorUser.setTakeFollowing(true);
+        donorUser.setTakeMessageDate(new Date());
+        donorUser.setTakeFollowingDate(new Date());
 
         transactionManager.doInTransaction(new Command() {
             @Override
@@ -98,13 +116,13 @@ public class DonorUserDAORealTest {
             }
         });
 
-        donorUser1.setTakeMessage(true);
-        donorUser1.setTakeFollowing(true);
-        donorUser1.setTakeFollowers(true);
+        donorUser1.setTakeMessageDate(new Date());
+        donorUser1.setTakeFollowingDate(new Date());
+        donorUser1.setTakeFollowersDate(new Date());
 
-        donorUser2.setTakeMessage(true);
-        donorUser2.setTakeFollowing(true);
-        donorUser2.setTakeFollowers(true);
+        donorUser2.setTakeMessageDate(new Date());
+        donorUser2.setTakeFollowingDate(new Date());
+        donorUser2.setTakeFollowersDate(new Date());
 
         transactionManager.doInTransaction(new Command() {
             @Override
@@ -119,12 +137,6 @@ public class DonorUserDAORealTest {
         DonorUser donorUser = new DonorUser();
         donorUser.setName(BASE_NAME + Counter.getNextNumber());
         donorUser.setMale(true);
-        donorUser.setTakeMessage(false);
-        donorUser.setTakeFollowing(false);
-        donorUser.setTakeFollowers(false);
-        donorUser.setTakeMessageDate(null);
-        donorUser.setTakeFollowingDate(null);
-        donorUser.setTakeFollowersDate(null);
         return donorUser;
     }
 }

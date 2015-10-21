@@ -52,7 +52,7 @@
         <constructor-arg name="executionPool" ref="executionPool"/>
         <constructor-arg name="taskList">
             <list>
-                <!--<ref bean="messageParseTask"/>-->
+                <ref bean="messageParseTask"/>
                 <ref bean="synonymizerTask"/>
             </list>
         </constructor-arg>

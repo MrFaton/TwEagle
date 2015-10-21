@@ -8,7 +8,6 @@ import java.util.Date;
 public class Message {
     private int id;
     private String message;
-    private boolean tweet;
 
     private String owner;
     private boolean ownerMale;
@@ -34,13 +33,6 @@ public class Message {
     }
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public boolean isTweet() {
-        return tweet;
-    }
-    public void setTweet(boolean tweet) {
-        this.tweet = tweet;
     }
 
     public String getOwner() {

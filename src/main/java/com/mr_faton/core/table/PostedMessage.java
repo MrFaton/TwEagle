@@ -10,7 +10,6 @@ public class PostedMessage {
     private int id;
     private String message;
     private long messageId;
-    private boolean tweet;
     private String owner;
     private String recipient;
     private Date postedDate;
@@ -34,13 +33,6 @@ public class PostedMessage {
     }
     public void setMessageId(long messageId) {
         this.messageId = messageId;
-    }
-
-    public boolean isTweet() {
-        return tweet;
-    }
-    public void setTweet(boolean tweet) {
-        this.tweet = tweet;
     }
 
     public String getOwner() {
