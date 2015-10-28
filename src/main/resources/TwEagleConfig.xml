@@ -28,6 +28,9 @@
     <bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal">
         <constructor-arg name="dataSource" ref="transactionManager"/>
     </bean>
+    <bean id="notExistsSynonym" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal">
+        <constructor-arg name="dataSource" ref="transactionManager"/>
+    </bean>
 
 
     <!-- Twitter API config-->
@@ -44,6 +47,7 @@
     <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask">
         <constructor-arg name="messageDAO" ref="messageDAO"/>
         <constructor-arg name="synonymDAO" ref="synonymDAO"/>
+        <constructor-arg name="notExistsSynonymDAO" ref="notExistsSynonym"/>
     </bean>
 
     <!-- Task Manager-->
