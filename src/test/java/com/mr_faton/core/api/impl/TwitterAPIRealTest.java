@@ -27,13 +27,13 @@ public class TwitterAPIRealTest {
     private static TwitterAPI twitterAPI;
     private static final String TEST_USER = "Mr_Faton";
 
-    @BeforeClass
-    public static void generalSetUp() throws SQLException, ClassNotFoundException, IOException {
-        SettingsHolder.loadSettings();
-        transactionManager = new TransactionManagerReal();
-        userDAO = new UserDAOReal(transactionManager);
-        twitterAPI = new TwitterAPIReal(userDAO);
-    }
+//    @BeforeClass
+//    public static void generalSetUp() throws SQLException, ClassNotFoundException, IOException {
+//        SettingsHolder.loadSettings();
+//        transactionManager = new TransactionManagerReal();
+//        userDAO = new UserDAOReal(transactionManager);
+//        twitterAPI = new TwitterAPIReal(userDAO);
+//    }
 
     @AfterClass
     public static void generalTearDown() {
