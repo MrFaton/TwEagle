@@ -27,13 +27,13 @@ public class UserDAORealTest {
     private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
 
 
-//    @AfterClass
-//    public static void tearDown() throws Exception {
-//        final String SQL = "" +
-//                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
-//
-//        JDBC_TEMPLATE.update(SQL);
-//    }
+    @AfterClass
+    public static void tearDown() throws Exception {
+        final String SQL = "" +
+                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
+
+        JDBC_TEMPLATE.update(SQL);
+    }
 
     private User createDefaultUser() {
         User user = new User();
@@ -58,31 +58,14 @@ public class UserDAORealTest {
     @Test
     public void getUserByName() throws Exception {
         final User user = createDefaultUser();
-        User takenUser = USER_DAO.getUserByName("UserDAOReal0");
-        System.out.println(takenUser);
+        USER_DAO.saveOrUpdate(user);
+        USER_DAO.getUserByName(user.getName());
     }
 
-//    @Test
-//    public void getUserList() throws Exception {
-//        final List<User> userList = new ArrayList<>(3);
-//        userList.add(createDefaultUser());
-//        userList.add(createDefaultUser());
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                USER_DAO.save(userList);
-//            }
-//        });
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                List<User> takenList = USER_DAO.getUserList();
-//                Assert.assertTrue(takenList.size() >= 2);
-//            }
-//        });
-//    }
+    @Test
+    public void getUserList() throws Exception {
+
+    }
 
 
     @Test
