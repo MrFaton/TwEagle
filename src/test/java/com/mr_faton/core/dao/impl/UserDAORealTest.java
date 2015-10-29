@@ -72,6 +72,9 @@ public class UserDAORealTest {
     public void saveOrUpdate() throws Exception {
         final User user = createDefaultUser();
         USER_DAO.saveOrUpdate(user);
+        int followers = 55;
+        user.setFollowers(followers);
+        USER_DAO.saveOrUpdate(user);
     }
 
 //    @Test
