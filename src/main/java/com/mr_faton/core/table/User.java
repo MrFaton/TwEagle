@@ -1,11 +1,12 @@
 package com.mr_faton.core.table;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Mr_Faton on 18.09.2015.
  */
-public class User {
+public class User implements Serializable {
     private String name;
     private String password;
     private String email;

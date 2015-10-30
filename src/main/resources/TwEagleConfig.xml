@@ -38,13 +38,17 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="testDao" class="com.mr_faton.TestDAO"/>
+
+
+    <bean id="testDao" class="com.mr_faton.TestDAO">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
 
 
 
 
-     <!--DAO config-->
+     <!--DAO -->
     <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
     <!--<bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal">-->
     <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->

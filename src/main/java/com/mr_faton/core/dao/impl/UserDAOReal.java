@@ -10,12 +10,13 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -28,16 +29,19 @@ import java.util.List;
 public class UserDAOReal implements UserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.UserDAOReal");
-    private static final String SAVE_OR_UPDATE_SQL = "" +
+    private static final String SQL_SAVE = "" +
             "INSERT INTO tweagle.users " +
             "(name, password, email, male, creation_date, messages, following, followers, " +
             "consumer_key, consumer_secret, access_token, access_token_secret) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String SQL_UPDATE = "" +
+            "UPDATE tweagle.users SET password = ?, email = ?, male = ?, creation_date = ?, " +
+            "messages = ?, following = ?, followers = ?, consumer_key = ?, consumer_secret = ?, access_token = ?, " +
+            "access_token_secret = ? WHERE name = ?;";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-//    @Transactional(propagation = Propagation.SUPPORTS, noRollbackFor = )
     @Override
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
         logger.debug("get user by name " + name);
@@ -55,14 +59,20 @@ public class UserDAOReal implements UserDAO {
         logger.debug("get all users");
         final String SQL = "" +
                 "SELECT * FROM tweagle.users;";
-        return jdbcTemplate.query(SQL, new UserRowMapper());
+        try {
+            return jdbcTemplate.query(SQL, new UserRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("users not exists in DB", emptyData);
+        }
+
     }
 
 
+    // INSERTS - UPDATES
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = SQLException.class)
     @Override
-    public void saveOrUpdate(final User user) throws SQLException {
-        logger.info("save or update user " + user);
+    public void save(final User user) throws SQLException {
+        logger.info("save user " + user);
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement pS) throws SQLException {
@@ -80,13 +90,13 @@ public class UserDAOReal implements UserDAO {
                 pS.setString(12, user.getAccessTokenSecret());
             }
         };
-        jdbcTemplate.update(SAVE_OR_UPDATE_SQL, pss);
+        jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = SQLException.class)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, noRollbackFor = NoSuchEntityException.class)
     @Override
-    public void saveOrUpdate(final List<User> userList) throws SQLException {
-        logger.info("save or update " + userList.size() + " users");
+    public void save(final List<User> userList) throws SQLException {
+        logger.info("save  " + userList.size() + " users");
         BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement pS, int i) throws SQLException {
@@ -111,9 +121,63 @@ public class UserDAOReal implements UserDAO {
                 return userList.size();
             }
         };
-        jdbcTemplate.batchUpdate(SAVE_OR_UPDATE_SQL, bpss);
+        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = SQLException.class)
+    @Override
+    public void update(final User user) throws SQLException {
+        logger.info("update user " + user);
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement pS) throws SQLException {
+                pS.setString(1, user.getPassword());
+                pS.setString(2, user.getEmail());
+                pS.setBoolean(3, user.isMale());
+                pS.setDate(4, new Date(user.getCreationDate().getTime()));
+                pS.setInt(5, user.getMessages());
+                pS.setInt(6, user.getFollowing());
+                pS.setInt(7, user.getFollowers());
+                pS.setString(8, user.getConsumerKey());
+                pS.setString(9, user.getConsumerSecret());
+                pS.setString(10, user.getAccessToken());
+                pS.setString(11, user.getAccessTokenSecret());
+                pS.setString(12, user.getName());
+            }
+        };
+        jdbcTemplate.update(SQL_UPDATE, pss);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, noRollbackFor = NoSuchEntityException.class)
+    @Override
+    public void update(final List<User> userList) throws SQLException {
+        logger.info("update " + userList.size() + " users");
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                User user = userList.get(i);
+
+                preparedStatement.setString(1, user.getPassword());
+                preparedStatement.setString(2, user.getEmail());
+                preparedStatement.setBoolean(3, user.isMale());
+                preparedStatement.setDate(4, new java.sql.Date(user.getCreationDate().getTime()));
+                preparedStatement.setInt(5, user.getMessages());
+                preparedStatement.setInt(6, user.getFollowing());
+                preparedStatement.setInt(7, user.getFollowers());
+                preparedStatement.setString(8, user.getConsumerKey());
+                preparedStatement.setString(9, user.getConsumerSecret());
+                preparedStatement.setString(10, user.getAccessToken());
+                preparedStatement.setString(11, user.getAccessTokenSecret());
+                preparedStatement.setString(12, user.getName());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return userList.size();
+            }
+        };
+        jdbcTemplate.update(SQL_UPDATE, bpss);
+    }
 
     class UserRowMapper implements RowMapper<User> {
         @Override

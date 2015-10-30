@@ -3,9 +3,6 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
-import com.mr_faton.core.util.Command;
-import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
@@ -27,13 +24,56 @@ public class UserDAORealTest {
     private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
 
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String SQL = "" +
-                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
+//    @AfterClass
+//    public static void tearDown() throws Exception {
+//        final String SQL = "" +
+//                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
+//
+//        JDBC_TEMPLATE.update(SQL);
+//    }
 
-        JDBC_TEMPLATE.update(SQL);
+
+
+
+    @Test
+    public void getUserByName() throws Exception {
+        final User user = createDefaultUser();
+        USER_DAO.save(user);
+        USER_DAO.getUserByName(user.getName());
     }
+
+    @Test
+    public void getUserList() throws Exception {
+
+    }
+
+
+    @Test
+    public void saveAndUpdate() throws Exception {
+        final User user = createDefaultUser();
+        USER_DAO.save(user);
+        int followers = 55;
+        user.setFollowers(followers);
+        USER_DAO.update(user);
+    }
+
+    @Test
+    public void saveAndUpdateList() throws Exception {
+        final User user1 = createDefaultUser();
+        final User user2 = createDefaultUser();
+
+        final List<User> userList = new ArrayList<>(3);
+        userList.add(user1);
+        userList.add(user2);
+
+        USER_DAO.save(userList);
+
+        user1.setMessages(35);
+        user2.setMessages(40);
+
+        USER_DAO.update(userList);
+    }
+
 
     private User createDefaultUser() {
         User user = new User();
@@ -53,54 +93,4 @@ public class UserDAORealTest {
 
         return user;
     }
-
-
-    @Test
-    public void getUserByName() throws Exception {
-        final User user = createDefaultUser();
-        USER_DAO.saveOrUpdate(user);
-        USER_DAO.getUserByName(user.getName());
-    }
-
-    @Test
-    public void getUserList() throws Exception {
-
-    }
-
-
-    @Test
-    public void saveOrUpdate() throws Exception {
-        final User user = createDefaultUser();
-        USER_DAO.saveOrUpdate(user);
-        int followers = 55;
-        user.setFollowers(followers);
-        USER_DAO.saveOrUpdate(user);
-    }
-
-//    @Test
-//    public void saveAndUpdateList() throws Exception {
-//        final User user1 = createDefaultUser();
-//        final User user2 = createDefaultUser();
-//
-//        final List<User> userList = new ArrayList<>(3);
-//        userList.add(user1);
-//        userList.add(user2);
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                USER_DAO.save(userList);
-//            }
-//        });
-//
-//        user1.setMessages(102);
-//        user2.setMessages(103);
-//
-//        transactionManager.doInTransaction(new Command() {
-//            @Override
-//            public void doCommands() throws Exception {
-//                USER_DAO.update(userList);
-//            }
-//        });
-//    }
 }

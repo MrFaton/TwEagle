@@ -14,6 +14,10 @@ public interface UserDAO {
     List<User> getUserList() throws SQLException, NoSuchEntityException;
 
 
-    void saveOrUpdate(User user) throws SQLException;
-    void saveOrUpdate(List<User> userList) throws SQLException;
+    // INSERTS - UPDATES
+    void save(User user) throws SQLException;
+    void save(List<User> userList) throws SQLException;
+
+    void update(User user) throws SQLException;
+    void update(List<User> userList) throws SQLException;
 }
