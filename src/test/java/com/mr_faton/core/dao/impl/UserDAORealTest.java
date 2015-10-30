@@ -3,11 +3,14 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
+import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -24,13 +27,13 @@ public class UserDAORealTest {
     private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
 
 
-//    @AfterClass
-//    public static void tearDown() throws Exception {
-//        final String SQL = "" +
-//                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
-//
-//        JDBC_TEMPLATE.update(SQL);
-//    }
+    @AfterClass
+    public static void tearDown() throws Exception {
+        final String SQL = "" +
+                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
+
+        JDBC_TEMPLATE.update(SQL);
+    }
 
 
 
@@ -44,8 +47,18 @@ public class UserDAORealTest {
 
     @Test
     public void getUserList() throws Exception {
+        final User user1 = createDefaultUser();
+        final User user2 = createDefaultUser();
+        final List<User> userList = Arrays.asList(user1, user2);
 
+        USER_DAO.save(userList);
+
+        List<User> extractedUserList = USER_DAO.getUserList();
+        Assert.assertTrue(extractedUserList.size() >= 2);
     }
+
+
+
 
 
     @Test

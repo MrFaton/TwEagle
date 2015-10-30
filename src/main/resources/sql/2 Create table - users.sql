@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS tweagle.users;
 CREATE TABLE tweagle.users (
 
   name                VARCHAR(25) NOT NULL PRIMARY KEY,
-  password            VARCHAR(10) NOT NULL,
+  password            VARCHAR(15) NOT NULL,
   email               VARCHAR(45) NOT NULL,
   male                BOOLEAN     NOT NULL,
   creation_date       DATE        NOT NULL,
