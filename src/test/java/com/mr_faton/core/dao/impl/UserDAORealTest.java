@@ -1,13 +1,13 @@
 package com.mr_faton.core.dao.impl;
 
+import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
-import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.Command;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
 import java.util.ArrayList;
@@ -23,29 +23,19 @@ import java.util.List;
  */
 public class UserDAORealTest {
     private static final String BASE_NAME = "UserDAOReal";
-    private static TransactionManager transactionManager;
-    private static UserDAO userDAO;
+    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
+    private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        transactionManager = TransactionMenagerHolder.getTransactionManager();
-        userDAO = new UserDAOReal(transactionManager);
-    }
 
     @AfterClass
     public static void tearDown() throws Exception {
         final String SQL = "" +
                 "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
 
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                transactionManager.getConnection().createStatement().executeUpdate(SQL);
-            }
-        });
+        JDBC_TEMPLATE.update(SQL);
     }
 
-    private User createUser() {
+    private User createDefaultUser() {
         User user = new User();
 
         user.setName(BASE_NAME + Counter.getNextNumber());
@@ -67,91 +57,50 @@ public class UserDAORealTest {
 
     @Test
     public void getUserByName() throws Exception {
-        final User user = createUser();
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.save(user);
-            }
-        });
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.getUserByName(user.getName());
-            }
-        });
+        final User user = createDefaultUser();
+        USER_DAO.saveOrUpdate(user);
+        USER_DAO.getUserByName(user.getName());
     }
 
     @Test
     public void getUserList() throws Exception {
-        final List<User> userList = new ArrayList<>(3);
-        userList.add(createUser());
-        userList.add(createUser());
 
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.save(userList);
-            }
-        });
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                List<User> takenList = userDAO.getUserList();
-                Assert.assertTrue(takenList.size() >= 2);
-            }
-        });
     }
 
 
     @Test
-    public void saveAndUpdate() throws Exception {
-        final User user = createUser();
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.save(user);
-            }
-        });
-
-        user.setMessages(101);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.update(user);
-            }
-        });
+    public void saveOrUpdate() throws Exception {
+        final User user = createDefaultUser();
+        USER_DAO.saveOrUpdate(user);
+        int followers = 55;
+        user.setFollowers(followers);
+        USER_DAO.saveOrUpdate(user);
     }
 
-    @Test
-    public void saveAndUpdateList() throws Exception {
-        final User user1 = createUser();
-        final User user2 = createUser();
-
-        final List<User> userList = new ArrayList<>(3);
-        userList.add(user1);
-        userList.add(user2);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.save(userList);
-            }
-        });
-
-        user1.setMessages(102);
-        user2.setMessages(103);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                userDAO.update(userList);
-            }
-        });
-    }
+//    @Test
+//    public void saveAndUpdateList() throws Exception {
+//        final User user1 = createDefaultUser();
+//        final User user2 = createDefaultUser();
+//
+//        final List<User> userList = new ArrayList<>(3);
+//        userList.add(user1);
+//        userList.add(user2);
+//
+//        transactionManager.doInTransaction(new Command() {
+//            @Override
+//            public void doCommands() throws Exception {
+//                USER_DAO.save(userList);
+//            }
+//        });
+//
+//        user1.setMessages(102);
+//        user2.setMessages(103);
+//
+//        transactionManager.doInTransaction(new Command() {
+//            @Override
+//            public void doCommands() throws Exception {
+//                USER_DAO.update(userList);
+//            }
+//        });
+//    }
 }
