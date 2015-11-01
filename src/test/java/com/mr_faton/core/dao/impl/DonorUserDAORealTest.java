@@ -1,15 +1,14 @@
 package com.mr_faton.core.dao.impl;
 
+import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.DonorUserDAO;
-import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.table.DonorUser;
-import com.mr_faton.core.util.Command;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -22,118 +21,67 @@ import java.util.List;
  */
 public class DonorUserDAORealTest {
     private static final String BASE_NAME = "DonorUserDAOReal";
-    private static TransactionManager transactionManager;
-    private static DonorUserDAO donorUserDAO;
+    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
+    private static final DonorUserDAO DONOR_USER_DAO = (DonorUserDAO) AppContext.getBeanByName("donorUserDAO");
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        transactionManager = TransactionMenagerHolder.getTransactionManager();
-        donorUserDAO = new DonorUserDAOReal(transactionManager);
-    }
 
     @AfterClass
     public static void tearDown() throws Exception {
         final String SQL = "" +
                 "DELETE FROM tweagle.donor_users WHERE donor_name LIKE 'DonorUserDAOReal%';";
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                transactionManager.getConnection().createStatement().executeUpdate(SQL);
-            }
-        });
+        JDBC_TEMPLATE.update(SQL);
     }
 
 
     @Test
     public void getDonorForMessage() throws Exception {
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.save(createDonorUser());
-            }
-        });
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.getDonorForMessage();
-            }
-        });
+        DonorUser donorUser = createDefaultDonorUser();
+
+        DONOR_USER_DAO.save(donorUser);
+        DONOR_USER_DAO.getDonorForMessage();
     }
 
     @Test
     public void deleteDonorUser() throws Exception {
-        final DonorUser donorUser = createDonorUser();
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.save(donorUser);
-            }
-        });
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.deleteUser(donorUser);
-            }
-        });
+        DonorUser donorUser = createDefaultDonorUser();
+
+        DONOR_USER_DAO.save(donorUser);
+        DONOR_USER_DAO.deleteUser(donorUser.getName());
     }
 
 
 
     @Test
     public void saveAndUpdate() throws Exception {
-        final DonorUser donorUser = createDonorUser();
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.save(donorUser);
-            }
-        });
+        DonorUser donorUser = createDefaultDonorUser();
+        DONOR_USER_DAO.save(donorUser);
 
         donorUser.setTakeMessageDate(new Date());
         donorUser.setTakeFollowingDate(new Date());
 
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.update(donorUser);
-            }
-        });
+        DONOR_USER_DAO.update(donorUser);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
-        final DonorUser donorUser1 = createDonorUser();
-        final DonorUser donorUser2 = createDonorUser();
+        DonorUser donorUser1 = createDefaultDonorUser();
+        DonorUser donorUser2 = createDefaultDonorUser();
+        List<DonorUser> donorUserList = Arrays.asList(donorUser1, donorUser2);
 
-        final List<DonorUser> donorUserList = new ArrayList<>(5);
-        donorUserList.add(donorUser1);
-        donorUserList.add(donorUser2);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.save(donorUserList);
-            }
-        });
+        DONOR_USER_DAO.save(donorUserList);
 
         donorUser1.setTakeMessageDate(new Date());
         donorUser1.setTakeFollowingDate(new Date());
-        donorUser1.setTakeFollowersDate(new Date());
 
         donorUser2.setTakeMessageDate(new Date());
         donorUser2.setTakeFollowingDate(new Date());
-        donorUser2.setTakeFollowersDate(new Date());
 
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                donorUserDAO.update(donorUserList);
-            }
-        });
+        DONOR_USER_DAO.update(donorUserList);
+
     }
 
 
-    private DonorUser createDonorUser() {
+    private DonorUser createDefaultDonorUser() {
         DonorUser donorUser = new DonorUser();
         donorUser.setName(BASE_NAME + Counter.getNextNumber());
         donorUser.setMale(true);

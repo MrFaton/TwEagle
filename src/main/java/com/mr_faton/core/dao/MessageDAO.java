@@ -4,12 +4,18 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.List;
 
 /**
  * Created by Mr_Faton on 18.09.2015.
  */
 public interface MessageDAO {
+    Message getMessage(boolean tweet, boolean male, String ownerName, String recipientName,
+                       Calendar minCalendar, Calendar maxCalendar) throws SQLException, NoSuchEntityException;
+
+
+
     // Get Tweet
     Message getTweetFirstTry(boolean male) throws SQLException, NoSuchEntityException;
     Message getTweetSecondTry(boolean male) throws SQLException, NoSuchEntityException;

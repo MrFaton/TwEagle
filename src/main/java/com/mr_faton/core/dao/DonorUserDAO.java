@@ -16,7 +16,7 @@ import java.util.List;
 public interface DonorUserDAO {
     DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException;
 
-    void deleteUser(DonorUser donorUser) throws SQLException;
+    void deleteUser(String donorUserName) throws SQLException;
 
     // INSERTS - UPDATES
     void save(DonorUser donorUser) throws SQLException;

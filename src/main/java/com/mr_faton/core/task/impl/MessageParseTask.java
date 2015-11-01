@@ -149,7 +149,7 @@ public class MessageParseTask implements Task {
                 } catch (BadUserException badUserEx) {
                     logger.debug(badUserEx.getMessage());
                     donorUser = null;
-                    donorUserDAO.deleteUser(donorUser);
+                    donorUserDAO.deleteUser(donorUser.getName());
                 }
 
             }

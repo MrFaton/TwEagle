@@ -7,7 +7,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Created by Mr_Faton on 18.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 18.09.2015
+ * @version 1.0
  */
 public interface UserDAO {
     User getUserByName(String name) throws SQLException, NoSuchEntityException;

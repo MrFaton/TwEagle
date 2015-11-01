@@ -4,8 +4,9 @@ import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,21 +23,26 @@ public class MessageDAOReal implements MessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.MessageDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.messages " +
-            "(message, owner, owner_male, recipient, recipient_male, posted_date, synonymized, posted) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+            "INSERT INTO tweagle.messages (message, owner_id, recipient_id, posted_date, synonymized, posted) " +
+            "VALUES (?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.messages SET message = ?, owner = ?, owner_male = ?, recipient = ?, " +
-            "recipient_male = ?, posted_date = ?, synonymized = ?, posted = ? WHERE id = ?;";
+            "UPDATE tweagle.messages SET synonymized = ?, posted = ? WHERE id = ?;";
 
-    private static final int DEEP_YEARS_SEARCH = 3;
-    private static final int DEEP_DAYS_SEARCH = 3;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    private final DataSource dataSource;
 
-    public MessageDAOReal(DataSource dataSource) {
-        logger.debug("constructor");
-        this.dataSource = dataSource;
+    @Override
+    public Message getMessage(boolean tweet, boolean male, String ownerName, String recipientName,
+                              Calendar minCalendar, Calendar maxCalendar) throws SQLException, NoSuchEntityException {
+        StringBuilder builtSQL = new StringBuilder();
+        builtSQL.append("SELECT * FROM tweagle.messages, tweagle.user_donors WHERE ");
+        builtSQL.append()
+        if (tweet) {
+            builtSQL.append("recipient_id = '").append(recipientName).append("' ");
+        } else {
+            builtSQL.append("recipient_id IS NULL ");
+        }
     }
 
     @Override

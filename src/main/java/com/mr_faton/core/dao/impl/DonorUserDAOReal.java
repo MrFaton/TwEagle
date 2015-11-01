@@ -4,8 +4,15 @@ import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.DonorUser;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
 
@@ -20,176 +27,190 @@ public class DonorUserDAOReal implements DonorUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.donor_users (donor_name, is_male, take_messages_date, " +
+            "INSERT INTO tweagle.donor_users (name, male, take_messages_date, " +
             "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +
-            "WHERE donor_name = ?;";
+            "WHERE name = ?;";
 
-    private final DataSource dataSource;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    public DonorUserDAOReal(DataSource dataSource) {
-        logger.debug("constructor");
-        this.dataSource = dataSource;
-    }
-
+    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get donorUser for parse messages");
         final String SQL = "" +
                 "SELECT * FROM tweagle.donor_users WHERE take_messages_date IS NULL LIMIT 1;";
-        Connection connection = dataSource.getConnection();
-        try(Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(SQL)) {
-            if (resultSet.next()) return getDonorUser(resultSet);
-            throw new NoSuchEntityException("no donor to parse messages");
+        try {
+            return jdbcTemplate.queryForObject(SQL, new DonorUserRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("it's seems that no user for message found", emptyData);
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void deleteUser(DonorUser donorUser) throws SQLException {
-        logger.debug("delete donor user " + donorUser);
+    public void deleteUser(final String donorUserName) throws SQLException {
+        logger.debug("delete donor user " + donorUserName);
         final String SQL = "" +
-                "DELETE FROM tweagle.donor_users WHERE donor_name = ?;";
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setString(1, donorUser.getName());
-            preparedStatement.executeUpdate();
-        }
+                "DELETE FROM tweagle.donor_users WHERE name = '" + donorUserName + "';";
+        jdbcTemplate.update(SQL);
     }
 
-    private DonorUser getDonorUser(final ResultSet resultSet) throws SQLException {
-        DonorUser donorUser = new DonorUser();
-        donorUser.setName(resultSet.getString("donor_name"));
-        donorUser.setMale(resultSet.getBoolean("is_male"));
-        donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
-        donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
-        donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
-        return donorUser;
-    }
 
 
 
 
     // INSERTS - UPDATES
-
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(DonorUser donorUser) throws SQLException {
+    public void save(final DonorUser donorUser) throws SQLException {
         logger.debug("save donor user " + donorUser);
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-            preparedStatement.setString(1, donorUser.getName());
-            preparedStatement.setBoolean(2, donorUser.isMale());
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, donorUser.getName());
+                ps.setBoolean(2, donorUser.isMale());
 
-            if (donorUser.getTakeMessageDate() != null) {
-                preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
-            } else {
-                preparedStatement.setNull(3, Types.DATE);
+                if (donorUser.getTakeMessageDate() != null) {
+                    ps.setDate(3, new Date(donorUser.getTakeMessageDate().getTime()));
+                } else {
+                    ps.setNull(3, Types.DATE);
+                }
+                if (donorUser.getTakeFollowingDate() != null) {
+                    ps.setDate(4, new Date(donorUser.getTakeFollowingDate().getTime()));
+                } else {
+                    ps.setNull(4, Types.DATE);
+                }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    ps.setDate(5, new Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    ps.setNull(5, Types.DATE);
+                }
             }
-            if (donorUser.getTakeFollowingDate() != null) {
-                preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
-            } else {
-                preparedStatement.setNull(4, Types.DATE);
-            }
-            if (donorUser.getTakeFollowersDate() != null) {
-                preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
-            } else {
-                preparedStatement.setNull(5, Types.DATE);
-            }
+        };
 
-            preparedStatement.executeUpdate();
-        }
+        jdbcTemplate.update(SQL_SAVE, pss);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(List<DonorUser> donorUserList) throws SQLException {
+    public void save(final List<DonorUser> donorUserList) throws SQLException {
         logger.debug("save " + donorUserList.size() + " donor users");
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-            for (DonorUser donorUser : donorUserList) {
-                preparedStatement.setString(1, donorUser.getName());
-                preparedStatement.setBoolean(2, donorUser.isMale());
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                DonorUser donorUser = donorUserList.get(i);
+
+                ps.setString(1, donorUser.getName());
+                ps.setBoolean(2, donorUser.isMale());
 
                 if (donorUser.getTakeMessageDate() != null) {
-                    preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                    ps.setDate(3, new Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
-                    preparedStatement.setNull(3, Types.DATE);
+                    ps.setNull(3, Types.DATE);
                 }
                 if (donorUser.getTakeFollowingDate() != null) {
-                    preparedStatement.setDate(4, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                    ps.setDate(4, new Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
-                    preparedStatement.setNull(4, Types.DATE);
+                    ps.setNull(4, Types.DATE);
                 }
                 if (donorUser.getTakeFollowersDate() != null) {
-                    preparedStatement.setDate(5, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                    ps.setDate(5, new Date(donorUser.getTakeFollowersDate().getTime()));
                 } else {
-                    preparedStatement.setNull(5, Types.DATE);
+                    ps.setNull(5, Types.DATE);
                 }
-
-                preparedStatement.addBatch();
             }
 
-            preparedStatement.executeBatch();
-        }
+            @Override
+            public int getBatchSize() {
+                return donorUserList.size();
+            }
+        };
+
+        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
 
-
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void update(DonorUser donorUser) throws SQLException {
+    public void update(final DonorUser donorUser) throws SQLException {
         logger.debug("update donor user " + donorUser);
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            if (donorUser.getTakeMessageDate() != null) {
-                preparedStatement.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
-            } else {
-                preparedStatement.setNull(1, Types.DATE);
-            }
-            if (donorUser.getTakeFollowingDate() != null) {
-                preparedStatement.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
-            } else {
-                preparedStatement.setNull(2, Types.DATE);
-            }
-            if (donorUser.getTakeFollowersDate() != null) {
-                preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
-            } else {
-                preparedStatement.setNull(3, Types.DATE);
-            }
-
-            preparedStatement.setString(4, donorUser.getName());
-
-            preparedStatement.executeUpdate();
-        }
-    }
-
-    @Override
-    public void update(List<DonorUser> donorUserList) throws SQLException {
-        logger.debug("update " + donorUserList.size() + " donor users");
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            for (DonorUser donorUser : donorUserList) {
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
                 if (donorUser.getTakeMessageDate() != null) {
-                    preparedStatement.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                    ps.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
-                    preparedStatement.setNull(1, Types.DATE);
+                    ps.setNull(1, Types.DATE);
                 }
                 if (donorUser.getTakeFollowingDate() != null) {
-                    preparedStatement.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                    ps.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
-                    preparedStatement.setNull(2, Types.DATE);
+                    ps.setNull(2, Types.DATE);
                 }
                 if (donorUser.getTakeFollowersDate() != null) {
-                    preparedStatement.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
                 } else {
-                    preparedStatement.setNull(3, Types.DATE);
+                    ps.setNull(3, Types.DATE);
                 }
 
-                preparedStatement.setString(4, donorUser.getName());
+                ps.setString(4, donorUser.getName());
+            }
+        };
 
-                preparedStatement.addBatch();
+        jdbcTemplate.update(SQL_UPDATE, pss);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Override
+    public void update(final List<DonorUser> donorUserList) throws SQLException {
+        logger.debug("update " + donorUserList.size() + " donor users");
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                DonorUser donorUser = donorUserList.get(i);
+
+                if (donorUser.getTakeMessageDate() != null) {
+                    ps.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                } else {
+                    ps.setNull(1, Types.DATE);
+                }
+                if (donorUser.getTakeFollowingDate() != null) {
+                    ps.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+                } else {
+                    ps.setNull(2, Types.DATE);
+                }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    ps.setNull(3, Types.DATE);
+                }
+
+                ps.setString(4, donorUser.getName());
             }
 
-            preparedStatement.executeBatch();
+            @Override
+            public int getBatchSize() {
+                return donorUserList.size();
+            }
+        };
+
+        jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
+    }
+
+
+    class DonorUserRowMapper implements RowMapper<DonorUser> {
+        @Override
+        public DonorUser mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
+            DonorUser donorUser = new DonorUser();
+            donorUser.setName(resultSet.getString("donor_name"));
+            donorUser.setMale(resultSet.getBoolean("is_male"));
+            donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
+            donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
+            donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
+            return donorUser;
         }
     }
 }
