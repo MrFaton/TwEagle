@@ -1,70 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:component-scan base-package="com.mr_faton.core.dao.impl"/>
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://127.0.0.1:3306/tweagle"/>
+        <property name="username" value="Mr_Faton"/>
+        <property name="password" value="123"/>
+        <property name="idleConnectionTestPeriodInMinutes" value="60"/>
+        <property name="idleMaxAgeInMinutes" value="30"/>
+        <property name="maxConnectionsPerPartition" value="4"/>
+        <property name="minConnectionsPerPartition" value="1"/>
+        <property name="partitionCount" value="2"/>
+        <property name="acquireIncrement" value="2"/>
+        <property name="statementsCacheSize" value="100"/>
+        <property name="connectionTestStatement" value="SELECT 1;"/>
+        <property name="idleConnectionTestPeriodInSeconds" value="300"/>
+    </bean>
+
+    <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
+
+    <bean id="jpaHibernateVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="database" value="MYSQL"/>
+        <property name="databasePlatform" value="org.hibernate.dialect.MySQL5Dialect"/>
+    </bean>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml"/>
+        <property name="persistenceUnitName" value="myPU"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter" ref="jpaHibernateVendorAdapter"/>
+        <property name="jpaDialect" ref="jpaDialect"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaDialect" ref="jpaDialect"/>
+    </bean>
+
+
+
+    <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
+
+
 
     <!-- pool config-->
-    <bean id="transactionManager" class="com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal"/>
-    <bean id="executionPool" class="com.mr_faton.core.pool.execution.impl.OptimalExecutor">
-        <constructor-arg name="transactionManager" ref="transactionManager"/>
-    </bean>
+    <!--<bean id="transactionManager" class="com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal"/>-->
+    <!--<bean id="executionPool" class="com.mr_faton.core.pool.execution.impl.OptimalExecutor">-->
+        <!--<constructor-arg name="transactionManager" ref="transactionManager"/>-->
+    <!--</bean>-->
 
     <!-- DAO config-->
-    <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
-    <bean id="notExistsSynonym" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal">
-        <constructor-arg name="dataSource" ref="transactionManager"/>
-    </bean>
+    <!--<bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>-->
+    <!--<bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
+    <!--<bean id="notExistsSynonym" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal">-->
+        <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
+    <!--</bean>-->
 
 
     <!-- Twitter API config-->
-    <bean id="twitterAPI" class="com.mr_faton.core.api.impl.TwitterAPIReal">
-        <constructor-arg name="userDAO" ref="userDAO"/>
-    </bean>
+    <!--<bean id="twitterAPI" class="com.mr_faton.core.api.impl.TwitterAPIReal">-->
+        <!--<constructor-arg name="userDAO" ref="userDAO"/>-->
+    <!--</bean>-->
 
-    <!-- Tasks-->
-    <bean id="messageParseTask" class="com.mr_faton.core.task.impl.MessageParseTask">
-        <constructor-arg name="donorUserDAO" ref="donorUserDAO"/>
-        <constructor-arg name="messageDAO" ref="messageDAO"/>
-        <constructor-arg name="twitterAPI" ref="twitterAPI"/>
-    </bean>
-    <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask">
-        <constructor-arg name="messageDAO" ref="messageDAO"/>
-        <constructor-arg name="synonymDAO" ref="synonymDAO"/>
-        <constructor-arg name="notExistsSynonymDAO" ref="notExistsSynonym"/>
-    </bean>
+    <!--&lt;!&ndash; Tasks&ndash;&gt;-->
+    <!--<bean id="messageParseTask" class="com.mr_faton.core.task.impl.MessageParseTask">-->
+        <!--<constructor-arg name="donorUserDAO" ref="donorUserDAO"/>-->
+        <!--<constructor-arg name="messageDAO" ref="messageDAO"/>-->
+        <!--<constructor-arg name="twitterAPI" ref="twitterAPI"/>-->
+    <!--</bean>-->
+    <!--<bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask">-->
+        <!--<constructor-arg name="messageDAO" ref="messageDAO"/>-->
+        <!--<constructor-arg name="synonymDAO" ref="synonymDAO"/>-->
+        <!--<constructor-arg name="notExistsSynonymDAO" ref="notExistsSynonym"/>-->
+    <!--</bean>-->
 
-    <!-- Task Manager-->
-    <bean id="taskManager" class="com.mr_faton.core.TaskManager">
-        <constructor-arg name="transactionManager" ref="transactionManager"/>
-        <constructor-arg name="executionPool" ref="executionPool"/>
-        <constructor-arg name="taskList">
-            <list>
-                <ref bean="messageParseTask"/>
-                <ref bean="synonymizerTask"/>
-            </list>
-        </constructor-arg>
-    </bean>
+    <!--&lt;!&ndash; Task Manager&ndash;&gt;-->
+    <!--<bean id="taskManager" class="com.mr_faton.core.TaskManager">-->
+        <!--<constructor-arg name="transactionManager" ref="transactionManager"/>-->
+        <!--<constructor-arg name="executionPool" ref="executionPool"/>-->
+        <!--<constructor-arg name="taskList">-->
+            <!--<list>-->
+                <!--<ref bean="messageParseTask"/>-->
+                <!--<ref bean="synonymizerTask"/>-->
+            <!--</list>-->
+        <!--</constructor-arg>-->
+    <!--</bean>-->
 
-    <!-- TwEagle-->
-    <bean id="twEagle" class="com.mr_faton.TwEagle">
-        <constructor-arg name="taskManager" ref="taskManager"/>
-    </bean>
+    <!--&lt;!&ndash; TwEagle&ndash;&gt;-->
+    <!--<bean id="twEagle" class="com.mr_faton.TwEagle">-->
+        <!--<constructor-arg name="taskManager" ref="taskManager"/>-->
+    <!--</bean>-->
 
 </beans>

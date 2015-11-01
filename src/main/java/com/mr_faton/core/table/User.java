@@ -1,24 +1,59 @@
 package com.mr_faton.core.table;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * Created by Mr_Faton on 18.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 18.09.2015
+ * @version 1.0
  */
+
+@Entity
+@Table(schema = "tweagle", name = "users")
 public class User {
+    @Id
+    @Column(length = 25, nullable = false, updatable = false)
     private String name;
+
+    @Column(length = 10, nullable = false)
     private String password;
+
+    @Column(length = 45, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private boolean male;
+
+    @Column(name = "creation_date", nullable = false, columnDefinition = "DATE")
     private Date creationDate;
 
+
+    @Column(nullable = false, columnDefinition = "DEFAULT 0")
     private int messages;
+
+    @Column(nullable = false, columnDefinition = "DEFAULT 0")
     private int following;
+
+    @Column(nullable = false, columnDefinition = "DEFAULT 0")
     private int followers;
 
+
+    @Column(name = "consumer_key", length = 70, nullable = false)
     private String consumerKey;
+
+    @Column(name = "consumer_secret", length = 70, nullable = false)
     private String consumerSecret;
+
+    @Column(name = "access_token", length = 70, nullable = false)
     private String accessToken;
+
+    @Column(name = "access_token_secret", length = 70, nullable = false)
     private String accessTokenSecret;
 
 
@@ -43,6 +78,7 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
 
     public Date getCreationDate() {
         return creationDate;
@@ -80,7 +116,6 @@ public class User {
     public void setFollowers(int followers) {
         this.followers = followers;
     }
-
 
 
     public String getConsumerKey() {
