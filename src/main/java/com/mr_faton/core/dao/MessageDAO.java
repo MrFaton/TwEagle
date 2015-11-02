@@ -11,16 +11,13 @@ import java.util.List;
  * Created by Mr_Faton on 18.09.2015.
  */
 public interface MessageDAO {
-    Message getMessage(boolean tweet, boolean male, String ownerName, String recipientName,
+    Message getTweet(boolean male, String ownerName, Calendar minCalendar, Calendar maxCalendar)
+        throws SQLException, NoSuchEntityException;
+    Message getMention(boolean tweet, boolean male, String ownerName, String recipientName,
                        Calendar minCalendar, Calendar maxCalendar) throws SQLException, NoSuchEntityException;
 
 
 
-    // Get Tweet
-    Message getTweetFirstTry(boolean male) throws SQLException, NoSuchEntityException;
-    Message getTweetSecondTry(boolean male) throws SQLException, NoSuchEntityException;
-    Message getTweetThirdTry(boolean male) throws SQLException, NoSuchEntityException;
-    Message getAnyTweet(boolean male) throws SQLException;
 
     //Get UnSynonymized message
     List<Message> getUnSynonymizedMessages(int limit) throws SQLException, NoSuchEntityException;

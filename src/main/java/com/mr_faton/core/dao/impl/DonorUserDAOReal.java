@@ -27,7 +27,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.donor_users (name, male, take_messages_date, " +
+            "INSERT IGNORE INTO tweagle.donor_users (name, male, take_messages_date, " +
             "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +

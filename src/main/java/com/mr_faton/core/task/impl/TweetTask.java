@@ -162,19 +162,19 @@ public class TweetTask implements Task {
 
             User user = userDAO.getUserByName(tweetUser.getName());
 
-            try {
-                message = messageDAO.getTweetFirstTry(user.isMale());
-            } catch (NoSuchEntityException entityEx1) {
-                try {
-                    message = messageDAO.getTweetSecondTry(user.isMale());
-                } catch (NoSuchEntityException entityEx2) {
-                    try {
-                        message = messageDAO.getTweetThirdTry(user.isMale());
-                    } catch (NoSuchEntityException entityEx3) {
-                        message = messageDAO.getAnyTweet(user.isMale());
-                    }
-                }
-            }
+//            try {
+//                message = messageDAO.getTweetFirstTry(user.isMale());
+//            } catch (NoSuchEntityException entityEx1) {
+//                try {
+//                    message = messageDAO.getTweetSecondTry(user.isMale());
+//                } catch (NoSuchEntityException entityEx2) {
+//                    try {
+//                        message = messageDAO.getTweetThirdTry(user.isMale());
+//                    } catch (NoSuchEntityException entityEx3) {
+//                        message = messageDAO.getAnyTweet(user.isMale());
+//                    }
+//                }
+//            }
             postedMessageId = twitterAPI.postTweet(tweetUser.getName(), message.getMessage());
 
             logger.info("tweet successful posted for " + tweetUser.getName() + " with id: " + postedMessageId + " " +
