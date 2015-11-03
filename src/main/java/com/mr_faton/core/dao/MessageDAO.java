@@ -11,10 +11,21 @@ import java.util.List;
  * Created by Mr_Faton on 18.09.2015.
  */
 public interface MessageDAO {
-    Message getTweet(boolean male, String ownerName, Calendar minCalendar, Calendar maxCalendar)
+    //Get Tweet
+    Message getTweet(boolean ownerMale) throws SQLException, NoSuchEntityException;
+
+    Message getTweet(boolean ownerMale, Calendar minCalendar, Calendar maxCalendar)
+            throws SQLException, NoSuchEntityException;
+
+    Message getTweet(String ownerName) throws SQLException, NoSuchEntityException;
+
+    Message getTweet(String ownerName, Calendar minCalendar, Calendar maxCalendar)
         throws SQLException, NoSuchEntityException;
-    Message getMention(boolean tweet, boolean male, String ownerName, String recipientName,
-                       Calendar minCalendar, Calendar maxCalendar) throws SQLException, NoSuchEntityException;
+
+
+    //Get Mention
+    Message getMention(boolean ownerMale, boolean recipientMale, Calendar minCalendar, Calendar maxCalendar)
+            throws SQLException, NoSuchEntityException;
 
 
 

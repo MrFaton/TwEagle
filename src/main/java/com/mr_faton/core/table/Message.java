@@ -3,10 +3,15 @@ package com.mr_faton.core.table;
 import java.util.Date;
 
 /**
- * Created by Mr_Faton on 18.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 18.09.2015
+ * @version 1.0
  */
 public class Message {
     private int id;
+
     private String message;
 
     private String owner;

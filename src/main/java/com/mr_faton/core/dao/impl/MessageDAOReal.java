@@ -3,12 +3,18 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
+import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -19,6 +25,7 @@ import java.util.List;
  * @version 1.0
  * @since 20.09.2015
  */
+@Transactional(propagation = Propagation.SUPPORTS)
 public class MessageDAOReal implements MessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.MessageDAOReal");
@@ -26,336 +33,262 @@ public class MessageDAOReal implements MessageDAO {
             "INSERT INTO tweagle.messages (message, owner_id, recipient_id, posted_date, synonymized, posted) " +
             "VALUES (?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.messages SET synonymized = ?, posted = ? WHERE id = ?;";
+            "UPDATE tweagle.messages SET message = ?, synonymized = ?, posted = ? WHERE id = ?;";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    //Get Tweet
     @Override
-    public Message getTweet(boolean male, String ownerName, Calendar minCalendar, Calendar maxCalendar)
+    public Message getTweet(boolean ownerMale) throws SQLException, NoSuchEntityException {
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
+                "WHERE recipient_id IS NULL AND du_male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
+        try {
+            return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
+                    "ownerMale = '" + ownerMale + "'", emptyData);
+        }
+    }
+
+    @Override
+    public Message getTweet(final boolean ownerMale, final Calendar minCalendar, final Calendar maxCalendar)
             throws SQLException, NoSuchEntityException {
-        StringBuilder builtSQL = new StringBuilder();
-        builtSQL.append("SELECT ");
-        builtSQL.append("messages.id, messages.message, messages.synonymized, messages.posted, ");
-        builtSQL.append("du_name AS 'donor_name', du_male AS 'donor_male' ");
-        if (ownerName == null) {
-            builtSQL.append("FROM tweagle.messages, tweagle.donor_users donor ");
-        } else {
-            builtSQL.append("FROM tweagle.messages INNER JOIN donor_users donor ON messages.owner_id = donor.du_name ");
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
+                "WHERE recipient_id IS NULL AND du_male = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setBoolean(1, ownerMale);
+                ps.setTimestamp(2, new Timestamp(minCalendar.getTimeInMillis()));
+                ps.setTimestamp(3, new Timestamp(maxCalendar.getTimeInMillis()));
+            }
+        };
+        List<Message> query = jdbcTemplate.query(SQL, pss, new MessageRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
+                    "ownerMale = '" + ownerMale + "', " +
+                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
         }
-        builtSQL.append("WHERE ");
-        if (minCalendar != null && maxCalendar != null) {
-            builtSQL.append("posted_date BETWEEN ");
-            builtSQL.append("'").append(new java.sql.Timestamp(minCalendar.getTimeInMillis())).append("' AND ");
-            builtSQL.append("'").append(new java.sql.Timestamp(maxCalendar.getTimeInMillis())).append("' AND ");
-        }
-        builtSQL.append("recipient_id IS NULL AND donor.du_male = ").append(male ? 1 : 0).append(" ");
-        builtSQL.append("LIMIT 1;");
-
-        System.out.println(builtSQL);
-        return null;
+        return query.get(0);
     }
 
     @Override
-    public Message getMention(boolean tweet, boolean male, String ownerName, String recipientName, Calendar minCalendar, Calendar maxCalendar) throws SQLException, NoSuchEntityException {
-        StringBuilder builtSQL = new StringBuilder();
-        builtSQL.append("SELECT ");
-        builtSQL.append("messages.id, ");
-        builtSQL.append("messages.message, ");
-        builtSQL.append("donor.du_name AS 'donor_name', ");
-        builtSQL.append("donor.du_male AS 'donor_male', ");
-        builtSQL.append("donor.take_messages_date AS 'donor_take_messages_date', ");
-        builtSQL.append("donor.take_following_date AS 'donor_take_following_date', ");
-        builtSQL.append("donor.take_followers_date AS 'donor_take_followers_date' ");
-        builtSQL.append("FROM tweagle.messages ");
-        builtSQL.append("INNER JOIN donor_users donor ON messages.owner_id = donor.du_name");
-
-        return null;
+    public Message getTweet(final String ownerName) throws SQLException, NoSuchEntityException {
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
+                "WHERE recipient_id IS NULL AND du_name = '" + ownerName + "' LIMIT 1;";
+        try {
+            return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
+                    "ownerName = '" + ownerName + "'", emptyData);
+        }
     }
 
-//    @Override
-//    public Message getTweetFirstTry(boolean male) throws SQLException, NoSuchEntityException{
-//        logger.debug("get tweet - First try");
-//        final String SQL = "" +
-//                "SELECT * FROM tweagle.messages WHERE " +
-//                "owner_male = ? AND recipient IS NULL AND posted_date = ? AND synonymized = 1 AND posted = 0 LIMIT 1;";
-//
-//        Calendar calendar = Calendar.getInstance();
-//        Message message = null;
-//
-//
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-//            preparedStatement.setBoolean(1, male);
-//        /*parameter 2 (posted_date) set in for-cycle*/
-//
-//            for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
-//                calendar.add(Calendar.YEAR, -1);
-//                java.sql.Date passedDate = new Date(calendar.getTimeInMillis());
-//
-//                preparedStatement.setDate(2, passedDate);
-//
-//                try(ResultSet resultSet = preparedStatement.executeQuery();) {
-//                    if (resultSet.next()) {
-//                        message = getMessageByResultSet(resultSet);
-//                        logger.info("found tweet at the first try in cycle №" + counter +
-//                                " with date " + String.format("%td-%<tm-%<tY", passedDate));
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        if (message == null) throw new NoSuchEntityException("tweet not found at the first try");
-//        return message;
-//    }
-//    @Override
-//    public Message getTweetSecondTry(boolean male) throws SQLException, NoSuchEntityException {
-//        logger.debug("get tweet - Second Try");
-//        final String SQL = "" +
-//                "SELECT * FROM tweagle.messages WHERE " +
-//                "owner_male = ? AND recipient IS NULL AND posted_date >= ? AND posted_date <= ? AND synonymized = 1 AND " +
-//                "posted = 0 LIMIT 1;";
-//
-//        Message message = null;
-//
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-//            preparedStatement.setBoolean(1, male);
-//        /*3 and 4 parameters (posted_date) set in for-cycle*/
-//
-//            Calendar calendar = Calendar.getInstance();
-//            for (int counter = 0; counter < DEEP_YEARS_SEARCH; counter++) {
-//                calendar.add(Calendar.YEAR, -1);
-//
-//                Calendar minDay = Calendar.getInstance();
-//                Calendar maxDay = Calendar.getInstance();
-//
-//                minDay.setTimeInMillis(calendar.getTimeInMillis());
-//                maxDay.setTimeInMillis(calendar.getTimeInMillis());
-//
-//                for (int doubleCounter = 0; doubleCounter < DEEP_DAYS_SEARCH; doubleCounter++) {
-//                    minDay.add(Calendar.DAY_OF_MONTH, -1);
-//                    maxDay.add(Calendar.DAY_OF_MONTH, 1);
-//
-//                    java.sql.Date passedMinDay = new Date(minDay.getTimeInMillis());
-//                    java.sql.Date passedMaxDay = new Date(maxDay.getTimeInMillis());
-//
-//                    preparedStatement.setDate(2, passedMinDay);
-//                    preparedStatement.setDate(3, passedMaxDay);
-//
-//                    try(ResultSet resultSet = preparedStatement.executeQuery()) {
-//                        if (resultSet.next()) {
-//                            message = getMessageByResultSet(resultSet);
-//                            logger.info("found tweet at the second try in general cycle №" + counter +
-//                                    " and inner cycle №" + doubleCounter + " between dates " +
-//                                    String.format("%td-%<tm-%<tY", passedMinDay) + " " +
-//                                    "and " +
-//                                    String.format("%td-%<tm-%<tY", passedMaxDay));
-//                            break;
-//                        }
-//                    }
-//                }
-//                if (message != null) {
-//                    break;
-//                }
-//            }
-//        }
-//        if (message == null) throw new NoSuchEntityException("tweet not found at the second try");
-//        return message;
-//    }
-//    @Override
-//    public Message getTweetThirdTry(boolean male) throws SQLException, NoSuchEntityException {
-//        logger.debug("get tweet - Third try");
-//        final String SQL = "" +
-//                "SELECT * FROM tweagle.messages WHERE " +
-//                "owner_male = ? AND recipient IS NULL AND synonymized = 1 AND posted = 0 LIMIT 1;";
-//
-//        Message message = null;
-//
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-//            preparedStatement.setBoolean(1, male);
-//            try(ResultSet resultSet = preparedStatement.executeQuery()) {
-//                if (resultSet.next()) {
-//                    message = getMessageByResultSet(resultSet);
-//                    logger.info("found tweet at the third try, date " +
-//                            String.format("%td-%<tm-%<tY", message.getPostedDate()));
-//                }
-//            }
-//        }
-//        if (message == null) throw new NoSuchEntityException("tweet not found at the third try");
-//        return message;
-//    }
-//    @Override
-//    public Message getAnyTweet(boolean male) throws SQLException {
-//        logger.debug("get tweet - any");
-//        final String SQL = "" +
-//                "SELECT * FROM tweagle.messages WHERE owner_male = ? AND recipient IS NULL LIMIT 1;";
-//
-//        Message message = null;
-//
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-//            preparedStatement.setBoolean(1, male);
-//            try(ResultSet resultSet = preparedStatement.executeQuery()) {
-//                if (resultSet.next()) {
-//                    message = getMessageByResultSet(resultSet);
-//                    logger.info("found tweet like any twitter message, date " +
-//                            String.format("%td-%<tm-%<tY", message.getPostedDate()));
-//                }
-//            }
-//
-//        }
-//        return message;
-//    }
-//
-//
+    @Override
+    public Message getTweet(final String ownerName, final Calendar minCalendar, final Calendar maxCalendar)
+            throws SQLException, NoSuchEntityException {
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male' " +
+                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
+                "WHERE recipient_id IS NULL AND du_name = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, ownerName);
+                ps.setTimestamp(2, new Timestamp(minCalendar.getTimeInMillis()));
+                ps.setTimestamp(3, new Timestamp(maxCalendar.getTimeInMillis()));
+            }
+        };
+        List<Message> query = jdbcTemplate.query(SQL, pss, new MessageRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
+                    "ownerName = '" + ownerName + "', " +
+                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
+        }
+        return query.get(0);
+    }
+
+
+
+    //Get Mention
+    @Override
+    public Message getMention(
+            final boolean ownerMale, final boolean recipientMale, final Calendar minCalendar, final Calendar maxCalendar)
+            throws SQLException, NoSuchEntityException {
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "owner.du_name AS 'owner', owner.du_male AS 'owner_male', " +
+                "recipient.du_name AS 'recipient', recipient.du_male AS 'recipient_male' " +
+                "FROM tweagle.messages " +
+                "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
+                "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
+                "WHERE owner.du_male = ? AND recipient.du_male = ? AND  posted_date BETWEEN ? AND ? LIMIT 1;";
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setBoolean(1, ownerMale);
+                ps.setBoolean(2, recipientMale);
+                ps.setTimestamp(3, new Timestamp(minCalendar.getTimeInMillis()));
+                ps.setTimestamp(4, new Timestamp(maxCalendar.getTimeInMillis()));
+            }
+        };
+
+        List<Message> query = jdbcTemplate.query(SQL, pss, new MessageRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("it's seems no mention found with parameters: " +
+                    "ownerMale = '" + ownerMale + "', " +
+                    "recipientMale = '" + recipientMale + "', " +
+                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
+        }
+        return query.get(0);
+    }
+
+
     @Override
     public List<Message> getUnSynonymizedMessages(int limit) throws SQLException, NoSuchEntityException {
-//        logger.debug("get UnSynonymized Messages");
-//        final String SQL = "" +
-//                "SELECT * FROM tweagle.messages WHERE synonymized = 0 LIMIT " + limit + ";";
-//        Connection connection = dataSource.getConnection();
-//        try(Statement statement = connection.createStatement();
-//            ResultSet resultSet = statement.executeQuery(SQL)) {
-//            List<Message> unsynonymizedMessages = new ArrayList<>();
-//            while (resultSet.next()) {
-//                unsynonymizedMessages.add(getMessageByResultSet(resultSet));
-//            }
-//            if (unsynonymizedMessages.isEmpty()) throw new NoSuchEntityException("no unsynonymized messages");
-//            return unsynonymizedMessages;
-//        }
-        return null;
+        logger.debug("get " + limit + " unsynonymized messages");
+        final String SQL = "" +
+                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+                "owner.du_name AS 'owner', owner.du_male AS 'owner_male', " +
+                "recipient.du_name AS 'recipient', recipient.du_male AS 'recipient_male' " +
+                "FROM tweagle.messages " +
+                "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
+                "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
+                "WHERE messages.synonymized = 0 LIMIT " + limit + ";";
+        List<Message> query = jdbcTemplate.query(SQL, new MessageRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("it's seems no unsynonymized messages found");
+        }
+        return query;
     }
-//
-//    private Message getMessageByResultSet(final ResultSet resultSet) throws SQLException{
-//        Message message = new Message();
-//
-//        message.setId(resultSet.getInt("id"));
-//        message.setMessage(resultSet.getString("message"));
-//
-//        message.setOwner(resultSet.getString("owner"));
-//        message.setOwnerMale(resultSet.getBoolean("owner_male"));
-//
-//        message.setRecipient(resultSet.getString("recipient"));
-//        message.setRecipientMale(resultSet.getBoolean("recipient_male"));
-//
-//        message.setPostedDate(resultSet.getDate("posted_date"));
-//
-//        message.setSynonymized(resultSet.getBoolean("synonymized"));
-//        message.setPosted(resultSet.getBoolean("posted"));
-//
-//        return message;
-//    }
 
 
     // INSERTS - UPDATES
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(Message message) throws SQLException {
-//        logger.info("save message " + message);
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-//            preparedStatement.setString(1, message.getMessage());
-//            preparedStatement.setString(2, message.getOwner());
-//            preparedStatement.setBoolean(3, message.isOwnerMale());
-//            if (message.getRecipient() != null) {
-//                preparedStatement.setString(4, message.getRecipient());
-//                preparedStatement.setBoolean(5, message.isRecipientMale());
-//            } else {
-//                preparedStatement.setNull(4, Types.VARCHAR);
-//                preparedStatement.setNull(5, Types.BOOLEAN);
-//            }
-//            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
-//            preparedStatement.setBoolean(7, message.isSynonymized());
-//            preparedStatement.setBoolean(8, message.isPosted());
-//
-//            preparedStatement.executeUpdate();
-//        }
+    public void save(final Message message) throws SQLException {
+        logger.info("save message " + message);
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, message.getMessage());
+                ps.setString(2, message.getOwner());
+                if (message.getRecipient() == null) {
+                    ps.setNull(3, Types.VARCHAR);
+                } else {
+                    ps.setString(3, message.getRecipient());
+                }
+                ps.setTimestamp(4, new Timestamp(message.getPostedDate().getTime()));
+                ps.setBoolean(5, message.isSynonymized());
+                ps.setBoolean(6, message.isPosted());
+            }
+        };
+        jdbcTemplate.update(SQL_SAVE, pss);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(List<Message> messageList) throws SQLException {
-//        logger.info("save " + messageList.size() + " messages");
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-//            for (Message message : messageList) {
-//                preparedStatement.setString(1, message.getMessage());
-//                preparedStatement.setString(2, message.getOwner());
-//                preparedStatement.setBoolean(3, message.isOwnerMale());
-//                if (message.getRecipient() != null) {
-//                    preparedStatement.setString(4, message.getRecipient());
-//                } else {
-//                    preparedStatement.setNull(4, Types.VARCHAR);
-//                }
-//                preparedStatement.setNull(5, Types.BOOLEAN);
-//                preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
-//                preparedStatement.setBoolean(7, message.isSynonymized());
-//                preparedStatement.setBoolean(8, message.isPosted());
-//
-//                preparedStatement.addBatch();
-//            }
-//            preparedStatement.executeBatch();
-//        }
+    public void save(final List<Message> messageList) throws SQLException {
+        logger.info("save " + messageList.size() + " messages");
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Message message = messageList.get(i);
+
+                ps.setString(1, message.getMessage());
+                ps.setString(2, message.getOwner());
+                if (message.getRecipient() == null) {
+                    ps.setNull(3, Types.VARCHAR);
+                } else {
+                    ps.setString(3, message.getRecipient());
+                }
+                ps.setTimestamp(4, new Timestamp(message.getPostedDate().getTime()));
+                ps.setBoolean(5, message.isSynonymized());
+                ps.setBoolean(6, message.isPosted());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return messageList.size();
+            }
+        };
+        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void update(Message message) throws SQLException {
-//        logger.info("update message " + message);
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-//            preparedStatement.setString(1, message.getMessage());
-//            preparedStatement.setString(2, message.getOwner());
-//            preparedStatement.setBoolean(3, message.isOwnerMale());
-//            if (message.getRecipient() != null) {
-//                preparedStatement.setString(4, message.getRecipient());
-//                preparedStatement.setBoolean(5, message.isRecipientMale());
-//            } else {
-//                preparedStatement.setNull(4, Types.VARCHAR);
-//                preparedStatement.setNull(5, Types.BOOLEAN);
-//            }
-//            preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
-//            preparedStatement.setBoolean(7, message.isSynonymized());
-//            preparedStatement.setBoolean(8, message.isPosted());
-//            preparedStatement.setInt(9, message.getId());
-//
-//            preparedStatement.executeUpdate();
-//        }
+    public void update(final Message message) throws SQLException {
+        logger.info("update message " + message);
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, message.getMessage());
+                ps.setBoolean(2, message.isSynonymized());
+                ps.setBoolean(3, message.isPosted());
+                ps.setInt(4, message.getId());
+            }
+        };
+        jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void update(List<Message> messageList) throws SQLException {
-//        logger.info("update " + messageList.size() + " messages");
-//        Connection connection = dataSource.getConnection();
-//        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-//            for (Message message : messageList) {
-//                preparedStatement.setString(1, message.getMessage());
-//                preparedStatement.setString(2, message.getOwner());
-//                preparedStatement.setBoolean(3, message.isOwnerMale());
-//                if (message.getRecipient() != null) {
-//                    preparedStatement.setString(4, message.getRecipient());
-//                    preparedStatement.setBoolean(5, message.isRecipientMale());
-//                } else {
-//                    preparedStatement.setNull(4, Types.VARCHAR);
-//                    preparedStatement.setNull(5, Types.BOOLEAN);
-//                }
-//                preparedStatement.setDate(6, new java.sql.Date(message.getPostedDate().getTime()));
-//                preparedStatement.setBoolean(7, message.isSynonymized());
-//                preparedStatement.setBoolean(8, message.isPosted());
-//                preparedStatement.setInt(9, message.getId());
-//
-//                preparedStatement.addBatch();
-//            }
-//            preparedStatement.executeBatch();
-//        }
+    public void update(final List<Message> messageList) throws SQLException {
+        logger.info("update " + messageList.size() + " messages");
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Message message = messageList.get(i);
+
+                ps.setString(1, message.getMessage());
+                ps.setBoolean(2, message.isSynonymized());
+                ps.setBoolean(3, message.isPosted());
+                ps.setInt(4, message.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return messageList.size();
+            }
+        };
+        jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
 
-    public static void main(String[] args) throws SQLException, NoSuchEntityException {
-        Calendar minCal = Calendar.getInstance();
-        minCal.add(Calendar.DAY_OF_MONTH, -20);
+    class MessageRowMapper implements RowMapper<Message> {
+        @Override
+        public Message mapRow(ResultSet resultSet, int roeNum) throws SQLException {
+            Message message = new Message();
 
-        MessageDAOReal messageDAOReal = new MessageDAOReal();
-        messageDAOReal.getTweet(true, null, null, null);
-//        messageDAOReal.getTweet(true, "Tony", minCal, Calendar.getInstance());
+        message.setId(resultSet.getInt("id"));
+        message.setMessage(resultSet.getString("message"));
+
+        message.setOwner(resultSet.getString("owner"));
+        message.setOwnerMale(resultSet.getBoolean("owner_male"));
+
+        message.setRecipient(resultSet.getString("recipient"));
+        message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+
+        message.setPostedDate(resultSet.getTimestamp("posted_date"));
+
+        message.setSynonymized(resultSet.getBoolean("synonymized"));
+        message.setPosted(resultSet.getBoolean("posted"));
+
+        return message;
+        }
     }
 }
