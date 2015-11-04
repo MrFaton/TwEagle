@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -88,11 +87,11 @@ public class UserDAORealTest {
     @Test
     public void test() throws Exception {
         String SQL = "" +
-                "SELECT * FROM tweagle.users;";
+                "SELECT * FROM users;";
         DBFiller dbFiller = (DBFiller) AppContext.getBeanByName("dbFiller");
         dbFiller.fill("/sql/testData/users_test_data_set.xml");
-//        List<Map<String, Object>> maps = JDBC_TEMPLATE.queryForList(SQL);
-//        System.out.println(maps.get(0).get("u_name"));
+        List<Map<String, Object>> maps = JDBC_TEMPLATE.queryForList(SQL);
+        System.out.println(maps.get(0).get("name"));
     }
 
 

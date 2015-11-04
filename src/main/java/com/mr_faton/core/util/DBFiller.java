@@ -8,15 +8,11 @@ import org.dbunit.operation.DatabaseOperation;
 import org.dbunit.util.fileloader.FullXmlDataFileLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 
 /**
  * Description
@@ -29,19 +25,15 @@ public class DBFiller {
     @Qualifier(value = "dataSourceTest")
     private DataSource dataSource;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void fill(String xmlDataFileName) throws DatabaseUnitException, SQLException {
-        Connection connect= null;
-        try {
-            connect = DataSourceUtils.getConnection(dataSource);
-            IDatabaseConnection dbUnitConnect = new DatabaseConnection(connect);
-            FullXmlDataFileLoader loader = new FullXmlDataFileLoader();
-            IDataSet xmlDataSet = loader.load(xmlDataFileName);
-            System.out.println(Arrays.toString(xmlDataSet.getTableNames()));
+        IDatabaseConnection iDatabaseConnection = new DatabaseConnection(dataSource.getConnection());
+        FullXmlDataFileLoader loader = new FullXmlDataFileLoader();
+        IDataSet iDataSet = loader.load(xmlDataFileName);
 
-            DatabaseOperation insert = DatabaseOperation.INSERT;
-            insert.execute(dbUnitConnect, xmlDataSet);
-        } finally {
-            DataSourceUtils.releaseConnection(connect, dataSource);
-        }
+
+
+//        System.out.println(iDatabaseConnection.getSchema());
+        DatabaseOperation.CLEAN_INSERT.execute(iDatabaseConnection, iDataSet);
     }
 }

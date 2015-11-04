@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataset>
     <table name="users">
-    <column>u_name</column>
+    <column>name</column>
     <column>password</column>
     <column>email</column>
-    <column>u_male</column>
+    <column>male</column>
     <column>creation_date</column>
 
     <column>messages</column>
@@ -18,7 +18,7 @@
         <row>
             <value>Toomba</value>
             <value>pass</value>
-            <value>email</value>
+            <value>emaillll</value>
             <value>1</value>
             <value>2015-10-12</value>
 

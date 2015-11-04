@@ -5,8 +5,6 @@ import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.table.Message;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -15,6 +13,7 @@ import util.Counter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -30,19 +29,19 @@ public class MessageDAORealTest {
     private static final MessageDAO MESSAGE_DAO = (MessageDAO) AppContext.getBeanByName("messageDAO");
     private static final DonorUserDAO DONOR_USER_DAO = (DonorUserDAO) AppContext.getBeanByName("donorUserDAO");
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String DELETE_FROM_MESSAGES_SQL = "" +
-                "DELETE FROM tweagle.messages WHERE owner_id LIKE 'MessageDAOReal%';";
-        final String DELETE_FROM_DONOR_USERS_SQL = "" +
-                "DELETE FROM tweagle.donor_users WHERE du_name LIKE 'MessageDAOReal%';";
-        JDBC_TEMPLATE.update(DELETE_FROM_MESSAGES_SQL);
-        JDBC_TEMPLATE.update(DELETE_FROM_DONOR_USERS_SQL);
-    }
+//    @AfterClass
+//    public static void tearDown() throws Exception {
+//        final String DELETE_FROM_MESSAGES_SQL = "" +
+//                "DELETE FROM tweagle.messages WHERE owner_id LIKE 'MessageDAOReal%';";
+//        final String DELETE_FROM_DONOR_USERS_SQL = "" +
+//                "DELETE FROM tweagle.donor_users WHERE du_name LIKE 'MessageDAOReal%';";
+//        JDBC_TEMPLATE.update(DELETE_FROM_MESSAGES_SQL);
+//        JDBC_TEMPLATE.update(DELETE_FROM_DONOR_USERS_SQL);
+//    }
 
     @Test
     public void getTweetByOwnerMale() throws Exception {
-
+        MESSAGE_DAO.getMention(true, true, Calendar.getInstance(), Calendar.getInstance());
     }
 
     @Test

@@ -1,10 +1,10 @@
-DROP TABLE IF EXISTS tweagle.users;
-CREATE TABLE tweagle.users (
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
 
-  u_name              VARCHAR(25) NOT NULL,
+  name              VARCHAR(25) NOT NULL,
   password            VARCHAR(15) NOT NULL,
   email               VARCHAR(45) NOT NULL,
-  u_male              BOOLEAN     NOT NULL,
+  male              BOOLEAN     NOT NULL,
   creation_date       DATE        NOT NULL,
 
   messages            INT         NOT NULL DEFAULT 0,
@@ -15,5 +15,5 @@ CREATE TABLE tweagle.users (
   consumer_secret     VARCHAR(70) NOT NULL DEFAULT '',
   access_token        VARCHAR(70) NOT NULL DEFAULT '',
   access_token_secret VARCHAR(70) NOT NULL DEFAULT '',
-  PRIMARY KEY (u_name)
+  PRIMARY KEY (name)
 );
