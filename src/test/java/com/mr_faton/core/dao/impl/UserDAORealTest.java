@@ -3,16 +3,14 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
-import org.junit.AfterClass;
+import com.mr_faton.core.util.DBFiller;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Description
@@ -27,13 +25,13 @@ public class UserDAORealTest {
     private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
 
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String SQL = "" +
-                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
-
-        JDBC_TEMPLATE.update(SQL);
-    }
+//    @AfterClass
+//    public static void tearDown() throws Exception {
+//        final String SQL = "" +
+//                "DELETE FROM tweagle.users WHERE name LIKE 'UserDAOReal%';";
+//
+//        JDBC_TEMPLATE.update(SQL);
+//    }
 
 
 
@@ -87,6 +85,16 @@ public class UserDAORealTest {
         USER_DAO.update(userList);
     }
 
+    @Test
+    public void test() throws Exception {
+        String SQL = "" +
+                "SELECT * FROM tweagle.users;";
+        DBFiller dbFiller = (DBFiller) AppContext.getBeanByName("dbFiller");
+        dbFiller.fill("/sql/testData/users_test_data_set.xml");
+//        List<Map<String, Object>> maps = JDBC_TEMPLATE.queryForList(SQL);
+//        System.out.println(maps.get(0).get("u_name"));
+    }
+
 
     private User createDefaultUser() {
         User user = new User();
@@ -106,4 +114,5 @@ public class UserDAORealTest {
 
         return user;
     }
+
 }

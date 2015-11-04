@@ -3,13 +3,13 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
-           http://www.springframework.org/schema/beans
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/tx
            http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
     <tx:annotation-driven transaction-manager="transactionManager"/>
     <context:annotation-config/>
@@ -30,16 +30,34 @@
         <property name="idleConnectionTestPeriodInSeconds" value="300"/>
     </bean>
 
+    <!-- DataSource for testing-->
+    <bean id="dataSourceTest" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:mem:tweagle;MODE=MySql;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+    <jdbc:initialize-database  data-source="dataSourceTest">
+        <jdbc:script location="classpath:sql/1 Create DB.sql"/>
+        <jdbc:script location="classpath:sql/2 Create table - users.sql"/>
+        <jdbc:script location="classpath:sql/3 Create table - donor_users.sql"/>
+        <jdbc:script location="classpath:sql/4 Create table - messages.sql"/>
+    </jdbc:initialize-database>
+
+    <bean id="dbFiller" class="com.mr_faton.core.util.DBFiller"/>
+
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource" ref="dataSource"/>
+        <!--<property name="dataSource" ref="dataSource"/>-->
+        <property name="dataSource" ref="dataSourceTest"/>
     </bean>
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>
+        <!--<property name="dataSource" ref="dataSource"/>-->
+        <property name="dataSource" ref="dataSourceTest"/>
     </bean>
 
 
-     <!--DAO -->
+    <!--DAO -->
     <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
     <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal"/>
     <bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal"/>
@@ -92,5 +110,8 @@
     <!--<bean id="twEagle" class="com.mr_faton.TwEagle">-->
     <!--<constructor-arg name="taskManager" ref="taskManager"/>-->
     <!--</bean>-->
+
+
+    <!-- For Testing-->
 
 </beans>
