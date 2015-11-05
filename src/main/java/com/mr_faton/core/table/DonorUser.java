@@ -68,8 +68,15 @@ public class DonorUser {
 //        return !(takeFollowersDate != null ? !takeFollowersDate.equals(donorUser.takeFollowersDate) : donorUser.takeFollowersDate != null);
 
         if (takeMessageDate != null && donorUser.takeMessageDate != null) {
-            if (donorUser.takeMessageDate.compareTo(takeMessageDate) == 0) return true;
-        } else {return false}
+            if (donorUser.takeMessageDate.compareTo(takeMessageDate) == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
     }
 
     @Override
