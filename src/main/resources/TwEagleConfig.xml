@@ -14,40 +14,28 @@
     <tx:annotation-driven transaction-manager="transactionManager"/>
     <context:annotation-config/>
 
-    <!--<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">-->
-        <!--<property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
-        <!--<property name="jdbcUrl" value="jdbc:mysql://127.0.0.1:3306/tweagle"/>-->
-        <!--<property name="username" value="Mr_Faton"/>-->
-        <!--<property name="password" value="123"/>-->
-        <!--<property name="idleConnectionTestPeriodInMinutes" value="60"/>-->
-        <!--<property name="idleMaxAgeInMinutes" value="30"/>-->
-        <!--<property name="maxConnectionsPerPartition" value="4"/>-->
-        <!--<property name="minConnectionsPerPartition" value="1"/>-->
-        <!--<property name="partitionCount" value="2"/>-->
-        <!--<property name="acquireIncrement" value="2"/>-->
-        <!--<property name="statementsCacheSize" value="100"/>-->
-        <!--<property name="connectionTestStatement" value="SELECT 1;"/>-->
-        <!--<property name="idleConnectionTestPeriodInSeconds" value="300"/>-->
-    <!--</bean>-->
-
-    <!-- DataSource for testing-->
-    <jdbc:embedded-database id="dataSourceTest" type="H2">
-        <jdbc:script location="sql/1 Create DB.sql"/>
-        <jdbc:script location="sql/2 Create table - users.sql"/>
-        <jdbc:script location="sql/3 Create table - donor_users.sql"/>
-        <jdbc:script location="sql/4 Create table - messages.sql"/>
-    </jdbc:embedded-database>
-
-    <bean id="dbFiller" class="com.mr_faton.core.util.DBFiller"/>
+    <bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://127.0.0.1:3306/tweagle"/>
+        <property name="username" value="Mr_Faton"/>
+        <property name="password" value="123"/>
+        <property name="idleConnectionTestPeriodInMinutes" value="60"/>
+        <property name="idleMaxAgeInMinutes" value="30"/>
+        <property name="maxConnectionsPerPartition" value="4"/>
+        <property name="minConnectionsPerPartition" value="1"/>
+        <property name="partitionCount" value="2"/>
+        <property name="acquireIncrement" value="2"/>
+        <property name="statementsCacheSize" value="100"/>
+        <property name="connectionTestStatement" value="SELECT 1;"/>
+        <property name="idleConnectionTestPeriodInSeconds" value="300"/>
+    </bean>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <!--<property name="dataSource" ref="dataSource"/>-->
-        <property name="dataSource" ref="dataSourceTest"/>
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <!--<property name="dataSource" ref="dataSource"/>-->
-        <property name="dataSource" ref="dataSourceTest"/>
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
 
@@ -105,7 +93,5 @@
     <!--<constructor-arg name="taskManager" ref="taskManager"/>-->
     <!--</bean>-->
 
-
-    <!-- For Testing-->
 
 </beans>

@@ -3,13 +3,15 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
-import com.mr_faton.core.util.DBFiller;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Description
@@ -84,15 +86,6 @@ public class UserDAORealTest {
         USER_DAO.update(userList);
     }
 
-    @Test
-    public void test() throws Exception {
-        String SQL = "" +
-                "SELECT * FROM users;";
-        DBFiller dbFiller = (DBFiller) AppContext.getBeanByName("dbFiller");
-        dbFiller.fill("/sql/testData/users_test_data_set.xml");
-        List<Map<String, Object>> maps = JDBC_TEMPLATE.queryForList(SQL);
-        System.out.println(maps.get(0).get("name"));
-    }
 
 
     private User createDefaultUser() {

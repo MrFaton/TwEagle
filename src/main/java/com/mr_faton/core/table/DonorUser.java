@@ -51,6 +51,37 @@ public class DonorUser {
         this.takeFollowersDate = takeFollowersDate;
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DonorUser donorUser = (DonorUser) o;
+
+        if (male != donorUser.male) return false;
+//        if (!name.equals(donorUser.name)) return false;
+//        if (takeMessageDate != null ? !takeMessageDate.equals(donorUser.takeMessageDate) : donorUser.takeMessageDate != null)
+//            return false;
+//        if (takeFollowingDate != null ? !takeFollowingDate.equals(donorUser.takeFollowingDate) : donorUser.takeFollowingDate != null)
+//            return false;
+//        return !(takeFollowersDate != null ? !takeFollowersDate.equals(donorUser.takeFollowersDate) : donorUser.takeFollowersDate != null);
+
+        if (takeMessageDate != null && donorUser.takeMessageDate != null) {
+            if (donorUser.takeMessageDate.compareTo(takeMessageDate) == 0) return true;
+        } else {return false}
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (male ? 1 : 0);
+        result = 31 * result + (takeMessageDate != null ? takeMessageDate.hashCode() : 0);
+        result = 31 * result + (takeFollowingDate != null ? takeFollowingDate.hashCode() : 0);
+        result = 31 * result + (takeFollowersDate != null ? takeFollowersDate.hashCode() : 0);
+        return result;
+    }
+
     @Override
     public String toString() {
         return name;

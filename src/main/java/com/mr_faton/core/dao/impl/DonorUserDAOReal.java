@@ -23,20 +23,20 @@ import java.util.List;
  * @version 1.0
  * @since 09.10.2015
  */
+@Transactional(propagation = Propagation.SUPPORTS)
 public class DonorUserDAOReal implements DonorUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT IGNORE INTO tweagle.donor_users (du_name, du_male, take_messages_date, " +
+            "INSERT IGNORE INTO tweagle.donor_users (du_name, male, take_messages_date, " +
             "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +
-            "WHERE name = ?;";
+            "WHERE du_name = ?;";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get donorUser for parse messages");
@@ -49,12 +49,13 @@ public class DonorUserDAOReal implements DonorUserDAO {
         }
     }
 
+    @Deprecated
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteUser(final String donorUserName) throws SQLException {
         logger.debug("delete donor user " + donorUserName);
         final String SQL = "" +
-                "DELETE FROM tweagle.donor_users WHERE name = '" + donorUserName + "';";
+                "DELETE FROM tweagle.donor_users WHERE du_name = '" + donorUserName + "';";
         jdbcTemplate.update(SQL);
     }
 
@@ -199,18 +200,17 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
+}
 
-
-    class DonorUserRowMapper implements RowMapper<DonorUser> {
-        @Override
-        public DonorUser mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
-            DonorUser donorUser = new DonorUser();
-            donorUser.setName(resultSet.getString("donor_name"));
-            donorUser.setMale(resultSet.getBoolean("is_male"));
-            donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
-            donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
-            donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
-            return donorUser;
-        }
+class DonorUserRowMapper implements RowMapper<DonorUser> {
+    @Override
+    public DonorUser mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
+        DonorUser donorUser = new DonorUser();
+        donorUser.setName(resultSet.getString("du_name"));
+        donorUser.setMale(resultSet.getBoolean("male"));
+        donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
+        donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
+        donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
+        return donorUser;
     }
 }
