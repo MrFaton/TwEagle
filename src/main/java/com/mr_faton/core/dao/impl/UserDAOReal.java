@@ -13,8 +13,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Serializable;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,18 +25,18 @@ import java.util.List;
  * @version 1.0
  * @since 28.09.2015
  */
-public class UserDAOReal implements UserDAO, Serializable {
+@Transactional(propagation = Propagation.SUPPORTS)
+public class UserDAOReal implements UserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.UserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.users " +
-            "(name, password, email, male, creation_date, messages, following, followers, " +
+            "INSERT IGNORE INTO tweagle.users " +
+            "(u_name, u_password, email, male, creation_date, messages, following, followers, " +
             "consumer_key, consumer_secret, access_token, access_token_secret) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.users SET password = ?, email = ?, male = ?, creation_date = ?, " +
-            "messages = ?, following = ?, followers = ?, consumer_key = ?, consumer_secret = ?, access_token = ?, " +
-            "access_token_secret = ? WHERE name = ?;";
+            "UPDATE tweagle.users SET u_password = ?, email = ?, messages = ?, following = ?, followers = ?, " +
+            "consumer_key = ?, consumer_secret = ?, access_token = ?, access_token_secret = ? WHERE u_name = ?;";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -48,7 +46,7 @@ public class UserDAOReal implements UserDAO, Serializable {
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
         logger.debug("get user by name " + name);
         final String SQL = "" +
-                "SELECT * FROM tweagle.users WHERE name = ?;";
+                "SELECT * FROM tweagle.users WHERE u_name = ?;";
         try {
             return jdbcTemplate.queryForObject(SQL, new Object[]{name}, new UserRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -135,16 +133,14 @@ public class UserDAOReal implements UserDAO, Serializable {
             public void setValues(PreparedStatement pS) throws SQLException {
                 pS.setString(1, user.getPassword());
                 pS.setString(2, user.getEmail());
-                pS.setBoolean(3, user.isMale());
-                pS.setDate(4, new Date(user.getCreationDate().getTime()));
-                pS.setInt(5, user.getMessages());
-                pS.setInt(6, user.getFollowing());
-                pS.setInt(7, user.getFollowers());
-                pS.setString(8, user.getConsumerKey());
-                pS.setString(9, user.getConsumerSecret());
-                pS.setString(10, user.getAccessToken());
-                pS.setString(11, user.getAccessTokenSecret());
-                pS.setString(12, user.getName());
+                pS.setInt(3, user.getMessages());
+                pS.setInt(4, user.getFollowing());
+                pS.setInt(5, user.getFollowers());
+                pS.setString(6, user.getConsumerKey());
+                pS.setString(7, user.getConsumerSecret());
+                pS.setString(8, user.getAccessToken());
+                pS.setString(9, user.getAccessTokenSecret());
+                pS.setString(10, user.getName());
             }
         };
         jdbcTemplate.update(SQL_UPDATE, pss);
@@ -161,16 +157,14 @@ public class UserDAOReal implements UserDAO, Serializable {
 
                 pS.setString(1, user.getPassword());
                 pS.setString(2, user.getEmail());
-                pS.setBoolean(3, user.isMale());
-                pS.setDate(4, new Date(user.getCreationDate().getTime()));
-                pS.setInt(5, user.getMessages());
-                pS.setInt(6, user.getFollowing());
-                pS.setInt(7, user.getFollowers());
-                pS.setString(8, user.getConsumerKey());
-                pS.setString(9, user.getConsumerSecret());
-                pS.setString(10, user.getAccessToken());
-                pS.setString(11, user.getAccessTokenSecret());
-                pS.setString(12, user.getName());
+                pS.setInt(3, user.getMessages());
+                pS.setInt(4, user.getFollowing());
+                pS.setInt(5, user.getFollowers());
+                pS.setString(6, user.getConsumerKey());
+                pS.setString(7, user.getConsumerSecret());
+                pS.setString(8, user.getAccessToken());
+                pS.setString(9, user.getAccessTokenSecret());
+                pS.setString(10, user.getName());
             }
 
             @Override
@@ -180,24 +174,24 @@ public class UserDAOReal implements UserDAO, Serializable {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
+}
 
-    class UserRowMapper implements RowMapper<User> {
-        @Override
-        public User mapRow(ResultSet resultSet, int rowNamber) throws SQLException {
-            User user = new User();
-            user.setName(resultSet.getString("name"));
-            user.setPassword(resultSet.getString("password"));
-            user.setEmail(resultSet.getString("email"));
-            user.setMale(resultSet.getBoolean("male"));
-            user.setCreationDate(resultSet.getDate("creation_date"));
-            user.setMessages(resultSet.getInt("messages"));
-            user.setFollowing(resultSet.getInt("following"));
-            user.setFollowers(resultSet.getInt("followers"));
-            user.setConsumerKey(resultSet.getString("consumer_key"));
-            user.setConsumerSecret(resultSet.getString("consumer_secret"));
-            user.setAccessToken(resultSet.getString("access_token"));
-            user.setAccessTokenSecret(resultSet.getString("access_token_secret"));
-            return user;
-        }
+class UserRowMapper implements RowMapper<User> {
+    @Override
+    public User mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
+        User user = new User();
+        user.setName(resultSet.getString("u_name"));
+        user.setPassword(resultSet.getString("u_password"));
+        user.setEmail(resultSet.getString("email"));
+        user.setMale(resultSet.getBoolean("male"));
+        user.setCreationDate(resultSet.getDate("creation_date"));
+        user.setMessages(resultSet.getInt("messages"));
+        user.setFollowing(resultSet.getInt("following"));
+        user.setFollowers(resultSet.getInt("followers"));
+        user.setConsumerKey(resultSet.getString("consumer_key"));
+        user.setConsumerSecret(resultSet.getString("consumer_secret"));
+        user.setAccessToken(resultSet.getString("access_token"));
+        user.setAccessTokenSecret(resultSet.getString("access_token_secret"));
+        return user;
     }
 }

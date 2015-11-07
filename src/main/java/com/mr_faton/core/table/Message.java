@@ -93,4 +93,38 @@ public class Message {
     public String toString() {
         return owner + ": " + message;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message1 = (Message) o;
+
+        if (id != message1.id) return false;
+        if (ownerMale != message1.ownerMale) return false;
+        if (synonymized != message1.synonymized) return false;
+        if (posted != message1.posted) return false;
+        if (!message.equals(message1.message)) return false;
+        if (!owner.equals(message1.owner)) return false;
+        if (recipient != null ? !recipient.equals(message1.recipient) : message1.recipient != null) return false;
+        if (recipientMale != null ? !recipientMale.equals(message1.recipientMale) : message1.recipientMale != null)
+            return false;
+        return postedDate.equals(message1.postedDate);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + message.hashCode();
+        result = 31 * result + owner.hashCode();
+        result = 31 * result + (ownerMale ? 1 : 0);
+        result = 31 * result + (recipient != null ? recipient.hashCode() : 0);
+        result = 31 * result + (recipientMale != null ? recipientMale.hashCode() : 0);
+        result = 31 * result + postedDate.hashCode();
+        result = 31 * result + (synonymized ? 1 : 0);
+        result = 31 * result + (posted ? 1 : 0);
+        return result;
+    }
 }

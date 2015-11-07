@@ -1,12 +1,15 @@
 package com.mr_faton.core.table;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Created by Mr_Faton on 18.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 18.09.2015
+ * @version 1.0
  */
-public class User implements Serializable {
+public class User{
     private String name;
     private String password;
     private String email;
@@ -115,5 +118,44 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (male != user.male) return false;
+        if (messages != user.messages) return false;
+        if (following != user.following) return false;
+        if (followers != user.followers) return false;
+        if (!name.equals(user.name)) return false;
+        if (!password.equals(user.password)) return false;
+        if (!email.equals(user.email)) return false;
+        if (!creationDate.equals(user.creationDate)) return false;
+        if (!consumerKey.equals(user.consumerKey)) return false;
+        if (!consumerSecret.equals(user.consumerSecret)) return false;
+        if (!accessToken.equals(user.accessToken)) return false;
+        return accessTokenSecret.equals(user.accessTokenSecret);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + password.hashCode();
+        result = 31 * result + email.hashCode();
+        result = 31 * result + (male ? 1 : 0);
+        result = 31 * result + creationDate.hashCode();
+        result = 31 * result + messages;
+        result = 31 * result + following;
+        result = 31 * result + followers;
+        result = 31 * result + consumerKey.hashCode();
+        result = 31 * result + consumerSecret.hashCode();
+        result = 31 * result + accessToken.hashCode();
+        result = 31 * result + accessTokenSecret.hashCode();
+        return result;
     }
 }

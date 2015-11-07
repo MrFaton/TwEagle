@@ -4,6 +4,7 @@ import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.DonorUser;
+import com.mr_faton.core.util.TimeWizard;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Description
@@ -28,6 +30,7 @@ public class DonorUserDAORealTest {
     private static final String BASE_NAME = "DonorUserDAOReal";
     private static final DonorUserDAO DONOR_USER_DAO = (DonorUserDAO) AppContext.getBeanByName("donorUserDAO");
     private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
+    private static final long DAY_IN_MS = 86400000;
 
 
     @AfterClass
@@ -41,57 +44,67 @@ public class DonorUserDAORealTest {
     @Test
     public void getDonorForMessage() throws Exception {
         DonorUser donorUser = createDefaultDonorUser();
-
+        donorUser.setTakeMessageDate(null);
         DONOR_USER_DAO.save(donorUser);
         DONOR_USER_DAO.getDonorForMessage();
     }
 
-    @Test
-    public void deleteDonorUser() throws Exception {
-        DonorUser donorUser = createDefaultDonorUser();
-
-        DONOR_USER_DAO.save(donorUser);
-        DONOR_USER_DAO.deleteUser(donorUser.getName());
-    }
 
 
 
     @Test
     public void saveAndUpdate() throws Exception {
-        DonorUser originalDonorUser = createDefaultDonorUser();
-        DONOR_USER_DAO.save(originalDonorUser);
+        //Test save
+        DonorUser original = createDefaultDonorUser();
+        DONOR_USER_DAO.save(original);
 
-        DonorUser extractedDonorUser1 = getDonorUserByUniqueName(originalDonorUser.getName());
+        DonorUser extracted = getDonorUserByUniqueName(original.getName());
 
-        assertEquals(originalDonorUser, extractedDonorUser1);
+        equalsDonorUsers(original, extracted);
 
-        originalDonorUser.setTakeMessageDate(new Date(System.currentTimeMillis() + 1000));
-        originalDonorUser.setTakeFollowingDate(new Date(System.currentTimeMillis() + 2000));
-        originalDonorUser.setTakeFollowersDate(new Date(System.currentTimeMillis() + 3000));
+        //Test update
+        original.setTakeMessageDate(new Date(System.currentTimeMillis() + DAY_IN_MS));
+        original.setTakeFollowingDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 2));
+        original.setTakeFollowersDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 3));
 
-        DONOR_USER_DAO.update(originalDonorUser);
+        DONOR_USER_DAO.update(original);
 
-        DonorUser extractedDonorUser2 = getDonorUserByUniqueName(originalDonorUser.getName());
+        extracted = getDonorUserByUniqueName(original.getName());
 
-        assertEquals(originalDonorUser, extractedDonorUser2);
+        equalsDonorUsers(original, extracted);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
-        DonorUser donorUser1 = createDefaultDonorUser();
-        DonorUser donorUser2 = createDefaultDonorUser();
-        List<DonorUser> donorUserList = Arrays.asList(donorUser1, donorUser2);
+        //Test save
+        DonorUser original1 = createDefaultDonorUser();
+        DonorUser original2 = createDefaultDonorUser();
+        List<DonorUser> donorUserList = Arrays.asList(original1, original2);
 
         DONOR_USER_DAO.save(donorUserList);
 
-        donorUser1.setTakeMessageDate(new Date());
-        donorUser1.setTakeFollowingDate(new Date());
+        DonorUser extracted1 = getDonorUserByUniqueName(original1.getName());
+        DonorUser extracted2 = getDonorUserByUniqueName(original2.getName());
 
-        donorUser2.setTakeMessageDate(new Date());
-        donorUser2.setTakeFollowingDate(new Date());
+        equalsDonorUsers(original1, extracted1);
+        equalsDonorUsers(original2, extracted2);
+
+        //Test update
+        original1.setTakeMessageDate(new Date(System.currentTimeMillis() + DAY_IN_MS));
+        original1.setTakeFollowingDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 2));
+        original1.setTakeFollowersDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 3));
+
+        original2.setTakeMessageDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 4));
+        original2.setTakeFollowingDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 5));
+        original2.setTakeFollowersDate(new Date(System.currentTimeMillis() + DAY_IN_MS * 6));
 
         DONOR_USER_DAO.update(donorUserList);
 
+        extracted1 = getDonorUserByUniqueName(original1.getName());
+        extracted2 = getDonorUserByUniqueName(original2.getName());
+
+        equalsDonorUsers(original1, extracted1);
+        equalsDonorUsers(original2, extracted2);
     }
 
 
@@ -105,7 +118,7 @@ public class DonorUserDAORealTest {
         return donorUser;
     }
 
-    DonorUser getDonorUserByUniqueName(String name) throws SQLException, NoSuchEntityException {
+    private DonorUser getDonorUserByUniqueName(String name) throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT * FROM tweagle.donor_users WHERE du_name = '" + name + "';";
         try {
@@ -113,5 +126,34 @@ public class DonorUserDAORealTest {
         } catch (EmptyResultDataAccessException emptyData) {
             throw new NoSuchEntityException("it's seems that donor user not found by unique name " + name, emptyData);
         }
+    }
+
+    private void equalsDonorUsers(DonorUser original, DonorUser extracted) {
+        assertEquals(original.getName(), extracted.getName());
+        assertEquals(original.isMale(), extracted.isMale());
+
+        if (original.getTakeMessageDate() != null) {
+            if (extracted.getTakeMessageDate() != null) {
+                String formattedOriginal = TimeWizard.formatDate(original.getTakeMessageDate().getTime());
+                String formattedExtracted = TimeWizard.formatDate(extracted.getTakeMessageDate().getTime());
+                assertEquals(formattedOriginal, formattedExtracted);
+            } else {fail();}
+        } else {if (extracted.getTakeMessageDate() != null) fail();}
+
+        if (original.getTakeFollowingDate() != null) {
+            if (extracted.getTakeFollowingDate() != null) {
+                String formattedOriginal = TimeWizard.formatDate(original.getTakeFollowingDate().getTime());
+                String formattedExtracted = TimeWizard.formatDate(extracted.getTakeFollowingDate().getTime());
+                assertEquals(formattedOriginal, formattedExtracted);
+            } else {fail();}
+        } else {if (extracted.getTakeFollowingDate() != null) fail();}
+
+        if (original.getTakeFollowersDate() != null) {
+            if (extracted.getTakeFollowersDate() != null) {
+                String formattedOriginal = TimeWizard.formatDate(original.getTakeFollowersDate().getTime());
+                String formattedExtracted = TimeWizard.formatDate(extracted.getTakeFollowersDate().getTime());
+                assertEquals(formattedOriginal, formattedExtracted);
+            } else {fail();}
+        } else {if (extracted.getTakeFollowersDate() != null) fail();}
     }
 }

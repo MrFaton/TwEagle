@@ -51,6 +51,10 @@ public class DonorUser {
         this.takeFollowersDate = takeFollowersDate;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -60,22 +64,12 @@ public class DonorUser {
         DonorUser donorUser = (DonorUser) o;
 
         if (male != donorUser.male) return false;
-//        if (!name.equals(donorUser.name)) return false;
-//        if (takeMessageDate != null ? !takeMessageDate.equals(donorUser.takeMessageDate) : donorUser.takeMessageDate != null)
-//            return false;
-//        if (takeFollowingDate != null ? !takeFollowingDate.equals(donorUser.takeFollowingDate) : donorUser.takeFollowingDate != null)
-//            return false;
-//        return !(takeFollowersDate != null ? !takeFollowersDate.equals(donorUser.takeFollowersDate) : donorUser.takeFollowersDate != null);
-
-        if (takeMessageDate != null && donorUser.takeMessageDate != null) {
-            if (donorUser.takeMessageDate.compareTo(takeMessageDate) == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
+        if (!name.equals(donorUser.name)) return false;
+        if (takeMessageDate != null ? !takeMessageDate.equals(donorUser.takeMessageDate) : donorUser.takeMessageDate != null)
             return false;
-        }
+        if (takeFollowingDate != null ? !takeFollowingDate.equals(donorUser.takeFollowingDate) : donorUser.takeFollowingDate != null)
+            return false;
+        return !(takeFollowersDate != null ? !takeFollowersDate.equals(donorUser.takeFollowersDate) : donorUser.takeFollowersDate != null);
 
     }
 
@@ -87,10 +81,5 @@ public class DonorUser {
         result = 31 * result + (takeFollowingDate != null ? takeFollowingDate.hashCode() : 0);
         result = 31 * result + (takeFollowersDate != null ? takeFollowersDate.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 }

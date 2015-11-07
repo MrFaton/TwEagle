@@ -43,9 +43,9 @@ public class MessageDAOReal implements MessageDAO {
     public Message getTweet(boolean ownerMale) throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
                 "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND du_male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
+                "WHERE recipient_id IS NULL AND male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
         try {
             return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -59,9 +59,9 @@ public class MessageDAOReal implements MessageDAO {
             throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
                 "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND du_male = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+                "WHERE recipient_id IS NULL AND male = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
@@ -74,8 +74,8 @@ public class MessageDAOReal implements MessageDAO {
         if (query.isEmpty()) {
             throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
                     "ownerMale = '" + ownerMale + "', " +
-                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
-                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
+                    "between '" + TimeWizard.formatDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.formatDateWithTime(maxCalendar.getTimeInMillis()) + "'");
         }
         return query.get(0);
     }
@@ -84,7 +84,7 @@ public class MessageDAOReal implements MessageDAO {
     public Message getTweet(final String ownerName) throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
+                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
                 "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
                 "WHERE recipient_id IS NULL AND du_name = '" + ownerName + "' LIMIT 1;";
         try {
@@ -100,7 +100,7 @@ public class MessageDAOReal implements MessageDAO {
             throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', du_male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male' " +
+                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male' " +
                 "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
                 "WHERE recipient_id IS NULL AND du_name = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
         PreparedStatementSetter pss = new PreparedStatementSetter() {
@@ -115,8 +115,8 @@ public class MessageDAOReal implements MessageDAO {
         if (query.isEmpty()) {
             throw new NoSuchEntityException("it's seems no tweet found with parameters: " +
                     "ownerName = '" + ownerName + "', " +
-                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
-                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
+                    "between '" + TimeWizard.formatDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.formatDateWithTime(maxCalendar.getTimeInMillis()) + "'");
         }
         return query.get(0);
     }
@@ -130,12 +130,12 @@ public class MessageDAOReal implements MessageDAO {
             throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "owner.du_name AS 'owner', owner.du_male AS 'owner_male', " +
-                "recipient.du_name AS 'recipient', recipient.du_male AS 'recipient_male' " +
+                "owner.du_name AS 'owner', owner.male AS 'owner_male', " +
+                "recipient.du_name AS 'recipient', recipient.male AS 'recipient_male' " +
                 "FROM tweagle.messages " +
                 "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
                 "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
-                "WHERE owner.du_male = ? AND recipient.du_male = ? AND  posted_date BETWEEN ? AND ? LIMIT 1;";
+                "WHERE owner.male = ? AND recipient.male = ? AND  posted_date BETWEEN ? AND ? LIMIT 1;";
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
@@ -151,8 +151,8 @@ public class MessageDAOReal implements MessageDAO {
             throw new NoSuchEntityException("it's seems no mention found with parameters: " +
                     "ownerMale = '" + ownerMale + "', " +
                     "recipientMale = '" + recipientMale + "', " +
-                    "between '" + TimeWizard.convertDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
-                    "'" + TimeWizard.convertDateWithTime(maxCalendar.getTimeInMillis()) + "'");
+                    "between '" + TimeWizard.formatDateWithTime(minCalendar.getTimeInMillis()) + "' and " +
+                    "'" + TimeWizard.formatDateWithTime(maxCalendar.getTimeInMillis()) + "'");
         }
         return query.get(0);
     }
@@ -163,8 +163,8 @@ public class MessageDAOReal implements MessageDAO {
         logger.debug("get " + limit + " unsynonymized messages");
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "owner.du_name AS 'owner', owner.du_male AS 'owner_male', " +
-                "recipient.du_name AS 'recipient', recipient.du_male AS 'recipient_male' " +
+                "owner.du_name AS 'owner', owner.male AS 'owner_male', " +
+                "recipient.du_name AS 'recipient', recipient.male AS 'recipient_male' " +
                 "FROM tweagle.messages " +
                 "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
                 "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
@@ -268,11 +268,12 @@ public class MessageDAOReal implements MessageDAO {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
+}
 
-    class MessageRowMapper implements RowMapper<Message> {
-        @Override
-        public Message mapRow(ResultSet resultSet, int roeNum) throws SQLException {
-            Message message = new Message();
+class MessageRowMapper implements RowMapper<Message> {
+    @Override
+    public Message mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        Message message = new Message();
 
         message.setId(resultSet.getInt("id"));
         message.setMessage(resultSet.getString("message"));
@@ -281,7 +282,9 @@ public class MessageDAOReal implements MessageDAO {
         message.setOwnerMale(resultSet.getBoolean("owner_male"));
 
         message.setRecipient(resultSet.getString("recipient"));
-        message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+        if (resultSet.getString("recipient") != null) {
+            message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+        }
 
         message.setPostedDate(resultSet.getTimestamp("posted_date"));
 
@@ -289,6 +292,5 @@ public class MessageDAOReal implements MessageDAO {
         message.setPosted(resultSet.getBoolean("posted"));
 
         return message;
-        }
     }
 }

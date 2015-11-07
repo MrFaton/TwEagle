@@ -45,7 +45,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
         try {
             return jdbcTemplate.queryForObject(SQL, new DonorUserRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
-            throw new NoSuchEntityException("it's seems that no user found for message", emptyData);
+            throw new NoSuchEntityException("it's seems that no user found for parsing messages", emptyData);
         }
     }
 

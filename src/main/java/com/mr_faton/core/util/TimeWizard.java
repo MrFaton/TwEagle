@@ -1,6 +1,5 @@
 package com.mr_faton.core.util;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -21,9 +20,14 @@ public class TimeWizard {
         return String.format("%02d:%02d:%02d", h,m,s);
     }
 
-    public static String convertDateWithTime(long dateTime) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        return dateFormat.format(new Date(dateTime));
+    public static String formatDateWithTime(long dateTime) {
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+//        return dateFormat.format(new Date(dateTime));
+        return String.format("%td-%<tm-%<tY %<tH:%<tM:%<tS", dateTime);
+    }
+
+    public static String formatDate(long date) {
+        return String.format("%td-%<tm-%<tY", date);
     }
 
     public static int getCurDay() {
@@ -46,5 +50,4 @@ public class TimeWizard {
 
         return diffDays / 30;
     }
-
 }
