@@ -29,6 +29,8 @@ public class PostedMessage {
     private String recipient;
     private Boolean recipientMale;
 
+    private boolean retweeted;
+
     private Date postedDate;
 
     public int getId() {
@@ -113,6 +115,13 @@ public class PostedMessage {
     }
     public void setRecipientMale(Boolean recipientMale) {
         this.recipientMale = recipientMale;
+    }
+
+    public boolean isRetweeted() {
+        return retweeted;
+    }
+    public void setRetweeted(boolean retweeted) {
+        this.retweeted = retweeted;
     }
 
     public Date getPostedDate() {

@@ -6,9 +6,13 @@ CREATE TABLE tweagle.posted_messages
   twitter_id   BIGINT             NOT NULL,
   owner_id     VARCHAR(30)        NOT NULL,
   recipient_id VARCHAR(30),
+  retweeted    BOOLEAN            NOT NULL DEFAULT 0,
   posted_date  TIMESTAMP          NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (message_id) REFERENCES tweagle.messages (id) ON DELETE CASCADE,
-  FOREIGN KEY (owner_id) REFERENCES tweagle.donor_users (du_name) ON DELETE CASCADE,
-  FOREIGN KEY (recipient_id) REFERENCES tweagle.donor_users (du_name) ON DELETE CASCADE
+  FOREIGN KEY (message_id) REFERENCES tweagle.messages (id)
+    ON DELETE CASCADE,
+  FOREIGN KEY (owner_id) REFERENCES tweagle.users (u_name)
+    ON DELETE CASCADE,
+  FOREIGN KEY (recipient_id) REFERENCES tweagle.users (u_name)
+    ON DELETE CASCADE
 );
