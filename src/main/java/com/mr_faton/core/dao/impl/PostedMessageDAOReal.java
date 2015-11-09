@@ -3,12 +3,15 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.PostedMessageDAO;
 import com.mr_faton.core.table.PostedMessage;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 
 /**
@@ -22,105 +25,65 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.PostedMessageDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.posted_messages (message, message_id, owner, recipient, posted_date) " +
+            "INSERT INTO tweagle.posted_messages (message_id, twitter_id, owner_id, recipient_id, posted_date)  " +
             "VALUES (?, ?, ?, ?, ?);";
-    private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.posted_messages SET message = ?, message_id = ?, owner = ?, recipient = ?, " +
-            "posted_date = ? WHERE id = ?;";
 
-    private final DataSource dataSource;
-
-    public PostedMessageDAOReal(DataSource dataSource) {
-        logger.debug("constructor");
-        this.dataSource = dataSource;
-    }
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
 
-    // INSERTS - UPDATES
+    // INSERTS
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(PostedMessage postedMessage) throws SQLException {
+    public void save(final PostedMessage postedMessage) throws SQLException {
         logger.debug("save posted message " + postedMessage);
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-            preparedStatement.setString(1, postedMessage.getMessage());
-            preparedStatement.setLong(2, postedMessage.getMessageId());
-            preparedStatement.setString(3, postedMessage.getOwner());
-            if (postedMessage.getRecipient() != null) {
-                preparedStatement.setString(4, postedMessage.getRecipient());
-            } else {
-                preparedStatement.setNull(4, Types.BOOLEAN);
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setInt(1, postedMessage.getMessageId());
+                ps.setLong(2, postedMessage.getTwitterId());
+                ps.setString(3, postedMessage.getOwner());
+                if (postedMessage.getRecipient() != null) {
+                    ps.setString(4, postedMessage.getRecipient());
+                } else {
+                    ps.setNull(4, Types.VARCHAR);
+                }
+                ps.setTimestamp(5, new Timestamp(postedMessage.getPostedDate().getTime()));
             }
-            preparedStatement.setDate(5, new java.sql.Date(postedMessage.getPostedDate().getTime()));
-
-            preparedStatement.executeUpdate();
-        }
+        };
+        jdbcTemplate.update(SQL_SAVE, pss);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void save(List<PostedMessage> postedMessageList) throws SQLException {
+    public void save(final List<PostedMessage> postedMessageList) throws SQLException {
         logger.debug("save " + postedMessageList.size() + " posted messages");
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE);) {
-            for (PostedMessage postedMessage : postedMessageList) {
-                preparedStatement.setString(1, postedMessage.getMessage());
-                preparedStatement.setLong(2, postedMessage.getMessageId());
-                preparedStatement.setString(3, postedMessage.getOwner());
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                PostedMessage postedMessage = postedMessageList.get(i);
+                ps.setInt(1, postedMessage.getMessageId());
+                ps.setLong(2, postedMessage.getTwitterId());
+                ps.setString(3, postedMessage.getOwner());
                 if (postedMessage.getRecipient() != null) {
-                    preparedStatement.setString(4, postedMessage.getRecipient());
+                    ps.setString(4, postedMessage.getRecipient());
                 } else {
-                    preparedStatement.setNull(4, Types.BOOLEAN);
+                    ps.setNull(4, Types.VARCHAR);
                 }
-                preparedStatement.setDate(5, new java.sql.Date(postedMessage.getPostedDate().getTime()));
-
-
-                preparedStatement.addBatch();
+                ps.setTimestamp(5, new Timestamp(postedMessage.getPostedDate().getTime()));
             }
-            preparedStatement.executeBatch();
-        }
+
+            @Override
+            public int getBatchSize() {
+                return postedMessageList.size();
+            }
+        };
+        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
-
-
-
+}
+class PostedMessageRowMapper implements RowMapper<PostedMessage> {
     @Override
-    public void update(PostedMessage postedMessage) throws SQLException {
-        logger.debug("update posted message " + postedMessage);
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE);) {
-            preparedStatement.setString(1, postedMessage.getMessage());
-            preparedStatement.setLong(2, postedMessage.getMessageId());
-            preparedStatement.setString(3, postedMessage.getOwner());
-            if (postedMessage.getRecipient() != null) {
-                preparedStatement.setString(4, postedMessage.getRecipient());
-            } else {
-                preparedStatement.setNull(4, Types.BOOLEAN);
-            }
-            preparedStatement.setDate(5, new java.sql.Date(postedMessage.getPostedDate().getTime()));
-            preparedStatement.setInt(6, postedMessage.getId());
-
-            preparedStatement.executeUpdate();
-        }
-    }
-
-    @Override
-    public void update(List<PostedMessage> postedMessageList) throws SQLException {
-        logger.debug("update " + postedMessageList.size() + " posted messages");
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE);) {
-            for (PostedMessage postedMessage : postedMessageList) {
-                preparedStatement.setString(1, postedMessage.getMessage());
-                preparedStatement.setLong(2, postedMessage.getMessageId());
-                preparedStatement.setString(3, postedMessage.getOwner());
-                if (postedMessage.getRecipient() != null) {
-                    preparedStatement.setString(4, postedMessage.getRecipient());
-                } else {
-                    preparedStatement.setNull(4, Types.BOOLEAN);
-                }
-                preparedStatement.setDate(5, new java.sql.Date(postedMessage.getPostedDate().getTime()));
-                preparedStatement.setInt(6, postedMessage.getId());
-
-                preparedStatement.addBatch();
-            }
-            preparedStatement.executeBatch();
-        }
+    public PostedMessage mapRow(ResultSet resultSet, int i) throws SQLException {
+        return null;
     }
 }

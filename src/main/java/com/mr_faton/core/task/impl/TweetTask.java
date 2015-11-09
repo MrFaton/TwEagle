@@ -304,7 +304,7 @@ public class TweetTask implements Task {
     private PostedMessage createPostedMessage(long messageId, Message message) {
         PostedMessage postedMessage = new PostedMessage();
         postedMessage.setMessage(message.getMessage());
-        postedMessage.setMessageId(messageId);
+        postedMessage.setTwitterId(messageId);
         postedMessage.setOwner(message.getOwner());
         postedMessage.setRecipient(null);
         Date postedDate = new Date(System.currentTimeMillis());

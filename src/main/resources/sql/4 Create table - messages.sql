@@ -10,5 +10,5 @@ CREATE TABLE tweagle.messages
   posted       BOOLEAN            NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
   FOREIGN KEY (owner_id) REFERENCES tweagle.donor_users (du_name),
-  FOREIGN KEY (recipient_id) REFERENCES tweagle.donor_users(du_name)
+  FOREIGN KEY (recipient_id) REFERENCES tweagle.donor_users (du_name)
 );

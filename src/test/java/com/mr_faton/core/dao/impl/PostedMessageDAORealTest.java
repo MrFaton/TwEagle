@@ -147,7 +147,7 @@ public class PostedMessageDAORealTest {
         PostedMessage postedMessage = new PostedMessage();
 
         postedMessage.setMessage("Test posted message");
-        postedMessage.setMessageId(new Random().nextInt(10_000));
+        postedMessage.setTwitterId(new Random().nextInt(10_000));
         postedMessage.setOwner(BASE_NAME + Counter.getNextNumber());
         postedMessage.setRecipient(null);
         postedMessage.setPostedDate(new Date());

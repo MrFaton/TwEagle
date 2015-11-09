@@ -43,6 +43,7 @@
     <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
     <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal"/>
     <bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal"/>
+    <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
     <!--<bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal">-->
     <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
     <!--</bean>-->
@@ -50,9 +51,6 @@
     <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
     <!--</bean>-->
     <!--<bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal">-->
-    <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
-    <!--</bean>-->
-    <!--<bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal">-->
     <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
     <!--</bean>-->
     <!--<bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal">-->
