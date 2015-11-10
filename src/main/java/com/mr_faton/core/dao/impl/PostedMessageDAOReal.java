@@ -163,6 +163,7 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
 }
+
 class PostedMessageRowMapper implements RowMapper<PostedMessage> {
     @Override
     public PostedMessage mapRow(ResultSet resultSet, int rowNum) throws SQLException {

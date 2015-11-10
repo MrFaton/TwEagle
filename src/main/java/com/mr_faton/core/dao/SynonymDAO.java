@@ -15,11 +15,9 @@ import java.util.List;
  */
 public interface SynonymDAO {
     Synonym getSynonym(String word) throws SQLException, NoSuchEntityException;
+    void doWordUseful(String word) throws SQLException;
 
     // INSERTS - UPDATES
     void save(Synonym synonym) throws SQLException;
     void save(List<Synonym> synonyms) throws SQLException;
-
-    void update(Synonym synonym) throws SQLException;
-    void update(List<Synonym> synonyms) throws SQLException;
 }

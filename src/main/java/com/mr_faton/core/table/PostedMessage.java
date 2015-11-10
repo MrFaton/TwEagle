@@ -68,7 +68,7 @@ public class PostedMessage {
         this.oldOwner = oldOwner;
     }
 
-    public Boolean getOldOwnerMale() {
+    public Boolean isOldOwnerMale() {
         return oldOwnerMale;
     }
     public void setOldOwnerMale(Boolean oldOwnerMale) {
@@ -82,7 +82,7 @@ public class PostedMessage {
         this.oldRecipient = oldRecipient;
     }
 
-    public Boolean getOldRecipientMale() {
+    public Boolean isOldRecipientMale() {
         return oldRecipientMale;
     }
     public void setOldRecipientMale(Boolean oldRecipientMale) {
@@ -96,7 +96,7 @@ public class PostedMessage {
         this.owner = owner;
     }
 
-    public Boolean getOwnerMale() {
+    public Boolean isOwnerMale() {
         return ownerMale;
     }
     public void setOwnerMale(Boolean ownerMale) {
@@ -110,7 +110,7 @@ public class PostedMessage {
         this.recipient = recipient;
     }
 
-    public Boolean getRecipientMale() {
+    public Boolean isRecipientMale() {
         return recipientMale;
     }
     public void setRecipientMale(Boolean recipientMale) {
