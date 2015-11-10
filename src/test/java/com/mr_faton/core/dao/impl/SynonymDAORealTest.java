@@ -1,13 +1,10 @@
 package com.mr_faton.core.dao.impl;
 
+import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.SynonymDAO;
-import com.mr_faton.core.pool.db_connection.TransactionManager;
-import com.mr_faton.core.table.Synonym;
-import com.mr_faton.core.util.Command;
-import com.mr_faton.core.util.SettingsHolder;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import util.Counter;
 
 import java.util.ArrayList;
@@ -15,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Description
@@ -25,110 +24,30 @@ import static org.junit.Assert.assertEquals;
  */
 public class SynonymDAORealTest {
     private static final String BASE_NAME = "SynonymDAOReal";
-    private static TransactionManager transactionManager;
-    private static SynonymDAO synonymDAO;
+    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
+    private static final SynonymDAO SYNONYM_DAO = (SynonymDAO) AppContext.getBeanByName("synonymDAO");
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        SettingsHolder.loadSettings();
-        transactionManager = TransactionMenagerHolder.getTransactionManager();
-        synonymDAO = new SynonymDAOReal(transactionManager);
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String SQL = "" +
-                "DELETE FROM tweagle.synonyms WHERE word LIKE 'SynonymDAOReal%';";
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                transactionManager.getConnection().createStatement().executeUpdate(SQL);
-            }
-        });
-    }
-
+//    @AfterClass
+//    public static void tearDown() throws Exception {
+//        final String SQL = "" +
+//                "DELETE FROM tweagle.words WHERE word LIKE 'SynonymDAOReal%';";
+//        JDBC_TEMPLATE.update(SQL);
+//    }
 
     @Test
-    public void getSynonyms() throws Exception {
-        final Synonym synonym = createSynonym();
+    public void saveAndGet() throws Exception {
+        //Test save
+        List<String> synonymList = new ArrayList<>(5);
+        for (int i = 0; i < 4; i++) {
+            synonymList.add(BASE_NAME + Counter.getNextNumber());
+        }
+        SYNONYM_DAO.save(synonymList);
 
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                synonymDAO.save(synonym);
-            }
-        });
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                Synonym takenSynonym = synonymDAO.getSynonym(synonym.getWord());
-                assertEquals(synonym.getWord(), takenSynonym.getWord());
-            }
-        });
-    }
-
-
-    private Synonym createSynonym() {
-        Synonym synonym = new Synonym();
-
-        synonym.setWord(BASE_NAME + Counter.getNextNumber());
-
-        List<String> synonymList = new ArrayList<>(4);
-        synonymList.add("syn1");
-        synonymList.add("syn2");
-        synonymList.add("syn3");
-        synonym.setSynonyms(synonymList);
-
-        synonym.setUsed(0);
-
-        return synonym;
-    }
-
-
-    // INSERTS - UPDATES
-    @Test
-    public void saveAndUpdate() throws Exception {
-        final Synonym synonym = createSynonym();
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                synonymDAO.save(synonym);
-            }
-        });
-
-        synonym.setUsed(10);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                synonymDAO.update(synonym);
-            }
-        });
-    }
-
-    @Test
-    public void saveAndUpdateList() throws Exception {
-        final Synonym synonym1 = createSynonym();
-        final Synonym synonym2 = createSynonym();
-        final List<Synonym> synonymList = Arrays.asList(synonym1, synonym2);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                synonymDAO.save(synonymList);
-            }
-        });
-
-        synonym1.setUsed(15);
-        synonym2.setUsed(20);
-
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                synonymDAO.update(synonymList);
-            }
-        });
+        //Test getSynonymList
+        String word = synonymList.get(1);
+        synonymList.remove(1);
+        List<String> extractedSynonyms = SYNONYM_DAO.getSynonymList(word);
+        if (extractedSynonyms.contains(word)) fail();
+        assertEquals(synonymList, extractedSynonyms);
     }
 }

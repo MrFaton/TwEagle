@@ -5,7 +5,6 @@ import com.mr_faton.core.dao.NotExistsSynonymDAO;
 import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
-import com.mr_faton.core.table.Synonym;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
 import org.apache.log4j.Logger;
@@ -235,21 +234,21 @@ public class SynonymizerTask implements Task{
             }
 
             List<String> synonyms;
-            try {
-                Synonym synonym = synonymDAO.getSynonym(replacementWordPart);
-                synonyms = synonym.getSynonyms();
-                int usedCount = synonym.getUsed();
-                synonym.setUsed(++usedCount);
-                synonymDAO.update(synonym);
-            } catch (NoSuchEntityException e) {
-                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
-                notExistsSynonymDAO.addWord(replacementWordPart);
-                continue;
-            }
-            String synonym = getRandomSynonym(synonyms);
-            String synonymizedWord = synonym + punctuationPart;
-
-            wordList.set(replacementWordIndex, synonymizedWord);
+//            try {
+//                Synonym synonym = synonymDAO.getSynonym(replacementWordPart);
+//                synonyms = synonym.getSynonyms();
+//                int usedCount = synonym.getUsed();
+//                synonym.setUsed(++usedCount);
+//                synonymDAO.update(synonym);
+//            } catch (NoSuchEntityException e) {
+//                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
+//                notExistsSynonymDAO.addWord(replacementWordPart);
+//                continue;
+//            }
+//            String synonym = getRandomSynonym(synonyms);
+//            String synonymizedWord = synonym + punctuationPart;
+//
+//            wordList.set(replacementWordIndex, synonymizedWord);
 
             positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
 

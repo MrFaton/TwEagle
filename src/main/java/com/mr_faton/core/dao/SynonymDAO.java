@@ -1,7 +1,6 @@
 package com.mr_faton.core.dao;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
-import com.mr_faton.core.table.Synonym;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -14,10 +13,9 @@ import java.util.List;
  * @since 12.10.2015
  */
 public interface SynonymDAO {
-    Synonym getSynonym(String word) throws SQLException, NoSuchEntityException;
+    List<String> getSynonymList(String word) throws SQLException, NoSuchEntityException;
     void doWordUseful(String word) throws SQLException;
 
-    // INSERTS - UPDATES
-    void save(Synonym synonym) throws SQLException;
-    void save(List<Synonym> synonyms) throws SQLException;
+    // INSERT
+    void save(List<String> synonymList) throws SQLException;
 }
