@@ -13,6 +13,7 @@ import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import twitter4j.Paging;
 import twitter4j.ResponseList;
 import twitter4j.Status;
@@ -20,7 +21,6 @@ import twitter4j.TwitterException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -35,44 +35,33 @@ public class MessageParseTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.MessageParseTask");
 
-    public static final int MIN_DELAY = 0 * 60 * 1000; //minutes
-    public static final int MAX_DELAY = 1 * 60 * 1000; //minutes
+    public static final int MIN_DELAY = 2 * 60 * 1000; //minutes
+    public static final int MAX_DELAY = 4 * 60 * 1000; //minutes
     public static final String SOURCE_USER = "Mr_Faton";
     public static final int MESSAGES_PER_PAGE = 200;
     public static final int PAGES_PER_ONE_SEARCH = 10;
-    public static final int DEPTH_SEARCH_IN_YEAR = 3; //max deep = 3 years old
     private static final String MESSAGE_lANG = "ru";
     private static final String COMMERCIAL_PARAM = "http";
     private static final String MENTION_PARAM = "@";
     private static final List<Message> messageList = new ArrayList<>();
 
-    private final TwitterAPI twitterAPI;
-    private final MessageDAO messageDAO;
-    private final DonorUserDAO donorUserDAO;
+    @Autowired
+    private TwitterAPI twitterAPI;
+    @Autowired
+    private MessageDAO messageDAO;
+    @Autowired
+    private DonorUserDAO donorUserDAO;
 
     private boolean status = true;
     private long nextTime = 0;
-    private Date maxOldDate;
     private DonorUser donorUser = null;
     private int searchedPage = 1;
     private boolean hasMoreDonorUsers = true;
 
-    public MessageParseTask(
-            TwitterAPI twitterAPI,
-            MessageDAO messageDAO,
-            DonorUserDAO donorUserDAO) {
-        logger.debug("constructor");
-        this.twitterAPI = twitterAPI;
-        this.messageDAO = messageDAO;
-        this.donorUserDAO = donorUserDAO;
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.YEAR, -DEPTH_SEARCH_IN_YEAR);
-        maxOldDate = new Date(calendar.getTimeInMillis());
-    }
 
     @Override
     public boolean getStatus() {
+        logger.debug("status is " + status);
         return status;
     }
 
@@ -84,6 +73,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public long getTime() {
+        logger.debug("next parsing will begin in " + TimeWizard.formatDateWithTime(nextTime));
         return nextTime;
     }
 
@@ -92,9 +82,10 @@ public class MessageParseTask implements Task {
         logger.debug("set next time");
         if (hasMoreDonorUsers) {
             nextTime = System.currentTimeMillis() + RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY);
-            logger.debug("next time is set to " + TimeWizard.convertToFuture(nextTime));
+            logger.debug("next parsing has been set up on " + TimeWizard.formatDateWithTime(nextTime));
         } else {
             nextTime = Long.MAX_VALUE;
+            logger.debug("next parsing hes been set up on maximum time, cause no donor user found for parse message");
         }
 
     }
@@ -113,7 +104,7 @@ public class MessageParseTask implements Task {
 
                 donorUserDAO.update(donorUser);
             } catch (NoSuchEntityException ex) {
-                logger.debug("no donorUser to parse messages");
+                logger.debug("no donorUser for parse messages");
                 hasMoreDonorUsers = false;
             }
         } else {
@@ -123,7 +114,7 @@ public class MessageParseTask implements Task {
 
     @Override
     public void save() throws SQLException {
-        logger.debug("save");
+        logger.debug("save " + messageList.size() + " parsed messages");
         if (messageList.size() == 0) return;
         messageDAO.save(messageList);
         messageList.clear();
@@ -132,27 +123,24 @@ public class MessageParseTask implements Task {
 
     @Override
     public void execute() {
-        logger.info("collect messages");
-        if (donorUser == null) return;
+
+        if (donorUser != null) {
+            logger.info("parse messages from user " + donorUser.getName());
+        } else {
+            logger.info("user for parsing messages is null, stop parsing");
+            return;
+        }
 
         try {
             for (int counter = 0; counter < PAGES_PER_ONE_SEARCH; counter++) {
-                try {
-                    ResponseList<Status> statusList = twitterAPI.getUserTimeLine(
-                            donorUser.getName(),
-                            new Paging(searchedPage, MESSAGES_PER_PAGE),
-                            SOURCE_USER);
-
-                    searchedPage++;
-
-                    handleUserTimeLineList(statusList);
-                } catch (BadUserException badUserEx) {
-                    logger.debug(badUserEx.getMessage());
-                    donorUser = null;
-                    donorUserDAO.deleteUser(donorUser.getName());
-                }
-
+                Paging paging = new Paging(searchedPage, MESSAGES_PER_PAGE);
+                ResponseList<Status> statusList = twitterAPI.getUserTimeLine(donorUser.getName(), paging, SOURCE_USER);
+                searchedPage++;
+                handleUserTimeLineList(statusList);
             }
+        } catch (BadUserException badUserEx) {
+            logger.debug(badUserEx.getMessage());
+            donorUser = null;
         } catch (DataSequenceReachedException lastTweetEx) {
             donorUser = null;
         } catch (LimitExhaustedException limitEx) {
@@ -178,6 +166,8 @@ public class MessageParseTask implements Task {
         return getClass().getSimpleName();
     }
 
+
+
     void handleUserTimeLineList (ResponseList<Status> statusList) throws DataSequenceReachedException{
         if (statusList.size() == 0) {
             logger.debug("response status list = 0, stop handle this user");
@@ -185,8 +175,6 @@ public class MessageParseTask implements Task {
         }
 
         for (Status status : statusList) {
-            Date statusDate = status.getCreatedAt();
-            if (maxOldDate.after(statusDate)) throw new DataSequenceReachedException();
             if (!MESSAGE_lANG.equals(status.getLang())) continue;
             if (status.isRetweet()) continue;
 
@@ -198,6 +186,8 @@ public class MessageParseTask implements Task {
                 recipient = status.getInReplyToScreenName();
                 if (recipient == null || !mentionValidator(text)) continue;
             }
+
+            Date statusDate = status.getCreatedAt();
 
             Message message = new Message();
             message.setMessage(text);

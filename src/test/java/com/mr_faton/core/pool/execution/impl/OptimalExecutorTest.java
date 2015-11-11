@@ -1,8 +1,9 @@
 package com.mr_faton.core.pool.execution.impl;
 
+import com.mr_faton.core.execution_pool.ExecutionPool;
+import com.mr_faton.core.execution_pool.impl.OptimalExecutor;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.pool.db_connection.impl.TransactionManagerReal;
-import com.mr_faton.core.pool.execution.ExecutionPool;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.SettingsHolder;
 import org.junit.Assert;

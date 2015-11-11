@@ -1,4 +1,4 @@
-package com.mr_faton.core.pool.execution;
+package com.mr_faton.core.execution_pool;
 
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.Command;

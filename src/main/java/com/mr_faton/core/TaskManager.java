@@ -1,8 +1,8 @@
 package com.mr_faton.core;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
+import com.mr_faton.core.execution_pool.ExecutionPool;
 import com.mr_faton.core.pool.db_connection.TransactionManager;
-import com.mr_faton.core.pool.execution.ExecutionPool;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;

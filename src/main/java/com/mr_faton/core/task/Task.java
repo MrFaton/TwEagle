@@ -3,7 +3,10 @@ package com.mr_faton.core.task;
 import java.sql.SQLException;
 
 /**
- * Created by Mr_Faton on 15.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 15.09.2015
  */
 public interface Task {
     boolean getStatus();

@@ -16,6 +16,7 @@ import com.mr_faton.core.task.util.MessageUpdateStrategy;
 import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import twitter4j.TwitterException;
 
 import java.sql.SQLException;
@@ -34,11 +35,16 @@ public class TweetTask implements Task {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.TweetTask");
 
-    private final TwitterAPI twitterAPI;
-    private final TweetUserDAO tweetUserDAO;
-    private final MessageDAO messageDAO;
-    private final PostedMessageDAO postedMessageDAO;
-    private final UserDAO userDAO;
+    @Autowired
+    private TwitterAPI twitterAPI;
+    @Autowired
+    private TweetUserDAO tweetUserDAO;
+    @Autowired
+    private MessageDAO messageDAO;
+    @Autowired
+    private PostedMessageDAO postedMessageDAO;
+    @Autowired
+    private UserDAO userDAO;
 
     private boolean status = true;
     private TweetUser tweetUser = null;
@@ -46,29 +52,15 @@ public class TweetTask implements Task {
     private long postedMessageId = 0;
 
 
-    public TweetTask(
-            TwitterAPI twitterAPI,
-            TweetUserDAO tweetUserDAO,
-            MessageDAO messageDAO,
-            PostedMessageDAO postedMessageDAO,
-            UserDAO userDAO
-    ) {
-        this.twitterAPI = twitterAPI;
-        this.tweetUserDAO = tweetUserDAO;
-        this.messageDAO = messageDAO;
-        this.postedMessageDAO = postedMessageDAO;
-        this.userDAO = userDAO;
-    }
-
     @Override
     public boolean getStatus() {
-        logger.debug("get status => " + status);
+        logger.debug("status is " + status);
         return status;
     }
 
     @Override
     public void setStatus(boolean status) {
-        logger.debug("change status => " + status);
+        logger.info("status changed to " + status);
         this.status = status;
     }
 
@@ -79,20 +71,21 @@ public class TweetTask implements Task {
             logger.debug("tweetUser == null");
             return Long.MAX_VALUE;
         }
-//        return tweetUser.getNextTweet();
-        return 0;
+        logger.debug("next tweet planed on " + TimeWizard.formatDateWithTime(tweetUser.getNextTweet().getTime()));
+        return tweetUser.getNextTweet().getTime();
     }
 
     @Override
     public void setNextTime() {
-        logger.debug("set time for next tweet");
+        logger.debug("set time");
         int currentTweets = tweetUser.getCurTweets();
         int maxTweets = tweetUser.getMaxTweets();
         currentTweets ++;
 
-//        if (currentTweets == maxTweets) tweetUser.setNextTweet(Long.MAX_VALUE);
-//
-//        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+        if (currentTweets == maxTweets) tweetUser.setNextTweet(new Date(Long.MAX_VALUE));
+
+        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+        logger.debug("next tweet has planed on " + TimeWizard.formatDateWithTime(tweetUser.getNextTweet().getTime()));
     }
 
     @Override

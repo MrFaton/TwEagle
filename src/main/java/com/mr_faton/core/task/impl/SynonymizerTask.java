@@ -7,7 +7,9 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
+import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,30 +27,27 @@ public class SynonymizerTask implements Task{
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.task.impl.SynonymizerTask");
     public static final int MESSAGE_LIMIT = 10; //how many messages select from db
-    public static final int MIN_DELAY = 1 * 60 * 1000; //minutes
-    public static final int MAX_DELAY = 2 * 60 * 1000; //minutes
+    public static final int MIN_DELAY = 2 * 60 * 1000; //minutes
+    public static final int MAX_DELAY = 3 * 60 * 1000; //minutes
     public static final int MIN_SYN_PERCENT = 20;
     public static final int MAX_SYN_PERCENT = 60;
     public static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
 
-    private final MessageDAO messageDAO;
-    private final SynonymDAO synonymDAO;
-    private final NotExistsSynonymDAO notExistsSynonymDAO;
+    @Autowired
+    private MessageDAO messageDAO;
+    @Autowired
+    private SynonymDAO synonymDAO;
+    @Autowired
+    private NotExistsSynonymDAO notExistsSynonymDAO;
 
     private boolean status = true;
     private long nextTime = 0;
-    private List<Message> messagesForSynonymize; //messages who will be synonymized
-    private List<Message> synonymizedMessages = new ArrayList<>(MESSAGE_LIMIT + 1); //synonymized messages
+    private List<Message> messagesForSynonymize;
+    private List<Message> synonymizedMessages = new ArrayList<>(MESSAGE_LIMIT + 1);
     private boolean hasMoreMessages = true; //if db says that no messages for synonymized, then turn it to false
 
 
 
-    public SynonymizerTask(MessageDAO messageDAO, SynonymDAO synonymDAO, NotExistsSynonymDAO notExistsSynonymDAO) {
-        logger.debug("constructor");
-        this.messageDAO = messageDAO;
-        this.synonymDAO = synonymDAO;
-        this.notExistsSynonymDAO = notExistsSynonymDAO;
-    }
 
 
     /**
@@ -57,6 +56,7 @@ public class SynonymizerTask implements Task{
      */
     @Override
     public boolean getStatus() {
+        logger.debug("status is " + status);
         return status;
     }
 
@@ -76,6 +76,7 @@ public class SynonymizerTask implements Task{
      */
     @Override
     public long getTime() {
+        logger.debug("next synonymizing planed on " + TimeWizard.formatDateWithTime(nextTime));
         return nextTime;
     }
 
@@ -84,8 +85,10 @@ public class SynonymizerTask implements Task{
         logger.debug("set next time");
         if (hasMoreMessages) {
             nextTime = RandomGenerator.getNumber(MIN_DELAY, MAX_DELAY) + System.currentTimeMillis();
+            logger.debug("next parsing has been set up on " + TimeWizard.formatDateWithTime(nextTime));
         } else {
             nextTime = Long.MAX_VALUE;
+            logger.debug("next parsing hes been set up on maximum time, cause no messages for synonymize");
         }
     }
 
@@ -95,9 +98,11 @@ public class SynonymizerTask implements Task{
         synonymizedMessages.clear();
         try {
             messagesForSynonymize = messageDAO.getUnSynonymizedMessages(MESSAGE_LIMIT);
+            logger.debug("find " + messagesForSynonymize.size() + " messages for synonymize");
         } catch (NoSuchEntityException e) {
             hasMoreMessages = false;
             nextTime = Long.MAX_VALUE;
+            logger.debug("no messages found for synonymize");
         }
     }
 
@@ -106,6 +111,7 @@ public class SynonymizerTask implements Task{
         logger.debug("save");
         if (synonymizedMessages == null || synonymizedMessages.size() == 0) return;
         messageDAO.update(synonymizedMessages);
+        logger.debug(synonymizedMessages.size() + " synonymized messages saved");
     }
 
 
@@ -134,7 +140,7 @@ public class SynonymizerTask implements Task{
                     text.append(word).append(" ");
                 }
                 String newMessage = text.substring(0, text.lastIndexOf(" "));
-                if (newMessage.length() > 140) logger.debug("message with 1d " + message.getId() + " in result is too long, so left it old message");
+                if (newMessage.length() > 140) logger.debug("message with id " + message.getId() + " in result is too long, so left it old message");
                 if (newMessage.length() <= 140) {
                     message.setMessage(newMessage);
                 }
@@ -233,22 +239,20 @@ public class SynonymizerTask implements Task{
                 punctuationPart = replacementWord.substring(punctuationIndex, replacementWord.length());
             }
 
-            List<String> synonyms;
-//            try {
-//                Synonym synonym = synonymDAO.getSynonym(replacementWordPart);
-//                synonyms = synonym.getSynonyms();
-//                int usedCount = synonym.getUsed();
-//                synonym.setUsed(++usedCount);
-//                synonymDAO.update(synonym);
-//            } catch (NoSuchEntityException e) {
-//                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
-//                notExistsSynonymDAO.addWord(replacementWordPart);
-//                continue;
-//            }
-//            String synonym = getRandomSynonym(synonyms);
-//            String synonymizedWord = synonym + punctuationPart;
-//
-//            wordList.set(replacementWordIndex, synonymizedWord);
+            List<String> synonymList;
+            try {
+                synonymList = synonymDAO.getSynonymList(replacementWordPart);
+
+                synonymDAO.doWordUseful(replacementWordPart);
+            } catch (NoSuchEntityException e) {
+                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
+                notExistsSynonymDAO.addWord(replacementWordPart);
+                continue;
+            }
+            String synonym = getRandomSynonym(synonymList);
+            String synonymizedWord = synonym + punctuationPart;
+
+            wordList.set(replacementWordIndex, synonymizedWord);
 
             positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
 

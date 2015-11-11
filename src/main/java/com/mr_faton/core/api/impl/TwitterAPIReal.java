@@ -6,32 +6,22 @@ import com.mr_faton.core.exception.BadUserException;
 import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TwitterAPIReal implements TwitterAPI{
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.api.impl.TwitterAPIReal");
-    private final String USER_LANG = "ru";
-    private final Date USER_LAST_POST_DATE;
     private static final Map<String, Twitter> TWITTER_STORAGE = new ConcurrentHashMap<>();
-    private final UserDAO userDAO;
     private static final String APP_LIMIT = "/application/rate_limit_status";
 
-
-    public TwitterAPIReal(UserDAO userDAO) {
-        logger.debug("constructor");
-        this.userDAO = userDAO;
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.YEAR, -3);
-        USER_LAST_POST_DATE = new Date(calendar.getTimeInMillis());
-    }
+    @Autowired
+    private UserDAO userDAO;
 
     @Override
     public long postTweet(String userName, String tweet) throws TwitterException, SQLException, NoSuchEntityException {
@@ -76,6 +66,11 @@ public class TwitterAPIReal implements TwitterAPI{
         twitterUserValidator(twitter, donorUserName);
         return twitter.getUserTimeline(donorUserName, paging);
     }
+
+
+
+
+
 
     private int getAppLimit(String userName) throws TwitterException, SQLException, NoSuchEntityException {
         logger.debug("get application limit status for user " + userName);
@@ -131,19 +126,18 @@ public class TwitterAPIReal implements TwitterAPI{
     }
 
     private void twitterUserValidator(Twitter twitter, String donorName) throws TwitterException, BadUserException {
+        final String userLang = "ru";
         try {
             User user = twitter.showUser(donorName);
-            if (user.isProtected()) throw new BadUserException("bad donorUser '" + donorName + "', cause its protected");
+            if (user.isProtected()) throw new BadUserException("bad donorUser '" + donorName + "', cause it's protected");
 
-            if (!USER_LANG.equals(user.getLang())) throw new BadUserException("bad donorUser " + donorName + ", cause its lang = " + user.getLang());
 
-            if (USER_LAST_POST_DATE.after(user.getStatus().getCreatedAt())) throw new BadUserException("bad donorUser " + donorName + ", because its last status update in " +
-                    String.format("%td.%<tm.%<tY", user.getStatus().getCreatedAt()));
-
+            if (!userLang.equals(user.getLang())) throw new BadUserException(
+                    "bad donorUser " + donorName + ", cause it's lang = " + user.getLang());
         } catch (TwitterException e) {
             int statusCode = e.getStatusCode();
             if (statusCode == 404) {
-                throw new BadUserException("bad donorUser " + donorName + ", because its not found");
+                throw new BadUserException("bad donorUser " + donorName + ", because it's not found");
             } else {
                 throw e;
             }
