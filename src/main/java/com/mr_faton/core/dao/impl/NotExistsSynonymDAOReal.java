@@ -2,9 +2,12 @@ package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.NotExistsSynonymDAO;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -21,19 +24,19 @@ public class NotExistsSynonymDAOReal implements NotExistsSynonymDAO {
     private static final String SQL = "" +
             "INSERT INTO tweagle.not_exists_synonym (word) VALUE (?) ON DUPLICATE KEY UPDATE used = used + 1;";
 
-    private final DataSource dataSource;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    public NotExistsSynonymDAOReal(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void addWord(String word) throws SQLException {
+    public void addWord(final String word) throws SQLException {
         logger.debug("add not exist synonym " + word);
-        Connection connection = dataSource.getConnection();
-        try(PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setString(1, word);
-            preparedStatement.executeUpdate();
-        }
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, word);
+            }
+        };
+        jdbcTemplate.update(SQL, pss);
     }
 }

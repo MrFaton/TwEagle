@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -27,12 +26,12 @@ public class SynonymDAORealTest {
     private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
     private static final SynonymDAO SYNONYM_DAO = (SynonymDAO) AppContext.getBeanByName("synonymDAO");
 
-//    @AfterClass
-//    public static void tearDown() throws Exception {
-//        final String SQL = "" +
-//                "DELETE FROM tweagle.words WHERE word LIKE 'SynonymDAOReal%';";
-//        JDBC_TEMPLATE.update(SQL);
-//    }
+    @AfterClass
+    public static void tearDown() throws Exception {
+        final String SQL = "" +
+                "DELETE FROM tweagle.words WHERE word LIKE 'SynonymDAOReal%';";
+        JDBC_TEMPLATE.update(SQL);
+    }
 
     @Test
     public void saveAndGet() throws Exception {
@@ -49,5 +48,21 @@ public class SynonymDAORealTest {
         List<String> extractedSynonyms = SYNONYM_DAO.getSynonymList(word);
         if (extractedSynonyms.contains(word)) fail();
         assertEquals(synonymList, extractedSynonyms);
+    }
+
+    @Test
+    public void doWordUseful() throws Exception {
+        List<String> synonymList = Arrays.asList(BASE_NAME + Counter.getNextNumber(), BASE_NAME + Counter.getNextNumber());
+        final String SQL = "" +
+                "SELECT used FROM tweagle.words WHERE word = '" + synonymList.get(0) + "'";
+        final int usedTimes = 2;
+
+        SYNONYM_DAO.save(synonymList);
+        SYNONYM_DAO.doWordUseful(synonymList.get(0));
+        SYNONYM_DAO.doWordUseful(synonymList.get(0));
+
+        final int extractedUsedTimes = JDBC_TEMPLATE.queryForObject(SQL, Integer.class);
+
+        assertEquals(usedTimes, extractedUsedTimes);
     }
 }

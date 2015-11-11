@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,7 +96,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
     @Override
     public void save(final List<DonorUser> donorUserList) throws SQLException {
         logger.debug("save " + donorUserList.size() + " donor users");
@@ -131,6 +132,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
         };
 
         jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
+        logger.debug("fine");
     }
 
 

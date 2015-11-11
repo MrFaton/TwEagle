@@ -4,10 +4,18 @@ import com.mr_faton.core.dao.TweetUserDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.TweetUser;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
 
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,18 +29,14 @@ public class TweetUserDAOReal implements TweetUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.TweetUserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.tweet_users (name, is_tweet, cur_tweet, max_tweet, next_tweet, last_upd) " +
+            "INSERT INTO tweagle.tweet_users (tu_name, is_tweet, cur_tweet, max_tweet, next_tweet, last_upd) " +
             "VALUES (?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.tweet_users SET " +
-            "is_tweet = ?, cur_tweet = ?, max_tweet = ?, next_tweet = ?, last_upd = ? WHERE name = ?;";
+            "is_tweet = ?, cur_tweet = ?, max_tweet = ?, next_tweet = ?, last_upd = ? WHERE tu_name = ?;";
 
-    private final DataSource dataSource;
-
-    public TweetUserDAOReal(DataSource dataSource) {
-        logger.debug("constructor");
-        this.dataSource = dataSource;
-    }
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public TweetUser getUserForTweet() throws SQLException, NoSuchEntityException {
@@ -41,11 +45,10 @@ public class TweetUserDAOReal implements TweetUserDAO {
                 "SELECT * FROM tweagle.tweet_users WHERE " +
                 "is_tweet = 1 AND cur_tweet < max_tweet AND " +
                 "next_tweet = (SELECT MIN(next_tweet) FROM tweagle.tweet_users);";
-        Connection connection = dataSource.getConnection();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SQL)) {
-            if (resultSet.next()) return getTweetUser(resultSet);
-            throw new NoSuchEntityException();
+        try {
+            return jdbcTemplate.queryForObject(SQL, new TwitterUserRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("no twitter user for posting tweet found", emptyData);
         }
     }
 
@@ -53,102 +56,116 @@ public class TweetUserDAOReal implements TweetUserDAO {
     public List<TweetUser> getUserList() throws SQLException, NoSuchEntityException {
         logger.debug("get tweet users");
         final String SQL = "SELECT * FROM tweagle.tweet_users;";
-        List<TweetUser> tweetUserList = new ArrayList<>();
-        Connection connection = dataSource.getConnection();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SQL)) {
-
-            while (resultSet.next()) {
-                tweetUserList.add(getTweetUser(resultSet));
-            }
-        }
-        if (tweetUserList.isEmpty()) throw new NoSuchEntityException();
+        List<TweetUser> tweetUserList = jdbcTemplate.query(SQL, new TwitterUserRowMapper());
+        if (tweetUserList.isEmpty()) throw new NoSuchEntityException("no tweet users found");
         return tweetUserList;
     }
 
 
-    private TweetUser getTweetUser(final ResultSet resultSet) throws SQLException {
-        TweetUser tweetUser = new TweetUser();
-        tweetUser.setName(resultSet.getString("name"));
-        tweetUser.setTweet(resultSet.getBoolean("is_tweet"));
-        tweetUser.setCurTweets(resultSet.getInt("cur_tweet"));
-        tweetUser.setMaxTweets(resultSet.getInt("max_tweet"));
-        tweetUser.setNextTweet(resultSet.getTimestamp("next_tweet").getTime());
-        tweetUser.setLastUpdateDay(resultSet.getInt("last_upd"));
-        return tweetUser;
-    }
-
 
     // INSERTS - UPDATES
     @Override
-    public void save(TweetUser tweetUser) throws SQLException {
+    public void save(final TweetUser tweetUser) throws SQLException {
         logger.debug("save tweet tweetUser " + tweetUser);
-        Connection connection = dataSource.getConnection();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-            preparedStatement.setString(1, tweetUser.getName());
-            preparedStatement.setBoolean(2, tweetUser.isTweet());
-            preparedStatement.setInt(3, tweetUser.getCurTweets());
-            preparedStatement.setInt(4, tweetUser.getMaxTweets());
-            preparedStatement.setTimestamp(5, new Timestamp(tweetUser.getNextTweet()));
-            preparedStatement.setInt(6, tweetUser.getLastUpdateDay());
-
-            preparedStatement.executeUpdate();
-        }
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setString(1, tweetUser.getName());
+                ps.setBoolean(2, tweetUser.isTweet());
+                ps.setInt(3, tweetUser.getCurTweets());
+                ps.setInt(4, tweetUser.getMaxTweets());
+                ps.setTimestamp(5, new Timestamp(tweetUser.getNextTweet().getTime()));
+                ps.setInt(6, tweetUser.getLastUpdateDay());
+            }
+        };
+        jdbcTemplate.update(SQL_SAVE, pss);
     }
 
     @Override
-    public void save(List<TweetUser> tweetUserList) throws SQLException {
+    public void save(final List<TweetUser> tweetUserList) throws SQLException {
         logger.debug("save " + tweetUserList.size() + " tweet users");
-        Connection connection = dataSource.getConnection();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_SAVE)) {
-            for (TweetUser tweetUser : tweetUserList) {
-                preparedStatement.setString(1, tweetUser.getName());
-                preparedStatement.setBoolean(2, tweetUser.isTweet());
-                preparedStatement.setInt(3, tweetUser.getCurTweets());
-                preparedStatement.setInt(4, tweetUser.getMaxTweets());
-                preparedStatement.setTimestamp(5, new Timestamp(tweetUser.getNextTweet()));
-                preparedStatement.setInt(6, tweetUser.getLastUpdateDay());
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                TweetUser tweetUser = tweetUserList.get(i);
 
-                preparedStatement.addBatch();
+                ps.setString(1, tweetUser.getName());
+                ps.setBoolean(2, tweetUser.isTweet());
+                ps.setInt(3, tweetUser.getCurTweets());
+                ps.setInt(4, tweetUser.getMaxTweets());
+                ps.setTimestamp(5, new Timestamp(tweetUser.getNextTweet().getTime()));
+                ps.setInt(6, tweetUser.getLastUpdateDay());
             }
-            preparedStatement.executeBatch();
-        }
+
+            @Override
+            public int getBatchSize() {
+                return tweetUserList.size();
+            }
+        };
+        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
 
     @Override
-    public void update(TweetUser tweetUser) throws SQLException {
+    public void update(final TweetUser tweetUser) throws SQLException {
         logger.debug("update tweet tweetUser " + tweetUser);
-        Connection connection = dataSource.getConnection();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            preparedStatement.setBoolean(1, tweetUser.isTweet());
-            preparedStatement.setInt(2, tweetUser.getCurTweets());
-            preparedStatement.setInt(3, tweetUser.getMaxTweets());
-            preparedStatement.setTimestamp(4, new Timestamp(tweetUser.getNextTweet()));
-            preparedStatement.setInt(5, tweetUser.getLastUpdateDay());
-            preparedStatement.setString(6, tweetUser.getName());
-
-            preparedStatement.executeUpdate();
-        }
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setBoolean(1, tweetUser.isTweet());
+                ps.setInt(2, tweetUser.getCurTweets());
+                ps.setInt(3, tweetUser.getMaxTweets());
+                ps.setTimestamp(4, new Timestamp(tweetUser.getNextTweet().getTime()));
+                ps.setInt(5, tweetUser.getLastUpdateDay());
+                ps.setString(6, tweetUser.getName());
+            }
+        };
+        jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
     @Override
-    public void update(List<TweetUser> userList) throws SQLException {
+    public void update(final List<TweetUser> userList) throws SQLException {
         logger.debug("update " + userList.size() + " tweet users");
-        Connection connection = dataSource.getConnection();
+        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                TweetUser tweetUser = userList.get(i);
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_UPDATE)) {
-            for (TweetUser tweetUser : userList) {
-                preparedStatement.setBoolean(1, tweetUser.isTweet());
-                preparedStatement.setInt(2, tweetUser.getCurTweets());
-                preparedStatement.setInt(3, tweetUser.getMaxTweets());
-                preparedStatement.setTimestamp(4, new Timestamp(tweetUser.getNextTweet()));
-                preparedStatement.setInt(5, tweetUser.getLastUpdateDay());
-                preparedStatement.setString(6, tweetUser.getName());
-
-                preparedStatement.addBatch();
+                ps.setBoolean(1, tweetUser.isTweet());
+                ps.setInt(2, tweetUser.getCurTweets());
+                ps.setInt(3, tweetUser.getMaxTweets());
+                ps.setTimestamp(4, new Timestamp(tweetUser.getNextTweet().getTime()));
+                ps.setInt(5, tweetUser.getLastUpdateDay());
+                ps.setString(6, tweetUser.getName());
             }
-            preparedStatement.executeBatch();
+
+            @Override
+            public int getBatchSize() {
+                return userList.size();
+            }
+        };
+        jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
+    }
+}
+
+class TwitterUserRowMapper implements RowMapper<TweetUser> {
+    @Override
+    public TweetUser mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        TweetUser tweetUser = new TweetUser();
+        tweetUser.setId(resultSet.getInt("id"));
+        tweetUser.setName(resultSet.getString("tu_name"));
+        tweetUser.setTweet(resultSet.getBoolean("is_tweet"));
+        tweetUser.setCurTweets(resultSet.getInt("cur_tweet"));
+        tweetUser.setMaxTweets(resultSet.getInt("max_tweet"));
+
+        Timestamp timestamp = resultSet.getTimestamp("next_tweet");
+        if (timestamp != null) {
+            tweetUser.setNextTweet(new Date(timestamp.getTime()));
+        }else {
+            tweetUser.setNextTweet(null);
         }
+
+        tweetUser.setLastUpdateDay(resultSet.getInt("last_upd"));
+        return tweetUser;
     }
 }

@@ -79,7 +79,8 @@ public class TweetTask implements Task {
             logger.debug("tweetUser == null");
             return Long.MAX_VALUE;
         }
-        return tweetUser.getNextTweet();
+//        return tweetUser.getNextTweet();
+        return 0;
     }
 
     @Override
@@ -89,9 +90,9 @@ public class TweetTask implements Task {
         int maxTweets = tweetUser.getMaxTweets();
         currentTweets ++;
 
-        if (currentTweets == maxTweets) tweetUser.setNextTweet(Long.MAX_VALUE);
-
-        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+//        if (currentTweets == maxTweets) tweetUser.setNextTweet(Long.MAX_VALUE);
+//
+//        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
     }
 
     @Override
@@ -140,7 +141,7 @@ public class TweetTask implements Task {
                 if (curDay != tweetUser.getLastUpdateDay() && tweetUser.isTweet()) {
                     tweetUser.setCurTweets(0);
                     tweetUser.setMaxTweets(evalMaxTweets(tweetUser));
-                    tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+//                    tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
                     tweetUser.setLastUpdateDay(curDay);
                 }
             }

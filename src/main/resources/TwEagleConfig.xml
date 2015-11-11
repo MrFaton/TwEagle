@@ -45,15 +45,8 @@
     <bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal"/>
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
     <bean id="synonymDAO" class="com.mr_faton.core.dao.impl.SynonymDAOReal"/>
-    <!--<bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal">-->
-    <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
-    <!--</bean>-->
-    <!--<bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal">-->
-    <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
-    <!--</bean>-->
-    <!--<bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal">-->
-    <!--<constructor-arg name="dataSource" ref="transactionManager"/>-->
-    <!--</bean>-->
+    <bean id="notExistsSynonymDAO" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal"/>
+    <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
 
 
     <!--&lt;!&ndash; Twitter API config&ndash;&gt;-->

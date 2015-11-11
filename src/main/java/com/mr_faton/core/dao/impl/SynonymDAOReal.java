@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,7 +49,9 @@ public class SynonymDAOReal implements SynonymDAO {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void doWordUseful(String word) throws SQLException {
-
+        final String SQL = "" +
+                "UPDATE tweagle.words SET used = used + 1 WHERE word = '" + word + "';";
+        jdbcTemplate.update(SQL);
     }
 
     // INSERT
