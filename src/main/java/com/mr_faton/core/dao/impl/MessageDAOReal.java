@@ -11,8 +11,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.Calendar;
@@ -25,7 +23,6 @@ import java.util.List;
  * @version 1.0
  * @since 20.09.2015
  */
-@Transactional(propagation = Propagation.SUPPORTS)
 public class MessageDAOReal implements MessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.MessageDAOReal");
@@ -44,7 +41,8 @@ public class MessageDAOReal implements MessageDAO {
         final String SQL = "" +
                 "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
                 "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
-                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
+                "FROM tweagle.messages " +
+                "INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
                 "WHERE recipient_id IS NULL AND male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
         try {
             return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
@@ -178,7 +176,6 @@ public class MessageDAOReal implements MessageDAO {
 
 
     // INSERTS - UPDATES
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final Message message) throws SQLException {
         logger.info("save message " + message);
@@ -200,7 +197,6 @@ public class MessageDAOReal implements MessageDAO {
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final List<Message> messageList) throws SQLException {
         logger.info("save " + messageList.size() + " messages");
@@ -230,7 +226,6 @@ public class MessageDAOReal implements MessageDAO {
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final Message message) throws SQLException {
         logger.info("update message " + message);
@@ -246,7 +241,6 @@ public class MessageDAOReal implements MessageDAO {
         jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final List<Message> messageList) throws SQLException {
         logger.info("update " + messageList.size() + " messages");

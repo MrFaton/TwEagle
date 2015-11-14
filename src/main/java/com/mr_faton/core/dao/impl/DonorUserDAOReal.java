@@ -10,9 +10,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.List;
@@ -24,7 +21,7 @@ import java.util.List;
  * @version 1.0
  * @since 09.10.2015
  */
-@Transactional(propagation = Propagation.SUPPORTS)
+
 public class DonorUserDAOReal implements DonorUserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
@@ -50,22 +47,9 @@ public class DonorUserDAOReal implements DonorUserDAO {
         }
     }
 
-    @Deprecated
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    @Override
-    public void deleteUser(final String donorUserName) throws SQLException {
-        logger.debug("delete donor user " + donorUserName);
-        final String SQL = "" +
-                "DELETE FROM tweagle.donor_users WHERE du_name = '" + donorUserName + "';";
-        jdbcTemplate.update(SQL);
-    }
-
-
-
 
 
     // INSERTS - UPDATES
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final DonorUser donorUser) throws SQLException {
         logger.debug("save donor user " + donorUser);
@@ -96,7 +80,6 @@ public class DonorUserDAOReal implements DonorUserDAO {
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
     @Override
     public void save(final List<DonorUser> donorUserList) throws SQLException {
         logger.debug("save " + donorUserList.size() + " donor users");
@@ -136,7 +119,6 @@ public class DonorUserDAOReal implements DonorUserDAO {
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final DonorUser donorUser) throws SQLException {
         logger.debug("update donor user " + donorUser);
@@ -166,7 +148,6 @@ public class DonorUserDAOReal implements DonorUserDAO {
         jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final List<DonorUser> donorUserList) throws SQLException {
         logger.debug("update " + donorUserList.size() + " donor users");
@@ -202,17 +183,17 @@ public class DonorUserDAOReal implements DonorUserDAO {
 
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
-}
 
-class DonorUserRowMapper implements RowMapper<DonorUser> {
-    @Override
-    public DonorUser mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
-        DonorUser donorUser = new DonorUser();
-        donorUser.setName(resultSet.getString("du_name"));
-        donorUser.setMale(resultSet.getBoolean("male"));
-        donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
-        donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
-        donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
-        return donorUser;
+    class DonorUserRowMapper implements RowMapper<DonorUser> {
+        @Override
+        public DonorUser mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
+            DonorUser donorUser = new DonorUser();
+            donorUser.setName(resultSet.getString("du_name"));
+            donorUser.setMale(resultSet.getBoolean("male"));
+            donorUser.setTakeMessageDate(resultSet.getDate("take_messages_date"));
+            donorUser.setTakeFollowingDate(resultSet.getDate("take_following_date"));
+            donorUser.setTakeFollowersDate(resultSet.getDate("take_followers_date"));
+            return donorUser;
+        }
     }
 }

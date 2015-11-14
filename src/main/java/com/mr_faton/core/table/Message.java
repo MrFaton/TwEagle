@@ -91,7 +91,17 @@ public class Message {
 
     @Override
     public String toString() {
-        return owner + ": " + message;
+        return "Message{" +
+                "id=" + id +
+                ", message='" + message + '\'' +
+                ", owner='" + owner + '\'' +
+                ", ownerMale=" + ownerMale +
+                ", recipient='" + recipient + '\'' +
+                ", recipientMale=" + recipientMale +
+                ", postedDate=" + postedDate +
+                ", synonymized=" + synonymized +
+                ", posted=" + posted +
+                '}';
     }
 
     @Override

@@ -10,8 +10,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +23,6 @@ import java.util.List;
  * @version 1.0
  * @since 28.09.2015
  */
-@Transactional(propagation = Propagation.SUPPORTS)
 public class UserDAOReal implements UserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.UserDAOReal");
@@ -41,7 +38,6 @@ public class UserDAOReal implements UserDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
         logger.debug("get user by name " + name);
@@ -54,7 +50,6 @@ public class UserDAOReal implements UserDAO {
         }
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<User> getUserList() throws SQLException, NoSuchEntityException {
         logger.debug("get all users");
@@ -69,7 +64,6 @@ public class UserDAOReal implements UserDAO {
 
 
     // INSERTS - UPDATES
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final User user) throws SQLException {
         logger.info("save user " + user);
@@ -93,7 +87,6 @@ public class UserDAOReal implements UserDAO {
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final List<User> userList) throws SQLException {
         logger.info("save  " + userList.size() + " users");
@@ -124,7 +117,6 @@ public class UserDAOReal implements UserDAO {
         jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final User user) throws SQLException {
         logger.info("update user " + user);
@@ -146,7 +138,6 @@ public class UserDAOReal implements UserDAO {
         jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final List<User> userList) throws SQLException {
         logger.info("update " + userList.size() + " users");
@@ -174,24 +165,24 @@ public class UserDAOReal implements UserDAO {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
-}
 
-class UserRowMapper implements RowMapper<User> {
-    @Override
-    public User mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
-        User user = new User();
-        user.setName(resultSet.getString("u_name"));
-        user.setPassword(resultSet.getString("u_password"));
-        user.setEmail(resultSet.getString("email"));
-        user.setMale(resultSet.getBoolean("male"));
-        user.setCreationDate(resultSet.getDate("creation_date"));
-        user.setMessages(resultSet.getInt("messages"));
-        user.setFollowing(resultSet.getInt("following"));
-        user.setFollowers(resultSet.getInt("followers"));
-        user.setConsumerKey(resultSet.getString("consumer_key"));
-        user.setConsumerSecret(resultSet.getString("consumer_secret"));
-        user.setAccessToken(resultSet.getString("access_token"));
-        user.setAccessTokenSecret(resultSet.getString("access_token_secret"));
-        return user;
+    class UserRowMapper implements RowMapper<User> {
+        @Override
+        public User mapRow(ResultSet resultSet, int rowNumber) throws SQLException {
+            User user = new User();
+            user.setName(resultSet.getString("u_name"));
+            user.setPassword(resultSet.getString("u_password"));
+            user.setEmail(resultSet.getString("email"));
+            user.setMale(resultSet.getBoolean("male"));
+            user.setCreationDate(resultSet.getDate("creation_date"));
+            user.setMessages(resultSet.getInt("messages"));
+            user.setFollowing(resultSet.getInt("following"));
+            user.setFollowers(resultSet.getInt("followers"));
+            user.setConsumerKey(resultSet.getString("consumer_key"));
+            user.setConsumerSecret(resultSet.getString("consumer_secret"));
+            user.setAccessToken(resultSet.getString("access_token"));
+            user.setAccessTokenSecret(resultSet.getString("access_token_secret"));
+            return user;
+        }
     }
 }

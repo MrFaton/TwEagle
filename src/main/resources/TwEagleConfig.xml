@@ -50,6 +50,11 @@
     <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
 
 
+    <!-- Service-->
+    <bean id="userService" class="com.mr_faton.core.service.impl.UserServiceReal"/>
+    <bean id="donorUserService" class="com.mr_faton.core.service.impl.DonorUserServiceImpl"/>
+
+
     <!-- Twitter API config-->
     <bean id="twitterAPI" class="com.mr_faton.core.api.impl.TwitterAPIReal"/>
 

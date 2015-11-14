@@ -1,4 +1,4 @@
-package com.mr_faton.core.dao;
+package com.mr_faton.core.service;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.DonorUser;
@@ -10,14 +10,12 @@ import java.util.List;
  * Description
  *
  * @author Mr_Faton
- * @version 1.0
- * @since 07.10.2015
+ * @since 12.11.2015
  */
-public interface DonorUserDAO {
+public interface DonorUserService {
     DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException;
 
 
-    // INSERTS - UPDATES
     void save(DonorUser donorUser) throws SQLException;
     void save(List<DonorUser> donorUserList) throws SQLException;
 
