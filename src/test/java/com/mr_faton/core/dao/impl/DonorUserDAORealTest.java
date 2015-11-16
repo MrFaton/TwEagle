@@ -121,11 +121,12 @@ public class DonorUserDAORealTest {
     private DonorUser getDonorUserByUniqueName(String name) throws SQLException, NoSuchEntityException {
         final String SQL = "" +
                 "SELECT * FROM tweagle.donor_users WHERE du_name = '" + name + "';";
-        try {
-            return JDBC_TEMPLATE.queryForObject(SQL, new DonorUserRowMapper());
-        } catch (EmptyResultDataAccessException emptyData) {
-            throw new NoSuchEntityException("it's seems that donor user not found by unique name " + name, emptyData);
-        }
+//        try {
+//            return JDBC_TEMPLATE.queryForObject(SQL, new DonorUserRowMapper());
+//        } catch (EmptyResultDataAccessException emptyData) {
+//            throw new NoSuchEntityException("it's seems that donor user not found by unique name " + name, emptyData);
+//        }
+        return null;
     }
 
     private void equalsDonorUsers(DonorUser original, DonorUser extracted) {

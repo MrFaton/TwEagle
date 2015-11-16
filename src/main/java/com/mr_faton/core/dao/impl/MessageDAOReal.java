@@ -262,29 +262,29 @@ public class MessageDAOReal implements MessageDAO {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
-}
 
-class MessageRowMapper implements RowMapper<Message> {
-    @Override
-    public Message mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Message message = new Message();
+    class MessageRowMapper implements RowMapper<Message> {
+        @Override
+        public Message mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+            Message message = new Message();
 
-        message.setId(resultSet.getInt("id"));
-        message.setMessage(resultSet.getString("message"));
+            message.setId(resultSet.getInt("id"));
+            message.setMessage(resultSet.getString("message"));
 
-        message.setOwner(resultSet.getString("owner"));
-        message.setOwnerMale(resultSet.getBoolean("owner_male"));
+            message.setOwner(resultSet.getString("owner"));
+            message.setOwnerMale(resultSet.getBoolean("owner_male"));
 
-        message.setRecipient(resultSet.getString("recipient"));
-        if (resultSet.getString("recipient") != null) {
-            message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+            message.setRecipient(resultSet.getString("recipient"));
+            if (resultSet.getString("recipient") != null) {
+                message.setRecipientMale(resultSet.getBoolean("recipient_male"));
+            }
+
+            message.setPostedDate(resultSet.getTimestamp("posted_date"));
+
+            message.setSynonymized(resultSet.getBoolean("synonymized"));
+            message.setPosted(resultSet.getBoolean("posted"));
+
+            return message;
         }
-
-        message.setPostedDate(resultSet.getTimestamp("posted_date"));
-
-        message.setSynonymized(resultSet.getBoolean("synonymized"));
-        message.setPosted(resultSet.getBoolean("posted"));
-
-        return message;
     }
 }

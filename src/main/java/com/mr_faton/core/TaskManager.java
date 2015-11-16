@@ -2,7 +2,6 @@ package com.mr_faton.core;
 
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.execution_pool.ExecutionPool;
-import com.mr_faton.core.pool.db_connection.TransactionManager;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
@@ -31,12 +30,12 @@ public class TaskManager implements Runnable {
 
 
     private final ExecutionPool executionPool;
-    private final TransactionManager transactionManager;
+//    private final TransactionManager transactionManager;
 
-    public TaskManager(ExecutionPool executionPool, TransactionManager transactionManager, List<Task> taskList) {
+    public TaskManager(ExecutionPool executionPool, /*TransactionManager transactionManager,*/ List<Task> taskList) {
         logger.debug("constructor");
         this.executionPool = executionPool;
-        this.transactionManager = transactionManager;
+//        this.transactionManager = transactionManager;
         this.taskList = taskList;
     }
 
@@ -108,25 +107,25 @@ public class TaskManager implements Runnable {
 
 
     private void setDailyParams() throws Exception {
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                for (Task task : taskList) {
-                    task.setDailyParams();
-                }
-            }
-        });
+//        transactionManager.doInTransaction(new Command() {
+//            @Override
+//            public void doCommands() throws Exception {
+//                for (Task task : taskList) {
+//                    task.setDailyParams();
+//                }
+//            }
+//        });
     }
 
     private void updateAllTasks() throws Exception {
-        transactionManager.doInTransaction(new Command() {
-            @Override
-            public void doCommands() throws Exception {
-                for (Task task : taskList) {
-                    task.update();
-                }
-            }
-        });
+//        transactionManager.doInTransaction(new Command() {
+//            @Override
+//            public void doCommands() throws Exception {
+//                for (Task task : taskList) {
+//                    task.update();
+//                }
+//            }
+//        });
     }
 
     private long getSleepTimeForNextPeriod() {
@@ -143,8 +142,8 @@ public class TaskManager implements Runnable {
     }
 
     private void idle(final long sleepTime) throws InterruptedException {
-        logger.info("the next task will be executed in " + TimeWizard.convertToFuture(sleepTime) + ", " +
-                "idle period is " + TimeWizard.convertToIdle(sleepTime));
+//        logger.info("the next task will be executed in " + TimeWizard.convertToFuture(sleepTime) + ", " +
+//                "idle period is " + TimeWizard.convertToIdle(sleepTime));
         Thread.sleep(sleepTime);
     }
 
@@ -168,7 +167,7 @@ public class TaskManager implements Runnable {
     }
 
     public void shutDown() {
-        transactionManager.shutDown();
+//        transactionManager.shutDown();
         executionPool.shutDown();
     }
 }

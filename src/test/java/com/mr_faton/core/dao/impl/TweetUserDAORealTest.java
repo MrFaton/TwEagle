@@ -195,11 +195,12 @@ public class TweetUserDAORealTest {
     private TweetUser getTweetUserByUniqueName(String name) throws NoSuchEntityException {
         final String SQL = "" +
                 "SELECT * FROM tweagle.tweet_users WHERE tu_name = '" + name + "';";
-        try {
-            return JDBC_TEMPLATE.queryForObject(SQL, new TwitterUserRowMapper());
-        } catch (EmptyResultDataAccessException emptyData) {
-            throw new NoSuchEntityException();
-        }
+//        try {
+//            return JDBC_TEMPLATE.queryForObject(SQL, new TwitterUserRowMapper());
+//        } catch (EmptyResultDataAccessException emptyData) {
+//            throw new NoSuchEntityException();
+//        }
+        return null;
     }
 
     private void equalsTweetUsers(TweetUser original, TweetUser extracted) {

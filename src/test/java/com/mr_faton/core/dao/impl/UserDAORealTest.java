@@ -4,9 +4,11 @@ import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
-import org.junit.AfterClass;
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Counter;
 
 import java.util.Arrays;
@@ -23,28 +25,19 @@ import static org.junit.Assert.assertTrue;
  * @version 1.0
  * @since 14.10.2015
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = ("classpath:daoTestConfig.xml"))
 public class UserDAORealTest {
     private static final String BASE_NAME = "UserDAOReal";
-    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
-    private static final UserDAO USER_DAO = (UserDAO) AppContext.getBeanByName("userDAO");
-
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String SQL = "" +
-                "DELETE FROM tweagle.users WHERE u_name LIKE 'UserDAOReal%';";
-
-        JDBC_TEMPLATE.update(SQL);
-    }
-
-
+    @Autowired
+    private UserDAO userDAO;
 
 
     @Test
     public void getUserByName() throws Exception {
         final User original = createDefaultUser();
-        USER_DAO.save(original);
-        User extracted = USER_DAO.getUserByName(original.getName());
+        userDAO.save(original);
+        User extracted = userDAO.getUserByName(original.getName());
         equalsUsers(original, extracted);
     }
 
@@ -54,9 +47,9 @@ public class UserDAORealTest {
         final User user2 = createDefaultUser();
         final List<User> userList = Arrays.asList(user1, user2);
 
-        USER_DAO.save(userList);
+        userDAO.save(userList);
 
-        List<User> extractedUserList = USER_DAO.getUserList();
+        List<User> extractedUserList = userDAO.getUserList();
         assertTrue(extractedUserList.size() >= 2);
     }
 
@@ -68,8 +61,8 @@ public class UserDAORealTest {
     public void saveAndUpdate() throws Exception {
         //Test save
         final User original = createDefaultUser();
-        USER_DAO.save(original);
-        User extracted = USER_DAO.getUserByName(original.getName());
+        userDAO.save(original);
+        User extracted = userDAO.getUserByName(original.getName());
         equalsUsers(original, extracted);
 
         //Test update
@@ -83,9 +76,9 @@ public class UserDAORealTest {
         original.setAccessToken("juihbgifbn");
         original.setAccessTokenSecret("skjifbh");
 
-        USER_DAO.update(original);
+        userDAO.update(original);
 
-        extracted = USER_DAO.getUserByName(original.getName());
+        extracted = userDAO.getUserByName(original.getName());
 
         equalsUsers(original, extracted);
     }
@@ -97,10 +90,10 @@ public class UserDAORealTest {
         final User original2 = createDefaultUser();
         List<User> userList = Arrays.asList(original1, original2);
 
-        USER_DAO.save(userList);
+        userDAO.save(userList);
 
-        User extracted1 = USER_DAO.getUserByName(original1.getName());
-        User extracted2 = USER_DAO.getUserByName(original2.getName());
+        User extracted1 = userDAO.getUserByName(original1.getName());
+        User extracted2 = userDAO.getUserByName(original2.getName());
 
         equalsUsers(original1, extracted1);
         equalsUsers(original2, extracted2);
@@ -126,10 +119,10 @@ public class UserDAORealTest {
         original2.setAccessToken("ngfyc");
         original2.setAccessTokenSecret("khigf");
 
-        USER_DAO.update(userList);
+        userDAO.update(userList);
 
-        extracted1 = USER_DAO.getUserByName(original1.getName());
-        extracted2 = USER_DAO.getUserByName(original2.getName());
+        extracted1 = userDAO.getUserByName(original1.getName());
+        extracted2 = userDAO.getUserByName(original2.getName());
 
         equalsUsers(original1, extracted1);
         equalsUsers(original2, extracted2);

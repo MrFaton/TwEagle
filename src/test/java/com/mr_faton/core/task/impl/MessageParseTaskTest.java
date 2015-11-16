@@ -37,7 +37,7 @@ public class MessageParseTaskTest {
     @Before
     public void setUp() {
         donorUserDAO = mock(DonorUserDAO.class);
-        messageParseTask = new MessageParseTask(mock(TwitterAPI.class), mock(MessageDAO.class), donorUserDAO);
+//        messageParseTask = new MessageParseTask(mock(TwitterAPI.class), mock(MessageDAO.class), donorUserDAO);
     }
 
     @Test

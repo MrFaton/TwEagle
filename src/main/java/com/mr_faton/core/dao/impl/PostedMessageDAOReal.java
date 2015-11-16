@@ -10,8 +10,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
 import java.util.List;
@@ -23,7 +21,6 @@ import java.util.List;
  * @version 1.0
  * @since 28.09.2015
  */
-@Transactional(propagation = Propagation.SUPPORTS)
 public class PostedMessageDAOReal implements PostedMessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.PostedMessageDAOReal");
@@ -80,7 +77,6 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
 
 
     // INSERTS - UPDATES
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final PostedMessage postedMessage) throws SQLException {
         logger.debug("save posted message " + postedMessage);
@@ -102,7 +98,6 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(final List<PostedMessage> postedMessageList) throws SQLException {
         logger.debug("save " + postedMessageList.size() + " posted messages");
@@ -131,7 +126,6 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final PostedMessage postedMessage) throws SQLException {
         logger.info("update posted message " + postedMessage);
@@ -144,7 +138,6 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
         jdbcTemplate.update(SQL_UPDATE, pss);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(final List<PostedMessage> postedMessageList) throws SQLException {
         logger.info("update " + postedMessageList.size() + " posted messages");
@@ -162,34 +155,34 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
-}
 
-class PostedMessageRowMapper implements RowMapper<PostedMessage> {
-    @Override
-    public PostedMessage mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        PostedMessage postedMessage = new PostedMessage();
-        postedMessage.setId(resultSet.getInt("id"));
+    class PostedMessageRowMapper implements RowMapper<PostedMessage> {
+        @Override
+        public PostedMessage mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+            PostedMessage postedMessage = new PostedMessage();
+            postedMessage.setId(resultSet.getInt("id"));
 
-        postedMessage.setMessageId(resultSet.getInt("message_id"));
-        postedMessage.setMessage(resultSet.getString("message"));
+            postedMessage.setMessageId(resultSet.getInt("message_id"));
+            postedMessage.setMessage(resultSet.getString("message"));
 
-        postedMessage.setTwitterId(resultSet.getLong("twitter_id"));
+            postedMessage.setTwitterId(resultSet.getLong("twitter_id"));
 
-        postedMessage.setOldOwner(resultSet.getString("oldOwner"));
-        postedMessage.setOldOwnerMale(resultSet.getBoolean("oldOwnerMale"));
+            postedMessage.setOldOwner(resultSet.getString("oldOwner"));
+            postedMessage.setOldOwnerMale(resultSet.getBoolean("oldOwnerMale"));
 
-        postedMessage.setOldRecipient(resultSet.getString("oldRecipient"));
-        if (postedMessage.getOldRecipient() != null) postedMessage.setOldRecipientMale(resultSet.getBoolean("oldRecipientMale"));
+            postedMessage.setOldRecipient(resultSet.getString("oldRecipient"));
+            if (postedMessage.getOldRecipient() != null) postedMessage.setOldRecipientMale(resultSet.getBoolean("oldRecipientMale"));
 
-        postedMessage.setOwner(resultSet.getString("owner_id"));
-        postedMessage.setOwnerMale(resultSet.getBoolean("ownerMale"));
+            postedMessage.setOwner(resultSet.getString("owner_id"));
+            postedMessage.setOwnerMale(resultSet.getBoolean("ownerMale"));
 
-        postedMessage.setRecipient(resultSet.getString("recipient_id"));
-        if (postedMessage.getRecipient() != null) postedMessage.setRecipientMale(resultSet.getBoolean("recipientMale"));
+            postedMessage.setRecipient(resultSet.getString("recipient_id"));
+            if (postedMessage.getRecipient() != null) postedMessage.setRecipientMale(resultSet.getBoolean("recipientMale"));
 
-        postedMessage.setRetweeted(resultSet.getBoolean("retweeted"));
-        postedMessage.setPostedDate(resultSet.getTimestamp("posted_date"));
+            postedMessage.setRetweeted(resultSet.getBoolean("retweeted"));
+            postedMessage.setPostedDate(resultSet.getTimestamp("posted_date"));
 
-        return postedMessage;
+            return postedMessage;
+        }
     }
 }

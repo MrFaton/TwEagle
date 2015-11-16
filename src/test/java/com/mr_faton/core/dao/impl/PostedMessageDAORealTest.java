@@ -168,7 +168,8 @@ public class PostedMessageDAORealTest {
                 "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
                 "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
                 "WHERE owner.du_name = '" + ownerName + "';";
-        return JDBC_TEMPLATE.queryForObject(SQL, new MessageRowMapper());
+//        return JDBC_TEMPLATE.queryForObject(SQL, new MessageRowMapper());
+        return null;
     }
 
     private PostedMessage getPostedMessageByUniqueOwner(String ownerName) throws NoSuchEntityException {
@@ -204,11 +205,12 @@ public class PostedMessageDAORealTest {
                 "INNER JOIN tweagle.users recipientTable ON posted_messages.recipient_id = recipientTable.u_name " +
                 "WHERE posted_messages.owner_id = '" + ownerName + "';";
 
-        try {
-            return JDBC_TEMPLATE.queryForObject(SQL, new PostedMessageRowMapper());
-        } catch (EmptyResultDataAccessException emptyData) {
-            throw new NoSuchEntityException("no posted message", emptyData);
-        }
+//        try {
+//            return JDBC_TEMPLATE.queryForObject(SQL, new PostedMessageRowMapper());
+//        } catch (EmptyResultDataAccessException emptyData) {
+//            throw new NoSuchEntityException("no posted message", emptyData);
+//        }
+        return null;
     }
 
     private PostedMessage createDefaultPostedMessage() throws SQLException {

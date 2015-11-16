@@ -17,7 +17,7 @@ import java.util.List;
  * @author Mr_Faton
  * @since 12.11.2015
  */
-public class DonorUserServiceImpl implements DonorUserService {
+public class DonorUserServiceReal implements DonorUserService {
     @Autowired
     DonorUserDAO donorUserDAO;
 

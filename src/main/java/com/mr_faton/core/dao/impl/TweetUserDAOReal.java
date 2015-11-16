@@ -146,26 +146,26 @@ public class TweetUserDAOReal implements TweetUserDAO {
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
     }
-}
 
-class TwitterUserRowMapper implements RowMapper<TweetUser> {
-    @Override
-    public TweetUser mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        TweetUser tweetUser = new TweetUser();
-        tweetUser.setId(resultSet.getInt("id"));
-        tweetUser.setName(resultSet.getString("tu_name"));
-        tweetUser.setTweet(resultSet.getBoolean("is_tweet"));
-        tweetUser.setCurTweets(resultSet.getInt("cur_tweet"));
-        tweetUser.setMaxTweets(resultSet.getInt("max_tweet"));
+    class TwitterUserRowMapper implements RowMapper<TweetUser> {
+        @Override
+        public TweetUser mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+            TweetUser tweetUser = new TweetUser();
+            tweetUser.setId(resultSet.getInt("id"));
+            tweetUser.setName(resultSet.getString("tu_name"));
+            tweetUser.setTweet(resultSet.getBoolean("is_tweet"));
+            tweetUser.setCurTweets(resultSet.getInt("cur_tweet"));
+            tweetUser.setMaxTweets(resultSet.getInt("max_tweet"));
 
-        Timestamp timestamp = resultSet.getTimestamp("next_tweet");
-        if (timestamp != null) {
-            tweetUser.setNextTweet(new Date(timestamp.getTime()));
-        }else {
-            tweetUser.setNextTweet(null);
+            Timestamp timestamp = resultSet.getTimestamp("next_tweet");
+            if (timestamp != null) {
+                tweetUser.setNextTweet(new Date(timestamp.getTime()));
+            }else {
+                tweetUser.setNextTweet(null);
+            }
+
+            tweetUser.setLastUpdateDay(resultSet.getInt("last_upd"));
+            return tweetUser;
         }
-
-        tweetUser.setLastUpdateDay(resultSet.getInt("last_upd"));
-        return tweetUser;
     }
 }

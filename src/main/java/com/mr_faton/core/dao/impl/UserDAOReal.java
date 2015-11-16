@@ -27,7 +27,7 @@ public class UserDAOReal implements UserDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.UserDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT IGNORE INTO tweagle.users " +
+            "INSERT INTO tweagle.users " +
             "(u_name, u_password, email, male, creation_date, messages, following, followers, " +
             "consumer_key, consumer_secret, access_token, access_token_secret) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";

@@ -8,7 +8,10 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by Mr_Faton on 18.09.2015.
+ * Description
+ *
+ * @author Mr_Faton
+ * @since 18.09.2015
  */
 public interface MessageDAO {
     //Get Tweet

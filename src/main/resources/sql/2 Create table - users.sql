@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS users;
-CREATE TABLE users (
+DROP TABLE IF EXISTS tweagle.users;
+CREATE TABLE tweagle.users (
 
   u_name              VARCHAR(25) NOT NULL,
   u_password            VARCHAR(15) NOT NULL,

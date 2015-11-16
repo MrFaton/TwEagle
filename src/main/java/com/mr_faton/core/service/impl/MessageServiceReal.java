@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
  * @author Mr_Faton
  * @since 12.11.2015
  */
-public class MessageServiceImpl implements MessageService {
+public class MessageServiceReal implements MessageService {
     @Autowired
     DonorUserDAO donorUserDAO;
     @Autowired
@@ -86,18 +87,28 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void save(List<Message> messageList) throws SQLException {
-
+        List<DonorUser> recipientList = new ArrayList<>();
+        for (Message message : messageList) {
+            if (message.getRecipient() != null) {
+                DonorUser recipient = new DonorUser();
+                recipient.setName(message.getRecipient());
+                recipient.setMale(message.isRecipientMale());
+                recipientList.add(recipient);
+            }
+        }
+        if (!recipientList.isEmpty()) donorUserDAO.save(recipientList);
+        messageDAO.save(messageList);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(Message message) throws SQLException {
-
+        messageDAO.update(message);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void update(List<Message> messageList) throws SQLException {
-
+        messageDAO.update(messageList);
     }
 }

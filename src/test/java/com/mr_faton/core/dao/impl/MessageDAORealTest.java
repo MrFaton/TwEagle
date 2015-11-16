@@ -268,7 +268,8 @@ public class MessageDAORealTest {
                 "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
                 "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
                 "WHERE owner.du_name = '" + ownerName + "';";
-        return JDBC_TEMPLATE.queryForObject(SQL, new MessageRowMapper());
+//        return JDBC_TEMPLATE.queryForObject(SQL, new MessageRowMapper());
+        return null;
     }
 
     private void equalsMessages(Message original, Message extracted) {

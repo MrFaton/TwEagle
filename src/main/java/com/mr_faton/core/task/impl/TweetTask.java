@@ -84,7 +84,7 @@ public class TweetTask implements Task {
 
         if (currentTweets == maxTweets) tweetUser.setNextTweet(new Date(Long.MAX_VALUE));
 
-        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
+//        tweetUser.setNextTweet(evalNextTweetTime(tweetUser));
         logger.debug("next tweet has planed on " + TimeWizard.formatDateWithTime(tweetUser.getNextTweet().getTime()));
     }
 

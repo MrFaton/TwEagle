@@ -2,7 +2,7 @@ package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.NotExistsSynonymDAO;
-import com.mr_faton.core.dao.SynonymDAO;
+//import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
@@ -35,8 +35,8 @@ public class SynonymizerTask implements Task{
 
     @Autowired
     private MessageDAO messageDAO;
-    @Autowired
-    private SynonymDAO synonymDAO;
+//    @Autowired
+//    private SynonymDAO synonymDAO;
     @Autowired
     private NotExistsSynonymDAO notExistsSynonymDAO;
 
@@ -239,16 +239,16 @@ public class SynonymizerTask implements Task{
                 punctuationPart = replacementWord.substring(punctuationIndex, replacementWord.length());
             }
 
-            List<String> synonymList;
-            try {
-                synonymList = synonymDAO.getSynonymList(replacementWordPart);
-
-                synonymDAO.doWordUseful(replacementWordPart);
-            } catch (NoSuchEntityException e) {
-                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
-                notExistsSynonymDAO.addWord(replacementWordPart);
-                continue;
-            }
+            List<String> synonymList = null;
+//            try {
+//                synonymList = synonymDAO.getSynonymList(replacementWordPart);
+//
+//                synonymDAO.doWordUseful(replacementWordPart);
+//            } catch (NoSuchEntityException e) {
+//                positionsOfPassableReplacements.remove(indexOfReplacementWordIndex);
+//                notExistsSynonymDAO.addWord(replacementWordPart);
+//                continue;
+//            }
             String synonym = getRandomSynonym(synonymList);
             String synonymizedWord = synonym + punctuationPart;
 
