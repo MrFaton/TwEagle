@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <users u_name="Mike" u_password="123" email="Mike@mail.ru" male="1" creation_date="2012-12-25"
+           messages="1010" following="1011" followers="1012"
+           consumer_key="qwe" consumer_secret="rty" access_token="uio" access_token_secret="pas"/>
+</dataset>
