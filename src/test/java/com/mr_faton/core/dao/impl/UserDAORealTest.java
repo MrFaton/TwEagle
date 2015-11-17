@@ -28,14 +28,13 @@ import static org.junit.Assert.assertTrue;
  * @since 14.10.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class UserDAORealTest {
     private static final String BASE_NAME = "UserDAOReal";
     @Autowired
-    UserDAO userDAO;
+    private UserDAO userDAO;
     @Autowired
-    JdbcTemplate jdbcTemplate;
-    DBFiller dbFiller = new DBFiller(jdbcTemplate);
+    private JdbcTemplate jdbcTemplate;
 
 
     @Test
@@ -64,10 +63,10 @@ public class UserDAORealTest {
 
     @Test
     public void saveAndUpdate() throws Exception {
-        System.out.println(jdbcTemplate);
         //Test save
         final User original = createDefaultUser();
-        dbFiller.fill("/data_set/user/afterSave.xml");
+        DBFiller.fill("/test/data_set/user/afterSave.xml", jdbcTemplate);
+        DBFiller.generateSchemaDTD(jdbcTemplate);
         userDAO.save(original);
         User extracted = userDAO.getUserByName(original.getName());
         equalsUsers(original, extracted);

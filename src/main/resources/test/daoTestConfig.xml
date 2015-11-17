@@ -21,14 +21,15 @@
     <!--</bean>-->
 
     <bean id="dataSource" class="org.h2.jdbcx.JdbcDataSource">
-        <property name="URL" value="jdbc:h2:mem:test;MODE=MySQL;DB_CLOSE_DELAY=-1"/>
+        <property name="URL" value="jdbc:h2:mem:tweagle_test;MODE=MySQL;DB_CLOSE_DELAY=-1"/>
         <property name="user" value="sa"/>
         <property name="password" value=""/>
     </bean>
 
     <jdbc:initialize-database>
-        <jdbc:script location="sql/1 Create DB.sql"/>
-        <jdbc:script location="sql/2 Create table - users.sql"/>
+        <jdbc:script location="/sql/1 Create DB.sql"/>
+        <jdbc:script location="/sql/2 Create table - users.sql"/>
+        <jdbc:script location="/sql/3 Create table - donor_users.sql"/>
     </jdbc:initialize-database>
 
 

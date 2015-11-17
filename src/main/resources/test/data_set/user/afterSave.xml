@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <!-- For production-->
+<!--<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">-->
+        <!--For develop-->
+<!DOCTYPE dataset SYSTEM "src/main/resources/test/dtd/tweagle.dtd">
+<dataset>
+    <users u_name="Mike" u_password="123" email="Mike@mail.ru" male="1" creation_date="2012-12-25"
+           messages="1010" following="1011" followers="1012"
+           consumer_key="qwe" consumer_secret="rty" access_token="uio" access_token_secret="pas"/>
+    <users u_name="Mik" u_password="saffas" email="asf" male="1" creation_date="2012-12-25" messages="1" following="1"
+           followers="2"
+           consumer_key="sf" consumer_secret="sdf" access_token="asd" access_token_secret="saf"/>
+
+</dataset>
