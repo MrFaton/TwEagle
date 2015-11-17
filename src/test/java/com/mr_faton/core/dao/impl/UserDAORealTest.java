@@ -1,16 +1,18 @@
 package com.mr_faton.core.dao.impl;
 
-import com.mr_faton.core.context.AppContext;
+import com.mr_faton.core.dao.DBFiller;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Counter;
 
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +32,10 @@ import static org.junit.Assert.assertTrue;
 public class UserDAORealTest {
     private static final String BASE_NAME = "UserDAOReal";
     @Autowired
-    private UserDAO userDAO;
+    UserDAO userDAO;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    DBFiller dbFiller = new DBFiller(jdbcTemplate);
 
 
     @Test
@@ -59,28 +64,32 @@ public class UserDAORealTest {
 
     @Test
     public void saveAndUpdate() throws Exception {
+        System.out.println(jdbcTemplate);
         //Test save
         final User original = createDefaultUser();
+        dbFiller.fill("/data_set/user/afterSave.xml");
         userDAO.save(original);
         User extracted = userDAO.getUserByName(original.getName());
         equalsUsers(original, extracted);
 
+
+
         //Test update
-        original.setPassword("pass_sdokgmr");
-        original.setEmail("asdfs@jois.ru");
-        original.setMessages(5476);
-        original.setFollowing(56765);
-        original.setFollowers(48745);
-        original.setConsumerKey("kjfafien");
-        original.setConsumerSecret("sajoarn");
-        original.setAccessToken("juihbgifbn");
-        original.setAccessTokenSecret("skjifbh");
-
-        userDAO.update(original);
-
-        extracted = userDAO.getUserByName(original.getName());
-
-        equalsUsers(original, extracted);
+//        original.setPassword("pass_sdokgmr");
+//        original.setEmail("asdfs@jois.ru");
+//        original.setMessages(5476);
+//        original.setFollowing(56765);
+//        original.setFollowers(48745);
+//        original.setConsumerKey("kjfafien");
+//        original.setConsumerSecret("sajoarn");
+//        original.setAccessToken("juihbgifbn");
+//        original.setAccessTokenSecret("skjifbh");
+//
+//        userDAO.update(original);
+//
+//        extracted = userDAO.getUserByName(original.getName());
+//
+//        equalsUsers(original, extracted);
     }
 
     @Test
@@ -167,6 +176,13 @@ public class UserDAORealTest {
         assertEquals(original.getConsumerSecret(), extracted.getConsumerSecret());
         assertEquals(original.getAccessToken(), extracted.getAccessToken());
         assertEquals(original.getAccessTokenSecret(), extracted.getAccessTokenSecret());
+    }
+
+    void compareDataSets(String expectedFileName, String actualTableName) {
+        Connection connection = null;
+//        try {
+//
+//        }
     }
 
 }
