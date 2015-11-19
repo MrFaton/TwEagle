@@ -1,6 +1,9 @@
 package com.mr_faton.core.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by root on 16.09.2015.
@@ -48,5 +51,10 @@ public class TimeWizard {
         int diffDays = curCalendarDays - startCalendarDays;
 
         return diffDays / 30;
+    }
+
+    public static Date stringToDate(String dateInString, String datePattern) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
+        return formatter.parse(dateInString);
     }
 }

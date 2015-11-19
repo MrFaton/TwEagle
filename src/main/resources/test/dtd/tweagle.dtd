@@ -6,7 +6,7 @@
                 u_name ID #REQUIRED
                 u_password CDATA #REQUIRED
                 email CDATA #REQUIRED
-                male (0|1) #REQUIRED
+                male (true|false) #REQUIRED
                 creation_date CDATA #REQUIRED
                 messages CDATA #REQUIRED
                 following CDATA #REQUIRED

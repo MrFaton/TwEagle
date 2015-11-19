@@ -1,9 +1,11 @@
 package com.mr_faton.core.dao.impl;
 
-import com.mr_faton.core.dao.DBFiller;
+import com.mr_faton.core.dao.DBHelper;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
+import org.dbunit.Assertion;
+import org.dbunit.dataset.ITable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Counter;
 
-import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +33,9 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class UserDAORealTest {
     private static final String BASE_NAME = "UserDAOReal";
+    private static final String TABLE = "users";
+    private static final String EMPTY_TABLE = "/test/data_set/user/empty.xml";
+    private static final String USER_TABLE_DATE_PATTERN = "yyyy-MM-dd";
     @Autowired
     private UserDAO userDAO;
     @Autowired
@@ -63,81 +68,67 @@ public class UserDAORealTest {
 
     @Test
     public void saveAndUpdate() throws Exception {
+        final String afterSaveTable = "/test/data_set/user/afterSave.xml";
+        final String afterUpdateTable = "/test/data_set/user/afterUpdate.xml";
+        User user;
+        ITable expected;
+        ITable actual;
+
         //Test save
-        final User original = createDefaultUser();
-        DBFiller.fill("/test/data_set/user/afterSave.xml", jdbcTemplate);
-        DBFiller.generateSchemaDTD(jdbcTemplate);
-        userDAO.save(original);
-        User extracted = userDAO.getUserByName(original.getName());
-        equalsUsers(original, extracted);
-
-
+        expected = DBHelper.getTableFromFile(TABLE, afterSaveTable);
+        user = tableToUser(expected, 0);
+        userDAO.save(user);
+        actual = DBHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
 
         //Test update
-//        original.setPassword("pass_sdokgmr");
-//        original.setEmail("asdfs@jois.ru");
-//        original.setMessages(5476);
-//        original.setFollowing(56765);
-//        original.setFollowers(48745);
-//        original.setConsumerKey("kjfafien");
-//        original.setConsumerSecret("sajoarn");
-//        original.setAccessToken("juihbgifbn");
-//        original.setAccessTokenSecret("skjifbh");
-//
-//        userDAO.update(original);
-//
-//        extracted = userDAO.getUserByName(original.getName());
-//
-//        equalsUsers(original, extracted);
+        expected = DBHelper.getTableFromFile(TABLE, afterUpdateTable);
+        user = tableToUser(expected, 0);
+        userDAO.update(user);
+        actual = DBHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
+        final String afterSaveListTable = "/test/data_set/user/afterSaveList.xml";
+        final String afterUpdateListTable = "/test/data_set/user/afterUpdateList.xml";
+        User user1;
+        User user2;
+        List<User> userList = new ArrayList<>(2);
+        ITable expected;
+        ITable actual;
+
         //Test save
-        final User original1 = createDefaultUser();
-        final User original2 = createDefaultUser();
-        List<User> userList = Arrays.asList(original1, original2);
-
-        userDAO.save(userList);
-
-        User extracted1 = userDAO.getUserByName(original1.getName());
-        User extracted2 = userDAO.getUserByName(original2.getName());
-
-        equalsUsers(original1, extracted1);
-        equalsUsers(original2, extracted2);
+        expected
 
         //Test update
-        original1.setPassword("adsjfoiv");
-        original1.setEmail("ouip@asf.ua");
-        original1.setMessages(1948);
-        original1.setFollowing(6581);
-        original1.setFollowers(5971);
-        original1.setConsumerKey("rqw");
-        original1.setConsumerSecret("zgvchagsv");
-        original1.setAccessToken("dhjdkfl");
-        original1.setAccessTokenSecret("ohjopg");
 
-        original2.setPassword("jdbkjd");
-        original2.setEmail("iuyrie@hty.hu");
-        original2.setMessages(8812);
-        original2.setFollowing(2168);
-        original2.setFollowers(1028);
-        original2.setConsumerKey("trqt");
-        original2.setConsumerSecret("bnbm");
-        original2.setAccessToken("ngfyc");
-        original2.setAccessTokenSecret("khigf");
+    }
 
-        userDAO.update(userList);
 
-        extracted1 = userDAO.getUserByName(original1.getName());
-        extracted2 = userDAO.getUserByName(original2.getName());
+    private User tableToUser(ITable table, int rowNum) throws Exception {
+        User user = new User();
 
-        equalsUsers(original1, extracted1);
-        equalsUsers(original2, extracted2);
+        user.setName((String) table.getValue(rowNum, "u_name"));
+        user.setPassword((String) table.getValue(rowNum, "u_password"));
+        user.setEmail((String) table.getValue(rowNum, "email"));
+        user.setMale(Boolean.valueOf((String) table.getValue(rowNum, "male")));
+        user.setCreationDate(TimeWizard.stringToDate((String) table.getValue(rowNum, "creation_date"), USER_TABLE_DATE_PATTERN));
+        user.setMessages(Integer.valueOf((String) table.getValue(rowNum, "messages")));
+        user.setFollowing(Integer.valueOf((String) table.getValue(rowNum, "following")));
+        user.setFollowers(Integer.valueOf((String) table.getValue(rowNum, "followers")));
+        user.setConsumerKey((String) table.getValue(rowNum, "consumer_key"));
+        user.setConsumerSecret((String) table.getValue(rowNum, "consumer_secret"));
+        user.setAccessToken((String) table.getValue(rowNum, "access_token"));
+        user.setAccessTokenSecret((String) table.getValue(rowNum, "access_token_secret"));
+
+        return user;
     }
 
 
 
+    @Deprecated
     private User createDefaultUser() {
         User user = new User();
 
@@ -156,7 +147,7 @@ public class UserDAORealTest {
 
         return user;
     }
-
+    @Deprecated
     private void equalsUsers(User original, User extracted) {
         assertEquals(original.getName(), extracted.getName());
         assertEquals(original.getPassword(), extracted.getPassword());
@@ -177,11 +168,5 @@ public class UserDAORealTest {
         assertEquals(original.getAccessTokenSecret(), extracted.getAccessTokenSecret());
     }
 
-    void compareDataSets(String expectedFileName, String actualTableName) {
-        Connection connection = null;
-//        try {
-//
-//        }
-    }
 
 }
