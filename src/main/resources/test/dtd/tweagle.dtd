@@ -19,8 +19,8 @@
 
         <!ELEMENT donor_users EMPTY>
         <!ATTLIST donor_users
-                du_name CDATA #REQUIRED
-                male CDATA #REQUIRED
+                du_name ID #REQUIRED
+                male (true|false) #REQUIRED
                 take_messages_date CDATA #IMPLIED
                 take_following_date CDATA #IMPLIED
                 take_followers_date CDATA #IMPLIED

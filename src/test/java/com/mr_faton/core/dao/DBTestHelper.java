@@ -19,7 +19,7 @@ import java.sql.Connection;
  * @author root
  * @since 16.11.2015
  */
-public class DBHelper {
+public class DBTestHelper {
     private static final String SCHEMA = "tweagle";
 
     public static void fill(String dataSetPath, JdbcTemplate jdbcTemplate) throws Exception {
@@ -27,7 +27,7 @@ public class DBHelper {
         try {
             connection = jdbcTemplate.getDataSource().getConnection();
             IDatabaseConnection databaseConnection = new DatabaseConnection(connection, SCHEMA);
-            IDataSet dataSet = new FlatXmlDataSetBuilder().build(DBHelper.class.getResourceAsStream(dataSetPath));
+            IDataSet dataSet = new FlatXmlDataSetBuilder().build(DBTestHelper.class.getResourceAsStream(dataSetPath));
             DatabaseOperation.CLEAN_INSERT.execute(databaseConnection, dataSet);
         } finally {
             if (connection != null) connection.close();
@@ -57,10 +57,10 @@ public class DBHelper {
     }
 
     public static IDataSet getDataSetFromFile(String xmlFilePath) throws Exception {
-        return new FlatXmlDataSetBuilder().build(DBHelper.class.getResourceAsStream(xmlFilePath));
+        return new FlatXmlDataSetBuilder().build(DBTestHelper.class.getResourceAsStream(xmlFilePath));
     }
     public static ITable getTableFromFile(String tableName, String xmlFilePath) throws Exception {
-        FlatXmlDataSet dataSet = new FlatXmlDataSetBuilder().build(DBHelper.class.getResourceAsStream(xmlFilePath));
+        FlatXmlDataSet dataSet = new FlatXmlDataSetBuilder().build(DBTestHelper.class.getResourceAsStream(xmlFilePath));
         return dataSet.getTable(tableName);
     }
 

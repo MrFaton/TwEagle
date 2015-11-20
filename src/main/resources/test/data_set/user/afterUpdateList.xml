@@ -4,13 +4,14 @@
         <!--For develop-->
 <!DOCTYPE dataset SYSTEM "src/main/resources/test/dtd/tweagle.dtd">
 <dataset>
-    <users u_name="Anna" u_password="anna-pass" email="anna@mai.ru" male="false" creation_date="2015-07-14"
+    <users u_name="Anna" u_password="new-anna-pass" email="new-anna@mai.ru" male="false" creation_date="2015-07-14"
            messages="10" following="11" followers="12"
            consumer_key="anna_cons_key" consumer_secret="anna_cons_sec" access_token="anna_acc_tok"
            access_token_secret="anna_acc_tok_sec"/>
 
     <users u_name="Bob" u_password="bob-pass" email="bob@mail.ru" male="true" creation_date="2014-03-01"
-           messages="20" following="21" followers="22"
-           consumer_key="bob-cons-kye" consumer_secret="bob-cons-sec" access_token="bob-acc-tok"
-           access_token_secret="bob-acc-tok-sec"/>
+           messages="30" following="31" followers="32"
+           consumer_key="new-bob-cons-kye" consumer_secret="new-bob-cons-sec" access_token="new-bob-acc-tok"
+           access_token_secret="new-bob-acc-tok-sec"/>
+
 </dataset>

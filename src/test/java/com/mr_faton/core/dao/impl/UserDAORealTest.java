@@ -1,6 +1,6 @@
 package com.mr_faton.core.dao.impl;
 
-import com.mr_faton.core.dao.DBHelper;
+import com.mr_faton.core.dao.DBTestHelper;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
@@ -12,11 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.Counter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -32,10 +29,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class UserDAORealTest {
-    private static final String BASE_NAME = "UserDAOReal";
     private static final String TABLE = "users";
-    private static final String EMPTY_TABLE = "/test/data_set/user/empty.xml";
-    private static final String USER_TABLE_DATE_PATTERN = "yyyy-MM-dd";
+    private static final String EMPTY_DATA_SET = "/test/data_set/user/empty.xml";
+
     @Autowired
     private UserDAO userDAO;
     @Autowired
@@ -44,27 +40,27 @@ public class UserDAORealTest {
 
     @Test
     public void getUserByName() throws Exception {
-        final User original = createDefaultUser();
-        userDAO.save(original);
-        User extracted = userDAO.getUserByName(original.getName());
-        equalsUsers(original, extracted);
+        String beforeGetUserByName = "/test/data_set/user/beforeGetUserByName.xml";
+        DBTestHelper.fill(beforeGetUserByName, jdbcTemplate);
+        User expected = tableToUser(DBTestHelper.getTableFromFile(TABLE, beforeGetUserByName), 0);
+        User actual = userDAO.getUserByName(expected.getName());
+
+        equalUsers(expected, actual);
     }
 
     @Test
     public void getUserList() throws Exception {
-        final User user1 = createDefaultUser();
-        final User user2 = createDefaultUser();
-        final List<User> userList = Arrays.asList(user1, user2);
+        String beforeGetUserList = "/test/data_set/user/beforeGetUserList.xml";
+        DBTestHelper.fill(beforeGetUserList, jdbcTemplate);
+        ITable expectedTable = DBTestHelper.getTableFromFile(TABLE, beforeGetUserList);
+        User expected1 = tableToUser(expectedTable, 0);
+        User expected2 = tableToUser(expectedTable, 1);
 
-        userDAO.save(userList);
+        List<User> actualUsers = userDAO.getUserList();
 
-        List<User> extractedUserList = userDAO.getUserList();
-        assertTrue(extractedUserList.size() >= 2);
+        equalUsers(expected1, actualUsers.get(0));
+        equalUsers(expected2, actualUsers.get(1));
     }
-
-
-
-
 
     @Test
     public void saveAndUpdate() throws Exception {
@@ -73,19 +69,20 @@ public class UserDAORealTest {
         User user;
         ITable expected;
         ITable actual;
+        DBTestHelper.fill(EMPTY_DATA_SET, jdbcTemplate);
 
         //Test save
-        expected = DBHelper.getTableFromFile(TABLE, afterSaveTable);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveTable);
         user = tableToUser(expected, 0);
         userDAO.save(user);
-        actual = DBHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
         Assertion.assertEquals(expected, actual);
 
         //Test update
-        expected = DBHelper.getTableFromFile(TABLE, afterUpdateTable);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateTable);
         user = tableToUser(expected, 0);
         userDAO.update(user);
-        actual = DBHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
         Assertion.assertEquals(expected, actual);
     }
 
@@ -98,23 +95,41 @@ public class UserDAORealTest {
         List<User> userList = new ArrayList<>(2);
         ITable expected;
         ITable actual;
+        DBTestHelper.fill(EMPTY_DATA_SET, jdbcTemplate);
 
         //Test save
-        expected
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveListTable);
+        user1 = tableToUser(expected, 0);
+        user2 = tableToUser(expected, 1);
+        userList.add(user1);
+        userList.add(user2);
+        userDAO.save(userList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
 
         //Test update
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateListTable);
+        user1 = tableToUser(expected, 0);
+        user2 = tableToUser(expected, 1);
+        userList.clear();
+        userList.add(user1);
+        userList.add(user2);
+        userDAO.update(userList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
 
     }
 
 
     private User tableToUser(ITable table, int rowNum) throws Exception {
+        String datePattern = "yyyy-MM-dd";
         User user = new User();
 
         user.setName((String) table.getValue(rowNum, "u_name"));
         user.setPassword((String) table.getValue(rowNum, "u_password"));
         user.setEmail((String) table.getValue(rowNum, "email"));
         user.setMale(Boolean.valueOf((String) table.getValue(rowNum, "male")));
-        user.setCreationDate(TimeWizard.stringToDate((String) table.getValue(rowNum, "creation_date"), USER_TABLE_DATE_PATTERN));
+        user.setCreationDate(TimeWizard.stringToDate((String) table.getValue(rowNum, "creation_date"), datePattern));
         user.setMessages(Integer.valueOf((String) table.getValue(rowNum, "messages")));
         user.setFollowing(Integer.valueOf((String) table.getValue(rowNum, "following")));
         user.setFollowers(Integer.valueOf((String) table.getValue(rowNum, "followers")));
@@ -125,48 +140,20 @@ public class UserDAORealTest {
 
         return user;
     }
+    private void equalUsers(User expected, User actual) {
+        assertEquals(expected.getName(), actual.getName());
+        assertEquals(expected.getPassword(), actual.getPassword());
+        assertEquals(expected.getEmail(), actual.getEmail());
+        assertEquals(expected.isMale(), actual.isMale());
+        assertEquals(expected.getCreationDate(), actual.getCreationDate());
 
+        assertEquals(expected.getMessages(), actual.getMessages());
+        assertEquals(expected.getFollowing(), actual.getFollowing());
+        assertEquals(expected.getFollowers(), actual.getFollowers());
 
-
-    @Deprecated
-    private User createDefaultUser() {
-        User user = new User();
-
-        user.setName(BASE_NAME + Counter.getNextNumber());
-        user.setPassword("secret");
-        user.setEmail("testmail@test.com");
-        user.setMale(true);
-        user.setCreationDate(new Date());
-        user.setMessages(100);
-        user.setFollowing(200);
-        user.setFollowers(300);
-        user.setConsumerKey("consumer key");
-        user.setConsumerSecret("consumer secret");
-        user.setAccessToken("access token");
-        user.setAccessTokenSecret("access token secret");
-
-        return user;
+        assertEquals(expected.getConsumerKey(), actual.getConsumerKey());
+        assertEquals(expected.getConsumerSecret(), actual.getConsumerSecret());
+        assertEquals(expected.getAccessToken(), actual.getAccessToken());
+        assertEquals(expected.getAccessTokenSecret(), actual.getAccessTokenSecret());
     }
-    @Deprecated
-    private void equalsUsers(User original, User extracted) {
-        assertEquals(original.getName(), extracted.getName());
-        assertEquals(original.getPassword(), extracted.getPassword());
-        assertEquals(original.getEmail(), extracted.getEmail());
-        assertEquals(original.isMale(), extracted.isMale());
-
-        String formattedOriginal = TimeWizard.formatDate(original.getCreationDate().getTime());
-        String formattedExtracted = TimeWizard.formatDate(extracted.getCreationDate().getTime());
-        assertEquals(formattedOriginal, formattedExtracted);
-
-        assertEquals(original.getMessages(), extracted.getMessages());
-        assertEquals(original.getFollowing(), extracted.getFollowing());
-        assertEquals(original.getFollowers(), extracted.getFollowers());
-
-        assertEquals(original.getConsumerKey(), extracted.getConsumerKey());
-        assertEquals(original.getConsumerSecret(), extracted.getConsumerSecret());
-        assertEquals(original.getAccessToken(), extracted.getAccessToken());
-        assertEquals(original.getAccessTokenSecret(), extracted.getAccessTokenSecret());
-    }
-
-
 }
