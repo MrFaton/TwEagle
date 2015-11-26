@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-        <!-- For production-->
-<!--<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">-->
-        <!--For develop-->
-<!DOCTYPE dataset SYSTEM "src/main/resources/test/dtd/tweagle.dtd">
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
 <dataset>
     <users u_name="Anna" u_password="new-anna-pass" email="new-anna@mai.ru" male="false" creation_date="2015-07-14"
            messages="10" following="11" followers="12"

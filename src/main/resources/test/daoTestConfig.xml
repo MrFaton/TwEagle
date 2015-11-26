@@ -30,6 +30,7 @@
         <jdbc:script location="/sql/1 Create DB.sql"/>
         <jdbc:script location="/sql/2 Create table - users.sql"/>
         <jdbc:script location="/sql/3 Create table - donor_users.sql"/>
+        <jdbc:script location="/sql/4 Create table - messages.sql"/>
     </jdbc:initialize-database>
 
 

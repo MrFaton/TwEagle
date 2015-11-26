@@ -1,8 +1,8 @@
 <!ELEMENT dataset (
-        users*, donor_users*)>
+        users*, donor_users*, messages*)>
 
-<!ELEMENT users EMPTY>
-<!ATTLIST users
+        <!ELEMENT users EMPTY>
+        <!ATTLIST users
                 u_name ID #REQUIRED
                 u_password CDATA #REQUIRED
                 email CDATA #REQUIRED
@@ -24,4 +24,15 @@
                 take_messages_date CDATA #IMPLIED
                 take_following_date CDATA #IMPLIED
                 take_followers_date CDATA #IMPLIED
+                >
+
+        <!ELEMENT messages EMPTY>
+        <!ATTLIST messages
+                id CDATA #REQUIRED
+                message CDATA #REQUIRED
+                owner_id CDATA #REQUIRED
+                recipient_id CDATA #IMPLIED
+                posted_date CDATA #REQUIRED
+                synonymized (true|false) #REQUIRED
+                posted (true|false) #REQUIRED
                 >

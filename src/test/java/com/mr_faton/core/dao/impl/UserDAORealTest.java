@@ -6,6 +6,8 @@ import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.ITable;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,36 +32,35 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class UserDAORealTest {
     private static final String TABLE = "users";
-    private static final String EMPTY_DATA_SET = "/test/data_set/user/empty.xml";
+    private static final String COMMON_DATA_SET = "/test/data_set/user/common.xml";
+    private static final String EMPTY_TABLE = "/test/data_set/user/empty.xml";
 
     @Autowired
     private UserDAO userDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Before
+    public void before() throws Exception {
+        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
+    }
 
     @Test
     public void getUserByName() throws Exception {
-        String beforeGetUserByName = "/test/data_set/user/beforeGetUserByName.xml";
-        DBTestHelper.fill(beforeGetUserByName, jdbcTemplate);
-        User expected = tableToUser(DBTestHelper.getTableFromFile(TABLE, beforeGetUserByName), 0);
-        User actual = userDAO.getUserByName(expected.getName());
-
-        equalUsers(expected, actual);
+        String name = "Den";
+        User user = userDAO.getUserByName(name);
+        Assert.assertEquals(name, user.getName());
     }
 
     @Test
     public void getUserList() throws Exception {
-        String beforeGetUserList = "/test/data_set/user/beforeGetUserList.xml";
-        DBTestHelper.fill(beforeGetUserList, jdbcTemplate);
-        ITable expectedTable = DBTestHelper.getTableFromFile(TABLE, beforeGetUserList);
-        User expected1 = tableToUser(expectedTable, 0);
-        User expected2 = tableToUser(expectedTable, 1);
-
-        List<User> actualUsers = userDAO.getUserList();
-
-        equalUsers(expected1, actualUsers.get(0));
-        equalUsers(expected2, actualUsers.get(1));
+        ITable expectedTable = DBTestHelper.getTableFromFile(TABLE, COMMON_DATA_SET);
+        List<User> expectedUserList = new ArrayList<>();
+        for (int i = 0; i < expectedTable.getRowCount(); i++) {
+            expectedUserList.add(rowToUser(expectedTable, i));
+        }
+        List<User> actualUserList = userDAO.getUserList();
+        Assert.assertEquals(expectedUserList, actualUserList);
     }
 
     @Test
@@ -69,18 +70,18 @@ public class UserDAORealTest {
         User user;
         ITable expected;
         ITable actual;
-        DBTestHelper.fill(EMPTY_DATA_SET, jdbcTemplate);
+        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
 
         //Test save
         expected = DBTestHelper.getTableFromFile(TABLE, afterSaveTable);
-        user = tableToUser(expected, 0);
+        user = rowToUser(expected, 0);
         userDAO.save(user);
         actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
         Assertion.assertEquals(expected, actual);
 
         //Test update
         expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateTable);
-        user = tableToUser(expected, 0);
+        user = rowToUser(expected, 0);
         userDAO.update(user);
         actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
         Assertion.assertEquals(expected, actual);
@@ -95,12 +96,12 @@ public class UserDAORealTest {
         List<User> userList = new ArrayList<>(2);
         ITable expected;
         ITable actual;
-        DBTestHelper.fill(EMPTY_DATA_SET, jdbcTemplate);
+        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
 
         //Test save
         expected = DBTestHelper.getTableFromFile(TABLE, afterSaveListTable);
-        user1 = tableToUser(expected, 0);
-        user2 = tableToUser(expected, 1);
+        user1 = rowToUser(expected, 0);
+        user2 = rowToUser(expected, 1);
         userList.add(user1);
         userList.add(user2);
         userDAO.save(userList);
@@ -109,8 +110,8 @@ public class UserDAORealTest {
 
         //Test update
         expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateListTable);
-        user1 = tableToUser(expected, 0);
-        user2 = tableToUser(expected, 1);
+        user1 = rowToUser(expected, 0);
+        user2 = rowToUser(expected, 1);
         userList.clear();
         userList.add(user1);
         userList.add(user2);
@@ -121,7 +122,7 @@ public class UserDAORealTest {
     }
 
 
-    private User tableToUser(ITable table, int rowNum) throws Exception {
+    private User rowToUser(ITable table, int rowNum) throws Exception {
         String datePattern = "yyyy-MM-dd";
         User user = new User();
 

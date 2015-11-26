@@ -1,9 +1,23 @@
 package com.mr_faton.core.dao.impl;
 
 
+import com.mr_faton.core.dao.DBTestHelper;
+import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.table.DonorUser;
+import com.mr_faton.core.util.TimeWizard;
+import org.dbunit.Assertion;
+import org.dbunit.dataset.ITable;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -13,13 +27,108 @@ import org.junit.Test;
  * @version 1.0
  * @since 13.10.2015
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class DonorUserDAORealTest {
     private static final String TABLE = "donor_users";
-    private static final String EMPTY_DATA_SET = "/test/data_set/donor_user/empty.xml";
+    private static final String COMMON_DATA_SET = "/test/data_set/donor_user/common.xml";
+    private static final String EMPTY_TABLE = "/test/data_set/donor_user/empty.xml";
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
+
+    @Autowired
+    private DonorUserDAO donorUserDAO;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Before
+    public void before() throws Exception {
+        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
+    }
+
 
     @Test
-    public void saveAndUpdate() {
-        String afterSave = "";
+    public void getDonorForMessage() throws Exception {
+        DonorUser donorUser = donorUserDAO.getDonorForMessage();
+        Assert.assertNull(donorUser.getTakeMessageDate());
+    }
+
+    @Test
+    public void saveAndUpdate() throws Exception{
+        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
+        String afterSave = "/test/data_set/donor_user/afterSave.xml";
+        String afterUpdate = "/test/data_set/donor_user/afterUpdate.xml";
+
+        DonorUser donorUser = new DonorUser();
+        donorUser.setName("Alex");
+        donorUser.setMale(true);
+        donorUser.setTakeMessageDate(TimeWizard.stringToDate("2013-12-26", DATE_PATTERN));
+        donorUser.setTakeFollowingDate(TimeWizard.stringToDate("2014-08-09", DATE_PATTERN));
+        donorUser.setTakeFollowersDate(TimeWizard.stringToDate("2015-10-15", DATE_PATTERN));
+
+        ITable expected;
+        ITable actual;
+
+        //Test save
+        donorUserDAO.save(donorUser);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSave);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
+
+        //Test update
+        donorUser.setTakeMessageDate(TimeWizard.stringToDate("2012-01-02", DATE_PATTERN));
+        donorUser.setTakeFollowingDate(TimeWizard.stringToDate("2013-03-04", DATE_PATTERN));
+        donorUser.setTakeFollowersDate(TimeWizard.stringToDate("2014-05-06", DATE_PATTERN));
+        donorUserDAO.update(donorUser);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdate);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void saveAndUpdateList() throws Exception {
+        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
+        String afterSaveList = "/test/data_set/donor_user/afterSaveList.xml";
+        String afterUpdateList = "/test/data_set/donor_user/afterUpdateList.xml";
+
+        DonorUser du1 = new DonorUser();
+        du1.setName("Andy");
+        du1.setMale(true);
+        du1.setTakeMessageDate(TimeWizard.stringToDate("2010-01-02", DATE_PATTERN));
+        du1.setTakeFollowingDate(TimeWizard.stringToDate("2011-02-03", DATE_PATTERN));
+        du1.setTakeFollowersDate(TimeWizard.stringToDate("2012-03-04", DATE_PATTERN));
+
+        DonorUser du2 = new DonorUser();
+        du2.setName("Polly");
+        du2.setMale(false);
+        du2.setTakeMessageDate(TimeWizard.stringToDate("2000-01-02", DATE_PATTERN));
+        du2.setTakeFollowingDate(TimeWizard.stringToDate("2001-02-03", DATE_PATTERN));
+        du2.setTakeFollowersDate(TimeWizard.stringToDate("2002-03-04", DATE_PATTERN));
+
+        List<DonorUser> duList = Arrays.asList(du1, du2);
+
+        ITable expected;
+        ITable actual;
+
+        //Test save
+        donorUserDAO.save(duList);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
+
+        //Test update
+        du1.setTakeMessageDate(TimeWizard.stringToDate("2015-01-02", DATE_PATTERN));
+        du1.setTakeFollowingDate(TimeWizard.stringToDate("2016-02-03", DATE_PATTERN));
+        du1.setTakeFollowersDate(TimeWizard.stringToDate("2017-03-04", DATE_PATTERN));
+
+        du2.setTakeMessageDate(TimeWizard.stringToDate("2005-01-02", DATE_PATTERN));
+        du2.setTakeFollowingDate(TimeWizard.stringToDate("2006-02-03", DATE_PATTERN));
+        du2.setTakeFollowersDate(TimeWizard.stringToDate("2007-03-04", DATE_PATTERN));
+
+        donorUserDAO.update(duList);
+
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEquals(expected, actual);
     }
 
     private void equalsDonorUsers(DonorUser expected, DonorUser actual) {

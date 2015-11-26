@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <donor_users du_name="Andy" male="true"
+                 take_messages_date="2010-01-02"
+                 take_following_date="2011-02-03"
+                 take_followers_date="2012-03-04"/>
+
+    <donor_users du_name="Polly" male="false"
+                 take_messages_date="2000-01-02"
+                 take_following_date="2001-02-03"
+                 take_followers_date="2002-03-04"/>
+</dataset>

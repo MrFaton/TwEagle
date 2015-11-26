@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <messages id="1" message="ljkdsjv"
+              owner_id="Tony" recipient_id="Frank"
+              posted_date="2014-03-25 14:25:40" synonymized="false" posted="true"/>
+</dataset>

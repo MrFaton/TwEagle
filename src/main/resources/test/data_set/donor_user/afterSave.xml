@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE dataset SYSTEM "src/main/resources/test/dtd/tweagle.dtd">
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
 <dataset>
     <donor_users du_name="Alex" male="true"
-                 take_messages_date="2013-12-26" take_following_date="2014-08-09" take_followers_date="2015-10-15"/>
+                 take_messages_date="2013-12-26"
+                 take_following_date="2014-08-09"
+                 take_followers_date="2015-10-15"/>
 </dataset>

@@ -1,19 +1,27 @@
 package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.context.AppContext;
+import com.mr_faton.core.dao.DBTestHelper;
 import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.table.Message;
+import com.mr_faton.core.util.TimeWizard;
+import org.dbunit.Assertion;
+import org.dbunit.dataset.ITable;
 import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import util.Counter;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.sql.Time;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,263 +33,134 @@ import static org.junit.Assert.assertTrue;
  * @version 1.0
  * @since 13.10.2015
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class MessageDAORealTest {
-    private static final String BASE_NAME = "MessageDAOReal";
-    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
-    private static final MessageDAO MESSAGE_DAO = (MessageDAO) AppContext.getBeanByName("messageDAO");
-    private static final DonorUserDAO DONOR_USER_DAO = (DonorUserDAO) AppContext.getBeanByName("donorUserDAO");
+    private static final String TABLE = "messages";
+    private static final String COMMON_DATA_SET = "/test/data_set/message/common.xml";
+    private static final String EMPTY_MESSAGES_TABLE = "/test/data_set/message/empty.xml";
+    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        final String DELETE_FROM_MESSAGES_SQL = "" +
-                "DELETE FROM tweagle.messages WHERE owner_id LIKE 'MessageDAOReal%';";
-        final String DELETE_FROM_DONOR_USERS_SQL = "" +
-                "DELETE FROM tweagle.donor_users WHERE du_name LIKE 'MessageDAOReal%';";
-        JDBC_TEMPLATE.update(DELETE_FROM_MESSAGES_SQL);
-        JDBC_TEMPLATE.update(DELETE_FROM_DONOR_USERS_SQL);
+    @Autowired
+    private MessageDAO messageDAO;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Before
+    public void before() throws Exception {
+        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
+    }
+
+
+    @Test
+    public void getAnyTweet() throws Exception {
+        Message message = messageDAO.getTweet(true);
+        Assert.assertTrue(message.isOwnerMale());
     }
 
     @Test
-    public void getTweetByOwnerGender() throws Exception {
-        DonorUser owner = createDefaultDonorUser();
-        owner.setMale(false);
-
-        Message original = createDefaultMessage();
-        original.setOwner(owner.getName());
-        original.setOwnerMale(owner.isMale());
-
-        DONOR_USER_DAO.save(owner);
-        MESSAGE_DAO.save(original);
-
-        Message extracted = MESSAGE_DAO.getTweet(owner.isMale());
-
-        assertEquals(owner.isMale(), extracted.isOwnerMale());
+    public void getTweet() throws Exception {
+        Calendar from = new GregorianCalendar(2013, 9, 23, 10, 5, 15); //month starts from 0, so if in Db it's 10 then here it's 9
+        Calendar to = new GregorianCalendar(2013, 9, 23, 12, 10, 45);
+        Message message = messageDAO.getTweet(true, from, to);
+        Assert.assertTrue(message.isOwnerMale());
+        Date min = from.getTime();
+        Date max = to.getTime();
+        Date postedDate = message.getPostedDate();
+        Assert.assertTrue(postedDate.after(min) && postedDate.before(max));
+        System.out.println(message.getMessage());
     }
-
-    @Test
-    public void getTweetByOwnerGenderAndBetweenDates() throws Exception {
-        DonorUser owner = createDefaultDonorUser();
-
-        Message original = createDefaultMessage();
-        original.setOwner(owner.getName());
-        original.setOwnerMale(owner.isMale());
-
-        DONOR_USER_DAO.save(owner);
-        MESSAGE_DAO.save(original);
-
-        Calendar min = Calendar.getInstance();
-        min.add(Calendar.DAY_OF_MONTH, -2);
-
-        Calendar max = Calendar.getInstance();
-        max.add(Calendar.DAY_OF_MONTH, 2);
-
-        Message extracted = MESSAGE_DAO.getTweet(owner.isMale(), min, max);
-
-        assertEquals(owner.isMale(), extracted.isOwnerMale());
-        assertTrue(min.getTime().before(extracted.getPostedDate()) && max.getTime().after(extracted.getPostedDate()));
-    }
-
-    @Test
-    public void getTweetByOwnerName() throws Exception {
-        DonorUser owner = createDefaultDonorUser();
-
-        Message message = createDefaultMessage();
-        message.setOwner(owner.getName());
-        message.setOwnerMale(owner.isMale());
-
-        DONOR_USER_DAO.save(owner);
-        MESSAGE_DAO.save(message);
-
-        Message received = MESSAGE_DAO.getTweet(owner.getName());
-
-        equalsMessages(message, received);
-    }
-
-    @Test
-    public void getTweetByOwnerNameAndBetweenDates() throws Exception {
-        DonorUser owner = createDefaultDonorUser();
-
-        Message original = createDefaultMessage();
-        original.setOwner(owner.getName());
-        original.setOwnerMale(owner.isMale());
-
-        DONOR_USER_DAO.save(owner);
-        MESSAGE_DAO.save(original);
-
-        Calendar min = Calendar.getInstance();
-        min.add(Calendar.DAY_OF_MONTH, -2);
-
-        Calendar max = Calendar.getInstance();
-        max.add(Calendar.DAY_OF_MONTH, 2);
-
-        Message extracted = MESSAGE_DAO.getTweet(owner.getName(), min, max);
-
-        equalsMessages(original, extracted);
-    }
-
-    @Test
-    public void getMentionBetweenDates() throws Exception {
-        DonorUser owner = createDefaultDonorUser();
-        owner.setMale(false);
-
-        DonorUser recipient = createDefaultDonorUser();
-        recipient.setMale(false);
-
-        Message original = createDefaultMessage();
-        original.setOwner(owner.getName());
-        original.setOwnerMale(owner.isMale());
-        original.setRecipient(recipient.getName());
-        original.setRecipientMale(recipient.isMale());
-
-        DONOR_USER_DAO.save(Arrays.asList(owner, recipient));
-        MESSAGE_DAO.save(original);
-
-        Calendar min = Calendar.getInstance();
-        min.add(Calendar.DAY_OF_MONTH, -2);
-
-        Calendar max = Calendar.getInstance();
-        max.add(Calendar.DAY_OF_MONTH, 2);
-
-        Message extracted = MESSAGE_DAO.getMention(owner.isMale(), recipient.isMale(), min, max);
-
-        assertEquals(owner.isMale(), extracted.isOwnerMale());
-        assertEquals(recipient.isMale(), extracted.isRecipientMale());
-        assertTrue(min.getTime().before(extracted.getPostedDate()) && max.getTime().after(extracted.getPostedDate()));
-    }
-
-
 
     @Test
     public void saveAndUpdate() throws Exception {
+        DBTestHelper.fill(EMPTY_MESSAGES_TABLE, jdbcTemplate);
+        String afterSave = "/test/data_set/message/afterSave.xml";
+        String afterUpdate = "/test/data_set/message/afterUpdate.xml";
+
+        Message message = new Message();
+        message.setMessage("tototo");
+        message.setOwner("Tony");
+        message.setOwnerMale(true);
+        message.setRecipient("Frank");
+        message.setRecipientMale(true);
+        message.setPostedDate(TimeWizard.stringToDate("2014-03-25 14:25:40", DATE_PATTERN));
+        message.setSynonymized(true);
+        message.setPosted(false);
+
+        ITable expected;
+        ITable actual;
+        String[] ignoringCol = {"id"};
+
         //Test save
-        DonorUser owner = createDefaultDonorUser();
-        DonorUser recipient = createDefaultDonorUser();
-
-        Message original = createDefaultMessage();
-        original.setOwner(owner.getName());
-        original.setOwnerMale(owner.isMale());
-        original.setRecipient(recipient.getName());
-        original.setRecipientMale(recipient.isMale());
-
-
-        DONOR_USER_DAO.save(Arrays.asList(owner, recipient));
-        MESSAGE_DAO.save(original);
-
-        Message extracted = getMessageByUniqueOwner(owner.getName());
-
-        equalsMessages(original, extracted);
+        messageDAO.save(message);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSave);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
 
         //Test update
-        original.setId(extracted.getId());
-        original.setMessage("kajflsanf");
-        original.setSynonymized(!original.isSynonymized());
-        original.setPosted(!original.isPosted());
-
-        MESSAGE_DAO.update(original);
-
-        extracted = getMessageByUniqueOwner(original.getOwner());
-
-        equalsMessages(original, extracted);
+        message.setId(1);
+        message.setMessage("ljkdsjv");
+        message.setSynonymized(false);
+        message.setPosted(true);
+        messageDAO.update(message);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdate);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
+        DBTestHelper.fill(EMPTY_MESSAGES_TABLE, jdbcTemplate);
+        String afterSaveList = "/test/data_set/message/afterSaveList.xml";
+        String afterUpdateList = "/test/data_set/message/afterUpdateList.xml";
+
+        Message message1 = new Message();
+        message1.setMessage("jvsdijs");
+        message1.setOwner("Frank");
+        message1.setOwnerMale(true);
+        message1.setRecipient("Tony");
+        message1.setRecipientMale(true);
+        message1.setPostedDate(TimeWizard.stringToDate("2012-10-15 09:15:30", DATE_PATTERN));
+        message1.setSynonymized(true);
+        message1.setPosted(false);
+
+        Message message2 = new Message();
+        message2.setMessage("asdcu");
+        message2.setOwner("Tony");
+        message2.setOwnerMale(true);
+        message2.setRecipient("Ann");
+        message2.setRecipientMale(false);
+        message2.setPostedDate(TimeWizard.stringToDate("2014-10-29 15:09:45", DATE_PATTERN));
+        message2.setSynonymized(false);
+        message2.setPosted(true);
+
+        List<Message> messageList = Arrays.asList(message1, message2);
+
+        ITable expected;
+        ITable actual;
+        String[] ignoringCol = {"id"};
+
         //Test save
-        DonorUser owner1 = createDefaultDonorUser();
-        DonorUser recipient1 = createDefaultDonorUser();
-
-        DonorUser owner2 = createDefaultDonorUser();
-        DonorUser recipient2 = createDefaultDonorUser();
-
-        Message original1 = createDefaultMessage();
-        original1.setOwner(owner1.getName());
-        original1.setOwnerMale(owner1.isMale());
-        original1.setRecipient(recipient1.getName());
-        original1.setRecipientMale(recipient1.isMale());
-
-        Message original2 = createDefaultMessage();
-        original2.setOwner(owner2.getName());
-        original2.setOwnerMale(owner2.isMale());
-        original2.setRecipient(recipient2.getName());
-        original2.setRecipientMale(recipient2.isMale());
-
-        List<Message> messageList = Arrays.asList(original1, original2);
-        List<DonorUser> donorUserList = Arrays.asList(owner1, owner2, recipient1, recipient2);
-
-        DONOR_USER_DAO.save(donorUserList);
-        MESSAGE_DAO.save(messageList);
-
-        Message extracted1 = getMessageByUniqueOwner(owner1.getName());
-        Message extracted2 = getMessageByUniqueOwner(owner2.getName());
-
-        equalsMessages(original1, extracted1);
-        equalsMessages(original2, extracted2);
-
+        messageDAO.save(messageList);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
 
         //Test update
-        original1.setId(extracted1.getId());
-        original1.setMessage("fkdhjdofjoid");
-        original1.setSynonymized(!original1.isSynonymized());
-        original1.setPosted(!original1.isPosted());
+        message1.setId(1);
+        message1.setMessage("casdc");
+        message1.setSynonymized(false);
+        message1.setPosted(true);
 
-        original2.setId(extracted2.getId());
-        original2.setMessage("jhaenjer");
-        original2.setSynonymized(!original2.isSynonymized());
-        original2.setPosted(!original2.isPosted());
+        message2.setId(2);
+        message2.setMessage("dsag");
+        message2.setSynonymized(true);
+        message2.setPosted(false);
 
-        MESSAGE_DAO.update(messageList);
+        messageDAO.update(messageList);
 
-        extracted1 = getMessageByUniqueOwner(owner1.getName());
-        extracted2 = getMessageByUniqueOwner(owner2.getName());
-
-        equalsMessages(original1, extracted1);
-        equalsMessages(original2, extracted2);
-    }
-
-
-    private DonorUser createDefaultDonorUser() {
-        DonorUser donorUser = new DonorUser();
-        donorUser.setName(BASE_NAME + Counter.getNextNumber());
-        donorUser.setMale(true);
-        return donorUser;
-    }
-
-    private Message createDefaultMessage() {
-        Message message = new Message();
-
-        message.setMessage("Test message " + Counter.getNextNumber());
-
-        message.setPostedDate(new Date());
-
-        message.setSynonymized(true);
-        message.setPosted(true);
-
-        return message;
-    }
-
-    private Message getMessageByUniqueOwner(String ownerName) {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "owner.du_name AS 'owner', owner.male AS 'owner_male', " +
-                "recipient.du_name AS 'recipient', recipient.male AS 'recipient_male' " +
-                "FROM tweagle.messages " +
-                "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
-                "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
-                "WHERE owner.du_name = '" + ownerName + "';";
-//        return JDBC_TEMPLATE.queryForObject(SQL, new MessageRowMapper());
-        return null;
-    }
-
-    private void equalsMessages(Message original, Message extracted) {
-        assertEquals(original.getMessage(), extracted.getMessage());
-        assertEquals(original.getOwner(), extracted.getOwner());
-        assertEquals(original.isOwnerMale(), extracted.isOwnerMale());
-        assertEquals(original.getRecipient(), extracted.getRecipient());
-        assertEquals(original.isRecipientMale(), extracted.isRecipientMale());
-        assertEquals(original.isSynonymized(), extracted.isSynonymized());
-        assertEquals(original.isPosted(), extracted.isPosted());
-        long mistake = original.getPostedDate().getTime() - extracted.getPostedDate().getTime();
-        long barrier = 1000;
-        assertTrue(mistake <= barrier && mistake >= -barrier);
+        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateList);
+        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
     }
 }

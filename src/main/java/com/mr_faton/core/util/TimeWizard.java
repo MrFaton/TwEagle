@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by root on 16.09.2015.
@@ -56,5 +57,9 @@ public class TimeWizard {
     public static Date stringToDate(String dateInString, String datePattern) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat(datePattern);
         return formatter.parse(dateInString);
+    }
+
+    public static Date getDate(int year, int month, int day) {
+        return new GregorianCalendar(year, month, day).getTime();
     }
 }

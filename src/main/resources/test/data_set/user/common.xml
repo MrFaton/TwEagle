@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <users u_name="Amy" u_password="amy-pass" email="amy@mail.ru" male="false" creation_date="2012-10-15"
+           messages="1" following="2" followers="3"
+           consumer_key="jvls;dj" consumer_secret="jvoijs" access_token="ckapo" access_token_secret="kcao"/>
+
+    <users u_name="Den" u_password="den-pass" email="den@mail.ru" male="true" creation_date="2013-05-07"
+           messages="50" following="51" followers="52"
+           consumer_key="kds" consumer_secret="jxciosad" access_token="ocuas987" access_token_secret="a86ctsga"/>
+</dataset>
