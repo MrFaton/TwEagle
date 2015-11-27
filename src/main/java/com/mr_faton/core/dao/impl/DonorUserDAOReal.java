@@ -31,6 +31,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +
             "WHERE du_name = ?;";
+    private static final String SQL_SELECT = "SELECT * FROM tweagle.donor_users ";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -38,8 +39,8 @@ public class DonorUserDAOReal implements DonorUserDAO {
     @Override
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get donorUser for parse messages");
-        final String SQL = "" +
-                "SELECT * FROM tweagle.donor_users WHERE take_messages_date IS NULL LIMIT 1;";
+        final String PREDICATE = "WHERE take_messages_date IS NULL LIMIT 1;";
+        final String SQL = SQL_SELECT + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new DonorUserRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {

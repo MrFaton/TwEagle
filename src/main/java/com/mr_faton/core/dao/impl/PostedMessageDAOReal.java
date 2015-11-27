@@ -45,17 +45,17 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
 
                 "posted_messages.twitter_id, " +
 
-                "oldOwnerTable.du_name AS 'oldOwner', " +
-                "oldOwnerTable.male AS 'oldOwnerMale', " +
+                "oldOwnerTable.du_name AS oldOwner, " +
+                "oldOwnerTable.male AS oldOwnerMale, " +
 
-                "oldRecipientTable.du_name AS 'oldRecipient', " +
-                "oldRecipientTable.male AS 'oldRecipientMale', " +
+                "oldRecipientTable.du_name AS oldRecipient, " +
+                "oldRecipientTable.male AS oldRecipientMale, " +
 
                 "posted_messages.owner_id, " +
-                "ownerTable.male AS 'ownerMale', " +
+                "ownerTable.male AS ownerMale, " +
 
                 "posted_messages.recipient_id, " +
-                "recipientTable.male AS 'recipientMale', " +
+                "recipientTable.male AS recipientMale, " +
 
                 "posted_messages.retweeted, " +
                 "posted_messages.posted_date " +

@@ -1,16 +1,11 @@
 package com.mr_faton.core.dao.impl;
 
-import com.mr_faton.core.context.AppContext;
 import com.mr_faton.core.dao.DBTestHelper;
-import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.dao.MessageDAO;
-import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.table.Message;
 import com.mr_faton.core.util.TimeWizard;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.ITable;
-import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,13 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import util.Counter;
 
-import java.sql.Time;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Description
@@ -53,23 +45,58 @@ public class MessageDAORealTest {
 
 
     @Test
-    public void getAnyTweet() throws Exception {
+    public void getTweetByOwnerMale() throws Exception {
         Message message = messageDAO.getTweet(true);
-        Assert.assertTrue(message.isOwnerMale());
+        assertTrue(message.isOwnerMale());
     }
 
     @Test
-    public void getTweet() throws Exception {
+    public void getTweetByOwnerMaleAndBetweenDates() throws Exception {
         Calendar from = new GregorianCalendar(2013, 9, 23, 10, 5, 15); //month starts from 0, so if in Db it's 10 then here it's 9
         Calendar to = new GregorianCalendar(2013, 9, 23, 12, 10, 45);
         Message message = messageDAO.getTweet(true, from, to);
-        Assert.assertTrue(message.isOwnerMale());
+        assertTrue(message.isOwnerMale());
         Date min = from.getTime();
         Date max = to.getTime();
         Date postedDate = message.getPostedDate();
-        Assert.assertTrue(postedDate.after(min) && postedDate.before(max));
-        System.out.println(message.getMessage());
+        assertTrue(postedDate.after(min) && postedDate.before(max));
     }
+
+    @Test
+    public void getTweetByOwnerName() throws Exception {
+        String ownerName = "Tony";
+        Message message = messageDAO.getTweet(ownerName);
+        assertEquals(ownerName, message.getOwner());
+    }
+
+    @Test
+    public void getTweetByOwnerNameAndBetweenDates() throws Exception {
+        String ownerName = "Tony";
+        Calendar from = new GregorianCalendar(2013, 9, 23, 10, 5, 15); //month starts from 0, so if in Db it's 10 then here it's 9
+        Calendar to = new GregorianCalendar(2013, 9, 23, 12, 10, 45);
+
+        Message message = messageDAO.getTweet(ownerName, from, to);
+        assertEquals(ownerName, message.getOwner());
+        Date min = from.getTime();
+        Date max = to.getTime();
+        Date postedDate = message.getPostedDate();
+        assertTrue(postedDate.after(min) && postedDate.before(max));
+    }
+
+    @Test
+    public void getMentionBetweenDates() throws Exception {
+        Calendar min = new GregorianCalendar(2015, 0, 15, 10, 0, 0);
+        Calendar max = new GregorianCalendar(2015, 0, 15, 11, 0, 0);
+        Message message = messageDAO.getMention(false, true, min, max);
+        assertFalse(message.isOwnerMale());
+        assertTrue(message.isRecipientMale());
+        Date minDate = min.getTime();
+        Date maxDate = max.getTime();
+        Date postedDate = message.getPostedDate();
+        assertTrue(postedDate.after(minDate) && postedDate.before(maxDate));
+    }
+
+
 
     @Test
     public void saveAndUpdate() throws Exception {
@@ -98,7 +125,8 @@ public class MessageDAORealTest {
         Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
 
         //Test update
-        message.setId(1);
+        int id = Integer.valueOf(DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate).getValue(0, "id").toString());
+        message.setId(id);
         message.setMessage("ljkdsjv");
         message.setSynonymized(false);
         message.setPosted(true);
@@ -147,12 +175,16 @@ public class MessageDAORealTest {
         Assertion.assertEqualsIgnoreCols(expected, actual, ignoringCol);
 
         //Test update
-        message1.setId(1);
+        ITable tempTable = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        int message1ID = Integer.valueOf(tempTable.getValue(0, "id").toString());
+        int message2ID = Integer.valueOf(tempTable.getValue(1, "id").toString());
+
+        message1.setId(message1ID);
         message1.setMessage("casdc");
         message1.setSynonymized(false);
         message1.setPosted(true);
 
-        message2.setId(2);
+        message2.setId(message2ID);
         message2.setMessage("dsag");
         message2.setSynonymized(true);
         message2.setPosted(false);

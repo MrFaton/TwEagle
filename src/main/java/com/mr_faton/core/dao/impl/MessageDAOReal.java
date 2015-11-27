@@ -31,6 +31,18 @@ public class MessageDAOReal implements MessageDAO {
             "VALUES (?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.messages SET message = ?, synonymized = ?, posted = ? WHERE id = ?;";
+    private static final String SQL_SELECT_TWEET = "" +
+            "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+            "du_name AS owner, male AS owner_male, NULL AS recipient, NULL AS recipient_male " +
+            "FROM tweagle.messages " +
+            "INNER JOIN tweagle.donor_users ON messages.owner_id = donor_users.du_name ";
+    private static final String SQL_SELECT_MENTION = "" +
+            "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
+            "owner.du_name AS owner, owner.male AS owner_male, " +
+            "recipient.du_name AS recipient, recipient.male AS recipient_male " +
+            "FROM tweagle.messages " +
+            "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
+            "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name ";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -38,12 +50,8 @@ public class MessageDAOReal implements MessageDAO {
     //Get Tweet
     @Override
     public Message getTweet(boolean ownerMale) throws SQLException, NoSuchEntityException {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS owner, male AS owner_male, NULL AS recipient, NULL AS recipient_male " +
-                "FROM tweagle.messages " +
-                "INNER JOIN tweagle.donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
+        final String PREDICATE = "WHERE recipient_id IS NULL AND male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
+        final String SQL = SQL_SELECT_TWEET + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -55,11 +63,8 @@ public class MessageDAOReal implements MessageDAO {
     @Override
     public Message getTweet(final boolean ownerMale, final Calendar minCalendar, final Calendar maxCalendar)
             throws SQLException, NoSuchEntityException {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS owner, male AS owner_male, NULL AS recipient, NULL AS recipient_male " +
-                "FROM tweagle.messages INNER JOIN tweagle.donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND male = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String PREDICATE = "WHERE recipient_id IS NULL AND male = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String SQL = SQL_SELECT_TWEET + PREDICATE;
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
@@ -80,11 +85,8 @@ public class MessageDAOReal implements MessageDAO {
 
     @Override
     public Message getTweet(final String ownerName) throws SQLException, NoSuchEntityException {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male'" +
-                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND du_name = '" + ownerName + "' LIMIT 1;";
+        final String PREDICATE = "WHERE recipient_id IS NULL AND du_name = '" + ownerName + "' LIMIT 1;";
+        final String SQL = SQL_SELECT_TWEET + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new MessageRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -96,11 +98,8 @@ public class MessageDAOReal implements MessageDAO {
     @Override
     public Message getTweet(final String ownerName, final Calendar minCalendar, final Calendar maxCalendar)
             throws SQLException, NoSuchEntityException {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "du_name AS 'owner', male AS 'owner_male', NULL AS 'recipient', NULL AS 'recipient_male' " +
-                "FROM tweagle.messages INNER JOIN donor_users ON messages.owner_id = donor_users.du_name " +
-                "WHERE recipient_id IS NULL AND du_name = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String PREDICATE = "WHERE recipient_id IS NULL AND du_name = ? AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String SQL = SQL_SELECT_TWEET + PREDICATE;
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
@@ -126,14 +125,8 @@ public class MessageDAOReal implements MessageDAO {
     public Message getMention(
             final boolean ownerMale, final boolean recipientMale, final Calendar minCalendar, final Calendar maxCalendar)
             throws SQLException, NoSuchEntityException {
-        final String SQL = "" +
-                "SELECT messages.id, messages.message, messages.posted_date, messages.synonymized, messages.posted, " +
-                "owner.du_name AS 'owner', owner.male AS 'owner_male', " +
-                "recipient.du_name AS 'recipient', recipient.male AS 'recipient_male' " +
-                "FROM tweagle.messages " +
-                "INNER JOIN tweagle.donor_users owner ON messages.owner_id = owner.du_name " +
-                "INNER JOIN tweagle.donor_users recipient ON messages.recipient_id = recipient.du_name " +
-                "WHERE owner.male = ? AND recipient.male = ? AND  posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String PREDICATE = "WHERE owner.male = ? AND recipient.male = ? AND  posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String SQL = SQL_SELECT_MENTION + PREDICATE;
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {

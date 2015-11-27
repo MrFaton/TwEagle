@@ -34,6 +34,7 @@ public class UserDAOReal implements UserDAO {
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.users SET u_password = ?, email = ?, messages = ?, following = ?, followers = ?, " +
             "consumer_key = ?, consumer_secret = ?, access_token = ?, access_token_secret = ? WHERE u_name = ?;";
+    private static final String SQL_SELECT = "SELECT * FROM tweagle.users ";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -41,10 +42,10 @@ public class UserDAOReal implements UserDAO {
     @Override
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
         logger.debug("get user by name " + name);
-        final String SQL = "" +
-                "SELECT * FROM tweagle.users WHERE u_name = ?;";
+        final String PREDICATE = "WHERE u_name = '" + name + "';";
+        final String SQL = SQL_SELECT + PREDICATE;
         try {
-            return jdbcTemplate.queryForObject(SQL, new Object[]{name}, new UserRowMapper());
+            return jdbcTemplate.queryForObject(SQL, new UserRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
             throw new NoSuchEntityException("user with name '" + name + "' not found", emptyData);
         }
