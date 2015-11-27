@@ -1,5 +1,5 @@
 <!ELEMENT dataset (
-        users*, donor_users*, messages*)>
+        users*, donor_users*, messages*, posted_messages*)>
 
         <!ELEMENT users EMPTY>
         <!ATTLIST users
@@ -35,4 +35,15 @@
                 posted_date CDATA #REQUIRED
                 synonymized (true|false) #REQUIRED
                 posted (true|false) #REQUIRED
+                >
+
+        <!ELEMENT posted_messages EMPTY>
+        <!ATTLIST posted_messages
+                id CDATA #REQUIRED
+                message_id CDATA #REQUIRED
+                twitter_id CDATA #REQUIRED
+                owner_id CDATA #REQUIRED
+                recipient_id CDATA #IMPLIED
+                retweeted (true|false) #REQUIRED
+                posted_date CDATA #REQUIRED
                 >

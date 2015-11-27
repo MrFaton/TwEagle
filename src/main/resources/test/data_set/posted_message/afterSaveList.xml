@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <posted_messages id="1" message_id="1" twitter_id="214684" owner_id="Bob" retweeted="false"
+                     posted_date="2014-11-12 15:28:45"/>
+    <posted_messages id="2" message_id="2" twitter_id="1546" owner_id="Sandy" recipient_id="Andy" retweeted="false"
+                     posted_date="2014-10-29 19:25:46"/>
+</dataset>

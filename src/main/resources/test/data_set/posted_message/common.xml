@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <users u_name="Andy" u_password="csalj" email="andy@mail.ru" male="true" creation_date="2011-10-15"
+           messages="154" following="694" followers="345"
+           consumer_key="jcas" consumer_secret="pblg" access_token="weri" access_token_secret="b0o"/>
+    <users u_name="Bob" u_password="vopsk" email="bob@mail.ru" male="true" creation_date="2011-12-14" 
+           messages="455" following="5641" followers="567"
+           consumer_key="ml[" consumer_secret="ycgsa" access_token="49y6i" access_token_secret="78lo"/>
+    <users u_name="Mandy" u_password="lbfdp" email="mandy@in.ru" male="false" creation_date="2010-10-27"
+           messages="165" following="654" followers="1354"
+           consumer_key="lvdk" consumer_secret="98s7" access_token="0df9i" access_token_secret="fcrw09"/>
+    <users u_name="Sandy" u_password="vlds[" email="sandy@mail.ua" male="false" creation_date="2014-01-16"
+           messages="48" following="468" followers="4894"
+           consumer_key="kpr" consumer_secret="kcwe" access_token="pvlerl" access_token_secret="we0f"/>
+    
+    <donor_users du_name="Didi" male="true"/>
+    <donor_users du_name="Ingrid" male="false"/>
+    <donor_users du_name="Pole" male="true"/>
+    <donor_users du_name="Zoe" male="false"/>
+
+    <messages id="1" message="cksa" owner_id="Ingrid" posted_date="2014-03-15 08:21:39" synonymized="true" posted="false"/>
+    <messages id="2" message="cssfg" owner_id="Zoe" recipient_id="Didi" posted_date="2015-04-29 15:16:26" synonymized="true" posted="false"/>
+
+    <posted_messages id="1" message_id="2" twitter_id="1654" owner_id="Mandy" recipient_id="Bob" retweeted="true"
+                     posted_date="2015-10-16 09:15:39"/>
+    <posted_messages id="2" message_id="1" twitter_id="4782" owner_id="Sandy" retweeted="false"
+                     posted_date="2014-10-27 20:36:54"/>
+</dataset>

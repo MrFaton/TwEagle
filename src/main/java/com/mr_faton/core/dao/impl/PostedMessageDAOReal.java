@@ -29,6 +29,27 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
             "(message_id, twitter_id, owner_id, recipient_id, retweeted, posted_date)  VALUES (?, ?, ?, ?, ?, ?);";
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.posted_messages SET retweeted = ?;";
+    private static final String SQL_SELECT = "" +
+            "SELECT " +
+            "posted_messages.id, " +
+
+            "posted_messages.message_id, " +
+            "messages.message, " +
+
+            "posted_messages.twitter_id, " +
+
+            "posted_messages.owner_id, " +
+            "ownerTable.male AS ownerMale, " +
+
+            "posted_messages.recipient_id, " +
+            "recipientTable.male AS recipientMale, " +
+
+            "posted_messages.retweeted, " +
+            "posted_messages.posted_date " +
+
+            "FROM tweagle.posted_messages " +
+            "INNER JOIN tweagle.users ownerTable ON posted_messages.owner_id = ownerTable.u_name " +
+            "INNER JOIN tweagle.users recipientTable ON posted_messages.recipient_id = recipientTable.u_name ";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -36,37 +57,8 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
     @Override
     public PostedMessage getUnRetweetedPostedMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get unretweeted posted message");
-        final String SQL = "" +
-                "SELECT " +
-                "posted_messages.id, " +
-
-                "posted_messages.message_id, " +
-                "messages.message, " +
-
-                "posted_messages.twitter_id, " +
-
-                "oldOwnerTable.du_name AS oldOwner, " +
-                "oldOwnerTable.male AS oldOwnerMale, " +
-
-                "oldRecipientTable.du_name AS oldRecipient, " +
-                "oldRecipientTable.male AS oldRecipientMale, " +
-
-                "posted_messages.owner_id, " +
-                "ownerTable.male AS ownerMale, " +
-
-                "posted_messages.recipient_id, " +
-                "recipientTable.male AS recipientMale, " +
-
-                "posted_messages.retweeted, " +
-                "posted_messages.posted_date " +
-
-                "FROM tweagle.posted_messages " +
-                "INNER JOIN tweagle.messages ON posted_messages.message_id = messages.id " +
-                "INNER JOIN tweagle.donor_users oldOwnerTable ON tweagle.messages.owner_id = oldOwnerTable.du_name " +
-                "INNER JOIN tweagle.donor_users oldRecipientTable ON tweagle.messages.recipient_id = oldRecipientTable.du_name " +
-                "INNER JOIN tweagle.users ownerTable ON posted_messages.owner_id = ownerTable.u_name " +
-                "INNER JOIN tweagle.users recipientTable ON posted_messages.recipient_id = recipientTable.u_name " +
-                "WHERE posted_messages.retweeted = 0 LIMIT 1;";
+        final String PREDICATE = "WHERE posted_messages.retweeted = 0 LIMIT 1;";
+        final String SQL = SQL_SELECT + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new PostedMessageRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -166,12 +158,6 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
             postedMessage.setMessage(resultSet.getString("message"));
 
             postedMessage.setTwitterId(resultSet.getLong("twitter_id"));
-
-            postedMessage.setOldOwner(resultSet.getString("oldOwner"));
-            postedMessage.setOldOwnerMale(resultSet.getBoolean("oldOwnerMale"));
-
-            postedMessage.setOldRecipient(resultSet.getString("oldRecipient"));
-            if (postedMessage.getOldRecipient() != null) postedMessage.setOldRecipientMale(resultSet.getBoolean("oldRecipientMale"));
 
             postedMessage.setOwner(resultSet.getString("owner_id"));
             postedMessage.setOwnerMale(resultSet.getBoolean("ownerMale"));
