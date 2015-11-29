@@ -58,7 +58,6 @@
     <!-- Service-->
     <bean id="userService" class="com.mr_faton.core.service.impl.UserServiceReal"/>
     <bean id="donorUserService" class="com.mr_faton.core.service.impl.DonorUserServiceReal"/>
-    <bean id="messageService" class="com.mr_faton.core.service.impl.MessageServiceReal"/>
     <bean id="postedMessageService" class="com.mr_faton.core.service.impl.PostedMessageServiceReal"/>
     <bean id="tweetUserService" class="com.mr_faton.core.service.impl.TweetUserServiceReal"/>
     <bean id="synonymService" class="com.mr_faton.core.service.impl.SynonymServiceReal"/>

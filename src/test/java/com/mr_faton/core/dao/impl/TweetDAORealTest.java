@@ -7,7 +7,6 @@ import com.mr_faton.core.util.TimeWizard;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.ITable;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,23 +27,19 @@ import java.util.List;
 @ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
 public class TweetDAORealTest {
     private static final String TABLE = "tweets";
+    private static final String COMMON_DATA_SET = "/test/data_set/tweet/common.xml";
     private static final String EMPTY_TWEETS_TABLE = "/test/data_set/tweet/empty.xml";
     private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Autowired
     private TweetDAO tweetDAO;
     @Autowired
-    private static JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
-    @BeforeClass
-    public static void initializeGeneralTables() throws Exception {
-        DBTestHelper.fill("/test/data_set/tweet/initializeGeneralTables.xml", jdbcTemplate);
+    @Before
+    public void before() throws Exception {
+        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
     }
-
-//    @Before
-//    public void before() throws Exception {
-//        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
-//    }
 
 
 
@@ -88,7 +83,7 @@ public class TweetDAORealTest {
 
         Tweet tweet1 = new Tweet();
         tweet1.setId(1);
-        tweet1.setOwner("donorUserB");
+        tweet1.setOwner("donorUserA");
         tweet1.setMessage("vksd");
         tweet1.setPostedDate(TimeWizard.stringToDate("2012-10-23 21:03:45", DATE_PATTERN));
         tweet1.setSynonymized(false);
@@ -96,7 +91,7 @@ public class TweetDAORealTest {
 
         Tweet tweet2 = new Tweet();
         tweet2.setId(2);
-        tweet2.setOwner("donorUserC");
+        tweet2.setOwner("donorUserB");
         tweet2.setMessage("vkjsd");
         tweet2.setPostedDate(TimeWizard.stringToDate("2014-08-14 15:41:19", DATE_PATTERN));
         tweet2.setSynonymized(false);
