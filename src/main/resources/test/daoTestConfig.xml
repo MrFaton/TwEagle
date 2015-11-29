@@ -30,7 +30,8 @@
         <jdbc:script location="/sql/Create schema.sql"/>
         <jdbc:script location="/sql/Create table - users.sql"/>
         <jdbc:script location="/sql/Create table - donor_users.sql"/>
-        <jdbc:script location="/sql/Create table - messages.sql"/>
+        <jdbc:script location="/sql/Create table - tweets.sql"/>
+        <jdbc:script location="/sql/Create table - mentions.sql"/>
         <jdbc:script location="/sql/Create table - posted_messages.sql"/>
     </jdbc:initialize-database>
 
@@ -49,7 +50,7 @@
 
     <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
     <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal"/>
-    <bean id="messageDAO" class="com.mr_faton.core.dao.impl.MessageDAOReal"/>
+    <bean id="tweetDAO" class="com.mr_faton.core.dao.impl.TweetDAOReal"/>
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
     <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
     <bean id="wordDAO" class="com.mr_faton.core.dao.impl.WordDAOReal"/>

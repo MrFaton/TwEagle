@@ -63,10 +63,10 @@ public class PostedMessageDAORealTest {
         postedMessage.setMessage("cssfg");
         postedMessage.setTwitterId(11646);
 
-        postedMessage.setOldOwner("Zoe");
-        postedMessage.setOldOwnerMale(false);
-        postedMessage.setOldRecipient("Didi");
-        postedMessage.setOldRecipientMale(true);
+//        postedMessage.setOldOwner("Zoe");
+//        postedMessage.setOldOwnerMale(false);
+//        postedMessage.setOldRecipient("Didi");
+//        postedMessage.setOldRecipientMale(true);
 
         postedMessage.setOwner("Sandy");
         postedMessage.setOwnerMale(false);
@@ -107,8 +107,8 @@ public class PostedMessageDAORealTest {
         postedMessage1.setMessageId(1);
         postedMessage1.setMessage("cksa");
         postedMessage1.setTwitterId(214684);
-        postedMessage1.setOldOwner("Mandy");
-        postedMessage1.setOldOwnerMale(false);
+//        postedMessage1.setOldOwner("Mandy");
+//        postedMessage1.setOldOwnerMale(false);
         postedMessage1.setOwner("Bob");
         postedMessage1.setRetweeted(false);
         postedMessage1.setPostedDate(TimeWizard.stringToDate("2014-11-12 15:28:45", DATE_PATTERN));
@@ -117,10 +117,10 @@ public class PostedMessageDAORealTest {
         postedMessage2.setMessageId(2);
         postedMessage2.setMessage("cssfg");
         postedMessage2.setTwitterId(1546);
-        postedMessage2.setOldOwner("Zoe");
-        postedMessage2.setOldOwnerMale(false);
-        postedMessage2.setOldRecipient("Didi");
-        postedMessage2.setOldRecipientMale(true);
+//        postedMessage2.setOldOwner("Zoe");
+//        postedMessage2.setOldOwnerMale(false);
+//        postedMessage2.setOldRecipient("Didi");
+//        postedMessage2.setOldRecipientMale(true);
         postedMessage2.setOwner("Sandy");
         postedMessage2.setOwnerMale(false);
         postedMessage2.setRecipient("Andy");

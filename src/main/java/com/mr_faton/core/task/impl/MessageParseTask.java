@@ -2,13 +2,13 @@ package com.mr_faton.core.task.impl;
 
 import com.mr_faton.core.api.TwitterAPI;
 import com.mr_faton.core.dao.DonorUserDAO;
-import com.mr_faton.core.dao.MessageDAO;
+//import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.exception.BadUserException;
 import com.mr_faton.core.exception.DataSequenceReachedException;
 import com.mr_faton.core.exception.LimitExhaustedException;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.DonorUser;
-import com.mr_faton.core.table.Message;
+//import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
@@ -43,12 +43,12 @@ public class MessageParseTask implements Task {
     private static final String MESSAGE_lANG = "ru";
     private static final String COMMERCIAL_PARAM = "http";
     private static final String MENTION_PARAM = "@";
-    private static final List<Message> messageList = new ArrayList<>();
+//    private static final List<Message> messageList = new ArrayList<>();
 
     @Autowired
     private TwitterAPI twitterAPI;
-    @Autowired
-    private MessageDAO messageDAO;
+//    @Autowired
+//    private MessageDAO messageDAO;
     @Autowired
     private DonorUserDAO donorUserDAO;
 
@@ -114,10 +114,10 @@ public class MessageParseTask implements Task {
 
     @Override
     public void save() throws SQLException {
-        logger.debug("save " + messageList.size() + " parsed messages");
-        if (messageList.size() == 0) return;
-        messageDAO.save(messageList);
-        messageList.clear();
+//        logger.debug("save " + messageList.size() + " parsed messages");
+//        if (messageList.size() == 0) return;
+//        messageDAO.save(messageList);
+//        messageList.clear();
     }
 
 
@@ -189,14 +189,14 @@ public class MessageParseTask implements Task {
 
             Date statusDate = status.getCreatedAt();
 
-            Message message = new Message();
-            message.setMessage(text);
-            message.setOwner(donorUser.getName());
-            message.setOwnerMale(donorUser.isMale());
-            message.setRecipient(recipient);
-            message.setPostedDate(statusDate);
-
-            messageList.add(message);
+//            Message message = new Message();
+//            message.setMessage(text);
+//            message.setOwner(donorUser.getName());
+//            message.setOwnerMale(donorUser.isMale());
+//            message.setRecipient(recipient);
+//            message.setPostedDate(statusDate);
+//
+//            messageList.add(message);
         }
     }
 

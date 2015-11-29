@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <donor_users du_name="donorUserA" male="true" take_messages_date="2015-02-03"/>
+    <donor_users du_name="donorUserB" male="false" take_messages_date="2014-10-10"/>
+</dataset>

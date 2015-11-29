@@ -1,10 +1,8 @@
 package com.mr_faton.core.task.impl;
 
-import com.mr_faton.core.dao.MessageDAO;
 import com.mr_faton.core.dao.NotExistsSynonymDAO;
 //import com.mr_faton.core.dao.SynonymDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
-import com.mr_faton.core.table.Message;
 import com.mr_faton.core.task.Task;
 import com.mr_faton.core.util.RandomGenerator;
 import com.mr_faton.core.util.TimeWizard;
@@ -33,8 +31,8 @@ public class SynonymizerTask implements Task{
     public static final int MAX_SYN_PERCENT = 60;
     public static final int MIN_SYN_WORD_LENGTH = 3; //if the word length less or equals it, word not synonymized
 
-    @Autowired
-    private MessageDAO messageDAO;
+//    @Autowired
+//    private MessageDAO messageDAO;
 //    @Autowired
 //    private SynonymDAO synonymDAO;
     @Autowired
@@ -42,8 +40,8 @@ public class SynonymizerTask implements Task{
 
     private boolean status = true;
     private long nextTime = 0;
-    private List<Message> messagesForSynonymize;
-    private List<Message> synonymizedMessages = new ArrayList<>(MESSAGE_LIMIT + 1);
+//    private List<Message> messagesForSynonymize;
+//    private List<Message> synonymizedMessages = new ArrayList<>(MESSAGE_LIMIT + 1);
     private boolean hasMoreMessages = true; //if db says that no messages for synonymized, then turn it to false
 
 
@@ -95,23 +93,23 @@ public class SynonymizerTask implements Task{
     @Override
     public void update() throws SQLException {
         logger.debug("update");
-        synonymizedMessages.clear();
-        try {
-            messagesForSynonymize = messageDAO.getUnSynonymizedMessages(MESSAGE_LIMIT);
-            logger.debug("find " + messagesForSynonymize.size() + " messages for synonymize");
-        } catch (NoSuchEntityException e) {
-            hasMoreMessages = false;
-            nextTime = Long.MAX_VALUE;
-            logger.debug("no messages found for synonymize");
-        }
+//        synonymizedMessages.clear();
+//        try {
+//            messagesForSynonymize = messageDAO.getUnSynonymizedMessages(MESSAGE_LIMIT);
+//            logger.debug("find " + messagesForSynonymize.size() + " messages for synonymize");
+//        } catch (NoSuchEntityException e) {
+//            hasMoreMessages = false;
+//            nextTime = Long.MAX_VALUE;
+//            logger.debug("no messages found for synonymize");
+//        }
     }
 
     @Override
     public void save() throws SQLException {
-        logger.debug("save");
-        if (synonymizedMessages == null || synonymizedMessages.size() == 0) return;
-        messageDAO.update(synonymizedMessages);
-        logger.debug(synonymizedMessages.size() + " synonymized messages saved");
+//        logger.debug("save");
+//        if (synonymizedMessages == null || synonymizedMessages.size() == 0) return;
+//        messageDAO.update(synonymizedMessages);
+//        logger.debug(synonymizedMessages.size() + " synonymized messages saved");
     }
 
 
@@ -119,38 +117,38 @@ public class SynonymizerTask implements Task{
     @Override
     public void execute() {
         logger.info("synonymize messages");
-        if (messagesForSynonymize == null || messagesForSynonymize.size() == 0) return;
-        try {
-            for (Message message : messagesForSynonymize) {
-                logger.debug("original message=" + message.getMessage());
-                List<String> wordList = getWordList(message.getMessage());
-                try {
-                    List<Integer> positionsOfPassableReplacements = getPositionsOfPassableReplacement(wordList);
-                    logger.debug("possible replacements = " + positionsOfPassableReplacements.size());
-                    int replacementsNumber = getReplacementsNumber(positionsOfPassableReplacements);
-                    logger.debug("actual replacements = " + replacementsNumber);
-                    replaceSynonyms(replacementsNumber, positionsOfPassableReplacements, wordList);
-
-                } catch (NoSuchEntityException entityEx) {
-                    logger.debug("message has no one word to replace by synonym");
-                }
-
-                StringBuilder text = new StringBuilder();
-                for (String word : wordList) {
-                    text.append(word).append(" ");
-                }
-                String newMessage = text.substring(0, text.lastIndexOf(" "));
-                if (newMessage.length() > 140) logger.debug("message with id " + message.getId() + " in result is too long, so left it old message");
-                if (newMessage.length() <= 140) {
-                    message.setMessage(newMessage);
-                }
-                message.setSynonymized(true);
-                synonymizedMessages.add(message);
-                logger.debug("synonymized message=" + message.getMessage());
-            }
-        } catch (SQLException sqlEx) {
-            logger.warn("exception", sqlEx);
-        }
+//        if (messagesForSynonymize == null || messagesForSynonymize.size() == 0) return;
+//        try {
+//            for (Message message : messagesForSynonymize) {
+//                logger.debug("original message=" + message.getMessage());
+//                List<String> wordList = getWordList(message.getMessage());
+//                try {
+//                    List<Integer> positionsOfPassableReplacements = getPositionsOfPassableReplacement(wordList);
+//                    logger.debug("possible replacements = " + positionsOfPassableReplacements.size());
+//                    int replacementsNumber = getReplacementsNumber(positionsOfPassableReplacements);
+//                    logger.debug("actual replacements = " + replacementsNumber);
+//                    replaceSynonyms(replacementsNumber, positionsOfPassableReplacements, wordList);
+//
+//                } catch (NoSuchEntityException entityEx) {
+//                    logger.debug("message has no one word to replace by synonym");
+//                }
+//
+//                StringBuilder text = new StringBuilder();
+//                for (String word : wordList) {
+//                    text.append(word).append(" ");
+//                }
+//                String newMessage = text.substring(0, text.lastIndexOf(" "));
+//                if (newMessage.length() > 140) logger.debug("message with id " + message.getId() + " in result is too long, so left it old message");
+//                if (newMessage.length() <= 140) {
+//                    message.setMessage(newMessage);
+//                }
+//                message.setSynonymized(true);
+//                synonymizedMessages.add(message);
+//                logger.debug("synonymized message=" + message.getMessage());
+//            }
+//        } catch (SQLException sqlEx) {
+//            logger.warn("exception", sqlEx);
+//        }
 
     }
 

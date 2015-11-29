@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
-<dataset>
-    <messages id="1" message="jvsdijs" owner_id="Frank" recipient_id="Tony" posted_date="2012-10-15 09:15:30"
-              synonymized="true" posted="false"/>
-
-    <messages id="2" message="asdcu" owner_id="Tony" recipient_id="Ann" posted_date="2014-10-29 15:09:45"
-              synonymized="false" posted="true"/>
-</dataset>
