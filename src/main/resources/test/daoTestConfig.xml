@@ -27,19 +27,19 @@
     </bean>
 
     <jdbc:initialize-database>
-        <jdbc:script location="/sql/1 Create DB.sql"/>
-        <jdbc:script location="/sql/2 Create table - users.sql"/>
-        <jdbc:script location="/sql/3 Create table - donor_users.sql"/>
-        <jdbc:script location="/sql/4 Create table - messages.sql"/>
-        <jdbc:script location="/sql/5 Create table - posted_messages.sql"/>
+        <jdbc:script location="/sql/Create schema.sql"/>
+        <jdbc:script location="/sql/Create table - users.sql"/>
+        <jdbc:script location="/sql/Create table - donor_users.sql"/>
+        <jdbc:script location="/sql/Create table - messages.sql"/>
+        <jdbc:script location="/sql/Create table - posted_messages.sql"/>
     </jdbc:initialize-database>
 
 
     <!-- Also I can initialize db like this-->
     <!-- Note this! If use this version, then must use short table name like this 'INSERT INTO users'-->
     <!--<jdbc:embedded-database id="dataSource" type="H2">-->
-        <!--<jdbc:script location="sql/1 Create DB.sql"/>-->
-        <!--<jdbc:script location="sql/2 Create table - users.sql"/>-->
+        <!--<jdbc:script location="sql/Create schema.sql"/>-->
+        <!--<jdbc:script location="sql/Create table - users.sql"/>-->
     <!--</jdbc:embedded-database>-->
 
 

@@ -1,10 +1,10 @@
-DROP TABLE IF EXISTS tweagle.messages;
-CREATE TABLE tweagle.messages
+DROP TABLE IF EXISTS tweagle.mentions;
+CREATE TABLE tweagle.mentions
 (
   id           INT AUTO_INCREMENT NOT NULL,
   message      VARCHAR(150)       NOT NULL,
   owner_id     VARCHAR(30)        NOT NULL,
-  recipient_id VARCHAR(30),
+  recipient_id VARCHAR(30)        NOT NULL,
   posted_date  TIMESTAMP          NOT NULL,
   synonymized  BOOLEAN            NOT NULL DEFAULT 0,
   posted       BOOLEAN            NOT NULL DEFAULT 0,
