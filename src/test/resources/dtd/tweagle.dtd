@@ -1,5 +1,5 @@
 <!ELEMENT dataset (
-        users*, donor_users*, tweets*, mentions*, posted_tweets*)>
+        users*, donor_users*, tweets*, mentions*, posted_messages*)>
 
         <!ELEMENT users EMPTY>
         <!ATTLIST users
@@ -47,8 +47,8 @@
                 reposted (true|false) #REQUIRED
                 >
 
-        <!ELEMENT posted_tweets EMPTY>
-        <!ATTLIST posted_tweets
+        <!ELEMENT posted_messages EMPTY>
+        <!ATTLIST posted_messages
                 id CDATA #REQUIRED
                 twitter_id CDATA #REQUIRED
                 posted_date CDATA #REQUIRED

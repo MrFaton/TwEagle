@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<dataset>
+    <donor_users du_name="donorUserA" male="true" take_messages_date="2015-02-03"/>
+    <donor_users du_name="donorUserB" male="false" take_messages_date="2014-10-10"/>
+    <tweets id="1" owner_id="donorUserA" message="csa" posted_date="2015-08-14 07:53:18"
+            synonymized="true" reposted="false"/>
+    <tweets id="2" owner_id="donorUserB" message="sacsa" posted_date="2012-03-28 07:45:16"
+            synonymized="true" reposted="false"/>
+</dataset>

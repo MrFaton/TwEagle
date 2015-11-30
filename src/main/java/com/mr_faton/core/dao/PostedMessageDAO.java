@@ -14,12 +14,10 @@ import java.util.List;
  */
 public interface PostedMessageDAO {
 
-    PostedMessage getUnRetweetedPostedMessage() throws SQLException, NoSuchEntityException;
+    Long getTwitterId() throws SQLException, NoSuchEntityException;
 
-    // INSERTS - UPDATES
-    void save(PostedMessage postedMessage) throws SQLException;
-    void save(List<PostedMessage> postedMessageList) throws SQLException;
+    void save(long twitterId) throws SQLException;
+    void save(List<Long> twitterIdList) throws SQLException;
 
-    void update(PostedMessage postedMessage) throws SQLException;
-    void update(List<PostedMessage> postedMessageList) throws SQLException;
+    void delete(long twitterId) throws SQLException;
 }

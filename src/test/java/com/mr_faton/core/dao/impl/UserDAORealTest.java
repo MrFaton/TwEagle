@@ -1,6 +1,6 @@
 package com.mr_faton.core.dao.impl;
 
-import com.mr_faton.core.dao.DBTestHelper;
+import util.DBTestHelper;
 import com.mr_faton.core.dao.UserDAO;
 import com.mr_faton.core.table.User;
 import com.mr_faton.core.util.TimeWizard;
@@ -29,20 +29,20 @@ import static org.junit.Assert.assertTrue;
  * @since 14.10.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
 public class UserDAORealTest {
     private static final String TABLE = "users";
-    private static final String COMMON_DATA_SET = "/test/data_set/user/common.xml";
-    private static final String EMPTY_TABLE = "/test/data_set/user/empty.xml";
+    private static final String COMMON_DATA_SET = "/data_set/user/common.xml";
+    private static final String EMPTY_TABLE = "/data_set/user/empty.xml";
 
     @Autowired
     private UserDAO userDAO;
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private DBTestHelper dbTestHelper;
 
     @Before
     public void before() throws Exception {
-        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
+        dbTestHelper.fill(COMMON_DATA_SET);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class UserDAORealTest {
 
     @Test
     public void getUserList() throws Exception {
-        ITable expectedTable = DBTestHelper.getTableFromFile(TABLE, COMMON_DATA_SET);
+        ITable expectedTable = dbTestHelper.getTableFromFile(TABLE, COMMON_DATA_SET);
         List<User> expectedUserList = new ArrayList<>();
         for (int i = 0; i < expectedTable.getRowCount(); i++) {
             expectedUserList.add(rowToUser(expectedTable, i));
@@ -65,58 +65,58 @@ public class UserDAORealTest {
 
     @Test
     public void saveAndUpdate() throws Exception {
-        final String afterSaveTable = "/test/data_set/user/afterSave.xml";
-        final String afterUpdateTable = "/test/data_set/user/afterUpdate.xml";
+        final String afterSaveTable = "/data_set/user/afterSave.xml";
+        final String afterUpdateTable = "/data_set/user/afterUpdate.xml";
         User user;
         ITable expected;
         ITable actual;
-        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
+        dbTestHelper.fill(EMPTY_TABLE);
 
         //Test save
-        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveTable);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterSaveTable);
         user = rowToUser(expected, 0);
         userDAO.save(user);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
         //Test update
-        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateTable);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdateTable);
         user = rowToUser(expected, 0);
         userDAO.update(user);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
-        final String afterSaveListTable = "/test/data_set/user/afterSaveList.xml";
-        final String afterUpdateListTable = "/test/data_set/user/afterUpdateList.xml";
+        final String afterSaveListTable = "/data_set/user/afterSaveList.xml";
+        final String afterUpdateListTable = "/data_set/user/afterUpdateList.xml";
         User user1;
         User user2;
         List<User> userList = new ArrayList<>(2);
         ITable expected;
         ITable actual;
-        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
+        dbTestHelper.fill(EMPTY_TABLE);
 
         //Test save
-        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveListTable);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterSaveListTable);
         user1 = rowToUser(expected, 0);
         user2 = rowToUser(expected, 1);
         userList.add(user1);
         userList.add(user2);
         userDAO.save(userList);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
         //Test update
-        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateListTable);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdateListTable);
         user1 = rowToUser(expected, 0);
         user2 = rowToUser(expected, 1);
         userList.clear();
         userList.add(user1);
         userList.add(user2);
         userDAO.update(userList);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
     }

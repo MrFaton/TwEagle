@@ -3,13 +3,17 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.TweetDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Tweet;
+import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -29,20 +33,42 @@ public class TweetDAOReal implements TweetDAO {
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.tweets SET message = ?, synonymized = ?, reposted = ? WHERE id = ?;";
     private static final String SQL_SELECT = "" +
-            "SELECT * FROM tweagle.tweets " +
-            "LEFT OUTER JOIN tweagle.posted_messages ON tweets.id = ";
+            "SELECT id, owner_id, male, message, posted_date, synonymized, reposted FROM tweagle.tweets " +
+            "INNER JOIN tweagle.donor_users ON tweets.owner_id = donor_users.du_name ";
 
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public Tweet getTweet(boolean ownerMale) throws SQLException, NoSuchEntityException {
-        return null;
+        final String PREDICATE = "WHERE synonymized = 1 AND reposted = 0 AND male = " + (ownerMale ? 1 : 0) + " LIMIT 1;";
+        final String SQL = SQL_SELECT + PREDICATE;
+        try {
+            return jdbcTemplate.queryForObject(SQL, new TweetRowMapper());
+        } catch (EmptyResultDataAccessException emptyData) {
+            throw new NoSuchEntityException("no tweet found with parameter: male =  '" + ownerMale + "'");
+        }
     }
 
     @Override
-    public Tweet getTweet(boolean ownerMale, Date minDate, Date maxDate) throws SQLException, NoSuchEntityException {
-        return null;
+    public Tweet getTweet(boolean ownerMale, final Date minDate, final Date maxDate) throws SQLException, NoSuchEntityException {
+        final String PREDICATE = "WHERE synonymized = 1 AND reposted = 0 AND posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String SQL = SQL_SELECT + PREDICATE;
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setTimestamp(1, new Timestamp(minDate.getTime()));
+                ps.setTimestamp(2, new Timestamp(maxDate.getTime()));
+            }
+        };
+        List<Tweet> query = jdbcTemplate.query(SQL, pss, new TweetRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("no tweet found with parameters:" +
+                    "male = '" + ownerMale + "', " +
+                    "between '" + TimeWizard.formatDateWithTime(minDate.getTime()) + "' " +
+                    "and '" + TimeWizard.formatDateWithTime(maxDate.getTime()) + "'");
+        }
+        return query.get(0);
     }
 
     @Override
@@ -115,5 +141,22 @@ public class TweetDAOReal implements TweetDAO {
             }
         };
         jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
+    }
+
+    private class TweetRowMapper implements RowMapper<Tweet> {
+        @Override
+        public Tweet mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+            Tweet tweet = new Tweet();
+
+            tweet.setId(resultSet.getInt("id"));
+            tweet.setOwner(resultSet.getString("owner_id"));
+            tweet.setOwnerMale(resultSet.getBoolean("male"));
+            tweet.setMessage(resultSet.getString("message"));
+            tweet.setPostedDate(resultSet.getTimestamp("posted_date"));
+            tweet.setSynonymized(resultSet.getBoolean("synonymized"));
+            tweet.setReposted(resultSet.getBoolean("reposted"));
+
+            return tweet;
+        }
     }
 }

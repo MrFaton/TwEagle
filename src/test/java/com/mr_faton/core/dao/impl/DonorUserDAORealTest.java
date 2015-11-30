@@ -1,7 +1,7 @@
 package com.mr_faton.core.dao.impl;
 
 
-import com.mr_faton.core.dao.DBTestHelper;
+import util.DBTestHelper;
 import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.util.TimeWizard;
@@ -28,21 +28,21 @@ import java.util.List;
  * @since 13.10.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/test/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
 public class DonorUserDAORealTest {
     private static final String TABLE = "donor_users";
-    private static final String COMMON_DATA_SET = "/test/data_set/donor_user/common.xml";
-    private static final String EMPTY_TABLE = "/test/data_set/donor_user/empty.xml";
+    private static final String COMMON_DATA_SET = "/data_set/donor_user/common.xml";
+    private static final String EMPTY_TABLE = "/data_set/donor_user/empty.xml";
     private static final String DATE_PATTERN = "yyyy-MM-dd";
 
     @Autowired
     private DonorUserDAO donorUserDAO;
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private DBTestHelper dbTestHelper;
 
     @Before
     public void before() throws Exception {
-        DBTestHelper.fill(COMMON_DATA_SET, jdbcTemplate);
+        dbTestHelper.fill(COMMON_DATA_SET);
     }
 
 
@@ -54,9 +54,9 @@ public class DonorUserDAORealTest {
 
     @Test
     public void saveAndUpdate() throws Exception{
-        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
-        String afterSave = "/test/data_set/donor_user/afterSave.xml";
-        String afterUpdate = "/test/data_set/donor_user/afterUpdate.xml";
+        dbTestHelper.fill(EMPTY_TABLE);
+        String afterSave = "/data_set/donor_user/afterSave.xml";
+        String afterUpdate = "/data_set/donor_user/afterUpdate.xml";
 
         DonorUser donorUser = new DonorUser();
         donorUser.setName("Alex");
@@ -70,8 +70,8 @@ public class DonorUserDAORealTest {
 
         //Test save
         donorUserDAO.save(donorUser);
-        expected = DBTestHelper.getTableFromFile(TABLE, afterSave);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterSave);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
         //Test update
@@ -79,16 +79,16 @@ public class DonorUserDAORealTest {
         donorUser.setTakeFollowingDate(TimeWizard.stringToDate("2013-03-04", DATE_PATTERN));
         donorUser.setTakeFollowersDate(TimeWizard.stringToDate("2014-05-06", DATE_PATTERN));
         donorUserDAO.update(donorUser);
-        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdate);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdate);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
     }
 
     @Test
     public void saveAndUpdateList() throws Exception {
-        DBTestHelper.fill(EMPTY_TABLE, jdbcTemplate);
-        String afterSaveList = "/test/data_set/donor_user/afterSaveList.xml";
-        String afterUpdateList = "/test/data_set/donor_user/afterUpdateList.xml";
+        dbTestHelper.fill(EMPTY_TABLE);
+        String afterSaveList = "/data_set/donor_user/afterSaveList.xml";
+        String afterUpdateList = "/data_set/donor_user/afterUpdateList.xml";
 
         DonorUser du1 = new DonorUser();
         du1.setName("Andy");
@@ -111,8 +111,8 @@ public class DonorUserDAORealTest {
 
         //Test save
         donorUserDAO.save(duList);
-        expected = DBTestHelper.getTableFromFile(TABLE, afterSaveList);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterSaveList);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
         //Test update
@@ -126,8 +126,8 @@ public class DonorUserDAORealTest {
 
         donorUserDAO.update(duList);
 
-        expected = DBTestHelper.getTableFromFile(TABLE, afterUpdateList);
-        actual = DBTestHelper.getTableFromSchema(TABLE, jdbcTemplate);
+        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdateList);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
     }
 

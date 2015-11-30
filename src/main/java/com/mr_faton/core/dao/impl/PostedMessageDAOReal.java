@@ -25,150 +25,63 @@ public class PostedMessageDAOReal implements PostedMessageDAO {
     private static final Logger logger = Logger.getLogger("" +
             "com.mr_faton.core.dao.impl.PostedMessageDAOReal");
     private static final String SQL_SAVE = "" +
-            "INSERT INTO tweagle.posted_messages " +
-            "(message_id, twitter_id, owner_id, recipient_id, retweeted, posted_date)  VALUES (?, ?, ?, ?, ?, ?);";
-    private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.posted_messages SET retweeted = ?;";
+            "INSERT INTO tweagle.posted_messages (twitter_id, posted_date)  VALUES (?, ?);";
+    private static final String SQL_DELETE = "" +
+            "DELETE FROM tweagle.posted_messages WHERE twitter_id = ?;";
     private static final String SQL_SELECT = "" +
-            "SELECT " +
-            "posted_messages.id, " +
-
-            "posted_messages.message_id, " +
-            "messages.message, " +
-
-            "posted_messages.twitter_id, " +
-
-            "posted_messages.owner_id, " +
-            "ownerTable.male AS ownerMale, " +
-
-            "posted_messages.recipient_id, " +
-            "recipientTable.male AS recipientMale, " +
-
-            "posted_messages.retweeted, " +
-            "posted_messages.posted_date " +
-
-            "FROM tweagle.posted_messages " +
-            "INNER JOIN tweagle.users ownerTable ON posted_messages.owner_id = ownerTable.u_name " +
-            "INNER JOIN tweagle.users recipientTable ON posted_messages.recipient_id = recipientTable.u_name ";
+            "SELECT twitter_id FROM tweagle.posted_messages LIMIT 1;";
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    JdbcTemplate jdbcTemplate;
+
 
     @Override
-    public PostedMessage getUnRetweetedPostedMessage() throws SQLException, NoSuchEntityException {
-        logger.debug("get unretweeted posted message");
-        final String PREDICATE = "WHERE posted_messages.retweeted = 0 LIMIT 1;";
-        final String SQL = SQL_SELECT + PREDICATE;
+    public Long getTwitterId() throws SQLException, NoSuchEntityException {
         try {
-            return jdbcTemplate.queryForObject(SQL, new PostedMessageRowMapper());
+            return jdbcTemplate.queryForObject(SQL_SELECT, Long.class);
         } catch (EmptyResultDataAccessException emptyData) {
-            throw new NoSuchEntityException("it's seems that no unretweeted posted message found", emptyData);
+            throw new NoSuchEntityException("no twitter id found", emptyData);
         }
     }
 
-
-
-    // INSERTS - UPDATES
     @Override
-    public void save(final PostedMessage postedMessage) throws SQLException {
-        logger.debug("save posted message " + postedMessage);
+    public void save(final long twitterId) throws SQLException {
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
-                ps.setInt(1, postedMessage.getMessageId());
-                ps.setLong(2, postedMessage.getTwitterId());
-                ps.setString(3, postedMessage.getOwner());
-                if (postedMessage.getRecipient() != null) {
-                    ps.setString(4, postedMessage.getRecipient());
-                } else {
-                    ps.setNull(4, Types.VARCHAR);
-                }
-                ps.setBoolean(5, postedMessage.isRetweeted());
-                ps.setTimestamp(6, new Timestamp(postedMessage.getPostedDate().getTime()));
+                ps.setLong(1, twitterId);
+                ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             }
         };
         jdbcTemplate.update(SQL_SAVE, pss);
     }
 
     @Override
-    public void save(final List<PostedMessage> postedMessageList) throws SQLException {
-        logger.debug("save " + postedMessageList.size() + " posted messages");
+    public void save(final List<Long> twitterIdList) throws SQLException {
         BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                PostedMessage postedMessage = postedMessageList.get(i);
-                ps.setInt(1, postedMessage.getMessageId());
-                ps.setLong(2, postedMessage.getTwitterId());
-                ps.setString(3, postedMessage.getOwner());
-                if (postedMessage.getRecipient() != null) {
-                    ps.setString(4, postedMessage.getRecipient());
-                } else {
-                    ps.setNull(4, Types.VARCHAR);
-                }
-                ps.setBoolean(5, postedMessage.isRetweeted());
-                ps.setTimestamp(6, new Timestamp(postedMessage.getPostedDate().getTime()));
+                long twitterId = twitterIdList.get(i);
+                ps.setLong(1, twitterId);
+                ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             }
 
             @Override
             public int getBatchSize() {
-                return postedMessageList.size();
+                return twitterIdList.size();
             }
         };
         jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
     }
 
-
     @Override
-    public void update(final PostedMessage postedMessage) throws SQLException {
-        logger.info("update posted message " + postedMessage);
+    public void delete(final long twitterId) throws SQLException {
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
-                ps.setBoolean(1, postedMessage.isRetweeted());
+                ps.setLong(1, twitterId);
             }
         };
-        jdbcTemplate.update(SQL_UPDATE, pss);
-    }
-
-    @Override
-    public void update(final List<PostedMessage> postedMessageList) throws SQLException {
-        logger.info("update " + postedMessageList.size() + " posted messages");
-        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                PostedMessage postedMessage = postedMessageList.get(i);
-                ps.setBoolean(1, postedMessage.isRetweeted());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return postedMessageList.size();
-            }
-        };
-        jdbcTemplate.batchUpdate(SQL_UPDATE, bpss);
-    }
-
-    class PostedMessageRowMapper implements RowMapper<PostedMessage> {
-        @Override
-        public PostedMessage mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-            PostedMessage postedMessage = new PostedMessage();
-            postedMessage.setId(resultSet.getInt("id"));
-
-            postedMessage.setMessageId(resultSet.getInt("message_id"));
-            postedMessage.setMessage(resultSet.getString("message"));
-
-            postedMessage.setTwitterId(resultSet.getLong("twitter_id"));
-
-            postedMessage.setOwner(resultSet.getString("owner_id"));
-            postedMessage.setOwnerMale(resultSet.getBoolean("ownerMale"));
-
-            postedMessage.setRecipient(resultSet.getString("recipient_id"));
-            if (postedMessage.getRecipient() != null) postedMessage.setRecipientMale(resultSet.getBoolean("recipientMale"));
-
-            postedMessage.setRetweeted(resultSet.getBoolean("retweeted"));
-            postedMessage.setPostedDate(resultSet.getTimestamp("posted_date"));
-
-            return postedMessage;
-        }
+        jdbcTemplate.update(SQL_DELETE, pss);
     }
 }
