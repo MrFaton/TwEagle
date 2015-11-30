@@ -48,6 +48,7 @@
     <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
     <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal"/>
     <bean id="tweetDAO" class="com.mr_faton.core.dao.impl.TweetDAOReal"/>
+    <bean id="mentionDAO" class="com.mr_faton.core.dao.impl.MentionDAOReal"/>
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
     <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
     <bean id="wordDAO" class="com.mr_faton.core.dao.impl.WordDAOReal"/>
@@ -58,7 +59,6 @@
     <!-- Service-->
     <bean id="userService" class="com.mr_faton.core.service.impl.UserServiceReal"/>
     <bean id="donorUserService" class="com.mr_faton.core.service.impl.DonorUserServiceReal"/>
-    <bean id="postedMessageService" class="com.mr_faton.core.service.impl.PostedMessageServiceReal"/>
     <bean id="tweetUserService" class="com.mr_faton.core.service.impl.TweetUserServiceReal"/>
     <bean id="synonymService" class="com.mr_faton.core.service.impl.SynonymServiceReal"/>
     <bean id="notExistsSynonymService" class="com.mr_faton.core.service.impl.NotExistsSynonymServiceReal"/>
