@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
  * @since 29.11.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 @Transactional
 public class TweetDAORealTest {
     private static final String TABLE = "tweets";

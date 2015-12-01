@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  * @since 30.11.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 @Transactional
 public class PostedMessageDAORealTest {
     private static final String TABLE = "posted_messages";

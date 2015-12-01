@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
  * @since 14.10.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 @Transactional
 public class UserDAORealTest {
     private static final String TABLE = "users";

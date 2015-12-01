@@ -21,7 +21,7 @@ import util.DBTestHelper;
  * @since 01.12.2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 @Transactional
 public class MentionDAORealTest {
     private static final String TABLE = "mentions";
