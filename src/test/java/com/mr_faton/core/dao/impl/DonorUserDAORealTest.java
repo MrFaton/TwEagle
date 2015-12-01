@@ -27,9 +27,9 @@ import java.util.List;
  * @version 1.0
  * @since 13.10.2015
  */
-@Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
+@Transactional
 public class DonorUserDAORealTest {
     private static final String TABLE = "donor_users";
     private static final String COMMON_DATA_SET = "/data_set/donor_user/common.xml";

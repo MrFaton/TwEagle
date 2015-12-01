@@ -1,38 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context-3.0.xsd
-           http://www.springframework.org/schema/tx
-           http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/jdbc
            http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
-    <context:annotation-config/>
-    <tx:annotation-driven />
-
-    <!--<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
-        <!--<property name="driverClassName" value="org.h2.Driver"/>-->
-        <!--<property name="url" value="jdbc:h2:mem:test;MODE=MySQL;DB_CLOSE_DELAY=-1"/>-->
-        <!--<property name="username" value="sa"/>-->
-        <!--<property name="password" value=""/>-->
-    <!--</bean>-->
+    <import resource="TwEagleConfig.xml"/>
 
     <bean id="dataSource" class="org.h2.jdbcx.JdbcDataSource">
         <!-- Disable foreign keys (references) REFERENTIAL_INTEGRITY=FALSE-->
         <property name="URL" value="jdbc:h2:mem:tweagle_test;MODE=MySQL;DB_CLOSE_DELAY=-1"/>
         <property name="user" value="sa"/>
         <property name="password" value=""/>
-    </bean>
-
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <jdbc:initialize-database>
@@ -44,30 +26,5 @@
         <jdbc:script location="/sql/Create table - posted_messages.sql"/>
     </jdbc:initialize-database>
 
-
-    <!-- Also I can initialize db like this-->
-    <!-- Note this! If use this version, then must use short table name like this 'INSERT INTO users'-->
-    <!--<jdbc:embedded-database id="dataSource" type="H2">-->
-        <!--<jdbc:script location="sql/Create schema.sql"/>-->
-        <!--<jdbc:script location="sql/Create table - users.sql"/>-->
-    <!--</jdbc:embedded-database>-->
-
-
-    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="dbTestHelper" class="util.DBTestHelper">
-        <constructor-arg name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="userDAO" class="com.mr_faton.core.dao.impl.UserDAOReal"/>
-    <bean id="donorUserDAO" class="com.mr_faton.core.dao.impl.DonorUserDAOReal"/>
-    <bean id="tweetDAO" class="com.mr_faton.core.dao.impl.TweetDAOReal"/>
-    <bean id="mentionDAO" class="com.mr_faton.core.dao.impl.MentionDAOReal"/>
-    <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
-    <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
-    <bean id="wordDAO" class="com.mr_faton.core.dao.impl.WordDAOReal"/>
-    <bean id="synonymMapDAO" class="com.mr_faton.core.dao.impl.SynonymMapDAOReal"/>
-    <bean id="notExistsSynonymDAO" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal"/>
+    <bean id="dbTestHelper" class="util.DBTestHelper"/>
 </beans>

@@ -1,5 +1,6 @@
 package util;
 
+import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -8,12 +9,14 @@ import org.dbunit.dataset.xml.FlatDtdDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.io.FileOutputStream;
+import java.sql.Connection;
 
 /**
  * Description
@@ -22,38 +25,26 @@ import java.io.FileOutputStream;
  * @since 16.11.2015
  */
 @Transactional
-@ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 public class DBTestHelper {
     public static final String[] IGNORED_COLUMN_ID = {"id"};
     public static final String DATE_PATTERN = "yyyy-MM-dd";
     public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-
-    private static final String SCHEMA = "tweagle";
-    private final IDatabaseConnection databaseConnection;
+    @Autowired
     private DataSource dataSource;
-
-    public DBTestHelper(DataSource dataSource) throws Exception {
-        databaseConnection = new DatabaseConnection(dataSource.getConnection(), SCHEMA);
-        this.dataSource = dataSource;
-    }
 
     public void fill(String dataSetPath) throws Exception {
         IDataSet dataSet = new FlatXmlDataSetBuilder().build(DBTestHelper.class.getResourceAsStream(dataSetPath));
-        IDatabaseConnection databaseConnection2 = new DatabaseConnection(DataSourceUtils.getConnection(dataSource), SCHEMA);
-        System.out.println("1 - " + databaseConnection);
-        System.out.println("2 - " + databaseConnection2);
-        DatabaseOperation.CLEAN_INSERT.execute(databaseConnection2, dataSet);
+        DatabaseOperation.CLEAN_INSERT.execute(getDatabaseConnection(), dataSet);
     }
 
     public IDataSet getDataSetFromSchema() throws Exception {
-        return databaseConnection.createDataSet();
+        return getDatabaseConnection().createDataSet();
     }
 
     public ITable getTableFromSchema(String tableName) throws Exception{
-        IDatabaseConnection databaseConnection2 = new DatabaseConnection(DataSourceUtils.getConnection(dataSource), SCHEMA);
-//        IDataSet dataSet = new DatabaseConnection(DataSourceUtils.getConnection(dataSource)).createDataSet();
-        IDataSet dataSet = databaseConnection2.createDataSet();
+        IDataSet dataSet = getDatabaseConnection().createDataSet();
         return dataSet.getTable(tableName);
     }
 
@@ -71,7 +62,13 @@ public class DBTestHelper {
     }
 
     public void generateSchemaDTD() throws Exception{
-        FlatDtdDataSet.write(databaseConnection.createDataSet(), new FileOutputStream("tweagle(auto-generated).dtd"));
+        FlatDtdDataSet.write(getDatabaseConnection().createDataSet(),
+                new FileOutputStream("tweagle(auto-generated).dtd"));
     }
 
+    private IDatabaseConnection getDatabaseConnection() throws DatabaseUnitException {
+        final String SCHEMA = "tweagle";
+        Connection connection = DataSourceUtils.getConnection(dataSource);
+        return new DatabaseConnection(connection, SCHEMA);
+    }
 }
