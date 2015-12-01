@@ -3,6 +3,7 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.MentionDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.table.Mention;
+import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -14,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,6 +62,33 @@ public class MentionDAOReal implements MentionDAO {
                     "no mention found with parameters: " +
                     "owner male = '" + ownerMale + "', " +
                     "recipient male = '" + recipientMale + "'");
+        }
+        return query.get(0);
+    }
+
+    @Override
+    public Mention getMention(final boolean ownerMale, final boolean recipientMale, final Date minDate, final Date maxDate)
+            throws SQLException, NoSuchEntityException {
+        final String PREDICATE = "" +
+                "WHERE synonymized = 1 AND reposted = 0 AND owner_male = ? AND recipient_male = ? AND " +
+                "posted_date BETWEEN ? AND ? LIMIT 1;";
+        final String SQL = SQL_SELECT + PREDICATE;
+        PreparedStatementSetter pss = new PreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps) throws SQLException {
+                ps.setBoolean(1, ownerMale);
+                ps.setBoolean(2, recipientMale);
+                ps.setTimestamp(3, new Timestamp(minDate.getTime()));
+                ps.setTimestamp(4, new Timestamp(maxDate.getTime()));
+            }
+        };
+        List<Mention> query = jdbcTemplate.query(SQL, pss, new MentionRowMapper());
+        if (query.isEmpty()) {
+            throw new NoSuchEntityException("no mention found with parameters: " +
+                    "owner male = '" + ownerMale + "', " +
+                    "recipient male = '" + recipientMale + "', " +
+                    "between dates '" + TimeWizard.formatDateWithTime(minDate.getTime()) + "' " +
+                    "and '" + TimeWizard.formatDateWithTime(maxDate.getTime()) + "'");
         }
         return query.get(0);
     }

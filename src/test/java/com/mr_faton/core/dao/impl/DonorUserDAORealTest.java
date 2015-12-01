@@ -1,7 +1,6 @@
 package com.mr_faton.core.dao.impl;
 
 
-import util.DBTestHelper;
 import com.mr_faton.core.dao.DonorUserDAO;
 import com.mr_faton.core.table.DonorUser;
 import com.mr_faton.core.util.TimeWizard;
@@ -12,9 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import util.DBTestHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +27,7 @@ import java.util.List;
  * @version 1.0
  * @since 13.10.2015
  */
+@Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
 public class DonorUserDAORealTest {

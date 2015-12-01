@@ -1,24 +1,25 @@
 package com.mr_faton.core.dao.impl;
 
-import util.DBTestHelper;
 import com.mr_faton.core.dao.TweetDAO;
 import com.mr_faton.core.table.Tweet;
 import com.mr_faton.core.util.TimeWizard;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.ITable;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import util.DBTestHelper;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Description
@@ -28,11 +29,11 @@ import java.util.List;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@Transactional
 public class TweetDAORealTest {
     private static final String TABLE = "tweets";
     private static final String COMMON_DATA_SET = "/data_set/tweet/common.xml";
     private static final String EMPTY_TWEETS_TABLE = "/data_set/tweet/empty.xml";
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Autowired
     private TweetDAO tweetDAO;
@@ -54,8 +55,8 @@ public class TweetDAORealTest {
 
     @Test
     public void getTweetByOwnerMaleAndBetweenDates() throws Exception {
-        Date minDate = TimeWizard.stringToDate("2012-03-28 07:00:00", DATE_PATTERN);
-        Date maxDate = TimeWizard.stringToDate("2012-03-28 08:00:00", DATE_PATTERN);
+        Date minDate = TimeWizard.stringToDate("2012-03-28 07:00:00", DBTestHelper.DATE_TIME_PATTERN);
+        Date maxDate = TimeWizard.stringToDate("2012-03-28 08:00:00", DBTestHelper.DATE_TIME_PATTERN);
         Tweet tweet = tweetDAO.getTweet(false, minDate, maxDate);
         assertFalse(tweet.isOwnerMale());
         Date actualDate = tweet.getPostedDate();
@@ -74,7 +75,7 @@ public class TweetDAORealTest {
         Tweet tweet = new Tweet();
         tweet.setOwner("donorUserA");
         tweet.setMessage("kvsdrvckds");
-        tweet.setPostedDate(TimeWizard.stringToDate("2015-10-16 09:21:26", DATE_PATTERN));
+        tweet.setPostedDate(TimeWizard.stringToDate("2015-10-16 09:21:26", DBTestHelper.DATE_TIME_PATTERN));
 
         ITable expected;
         ITable actual;
@@ -105,14 +106,14 @@ public class TweetDAORealTest {
         Tweet tweet1 = new Tweet();
         tweet1.setOwner("donorUserA");
         tweet1.setMessage("vksd");
-        tweet1.setPostedDate(TimeWizard.stringToDate("2012-10-23 21:03:45", DATE_PATTERN));
+        tweet1.setPostedDate(TimeWizard.stringToDate("2012-10-23 21:03:45", DBTestHelper.DATE_TIME_PATTERN));
         tweet1.setSynonymized(false);
         tweet1.setReposted(false);
 
         Tweet tweet2 = new Tweet();
         tweet2.setOwner("donorUserB");
         tweet2.setMessage("vkjsd");
-        tweet2.setPostedDate(TimeWizard.stringToDate("2014-08-14 15:41:19", DATE_PATTERN));
+        tweet2.setPostedDate(TimeWizard.stringToDate("2014-08-14 15:41:19", DBTestHelper.DATE_TIME_PATTERN));
         tweet2.setSynonymized(false);
         tweet2.setReposted(false);
 

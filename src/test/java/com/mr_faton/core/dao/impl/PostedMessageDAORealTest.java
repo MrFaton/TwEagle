@@ -1,8 +1,6 @@
 package com.mr_faton.core.dao.impl;
 
 import com.mr_faton.core.dao.PostedMessageDAO;
-import static org.junit.Assert.*;
-
 import com.mr_faton.core.exception.NoSuchEntityException;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +8,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 import util.DBTestHelper;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Description
@@ -20,11 +21,11 @@ import util.DBTestHelper;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = ("classpath:/daoTestConfig.xml"))
+@Transactional
 public class PostedMessageDAORealTest {
     private static final String TABLE = "posted_messages";
     private static final String COMMON_DATA_SET = "/data_set/posted_message/common.xml";
     private static final String EMPTY_TWEETS_TABLE = "/data_set/posted_message/empty.xml";
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Autowired
     PostedMessageDAO postedMessageDAO;

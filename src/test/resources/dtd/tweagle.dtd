@@ -42,8 +42,8 @@
                 owner_id CDATA #REQUIRED
                 recipient_id CDATA #REQUIRED
                 message CDATA #REQUIRED
-                posted_date (true|false) #REQUIRED
-                synonymized CDATA #REQUIRED
+                posted_date CDATA #REQUIRED
+                synonymized (true|false) #REQUIRED
                 reposted (true|false) #REQUIRED
                 >
 
