@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE dataset SYSTEM "test/dtd/tweagle.dtd">
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
 <dataset>
     <mentions id="1" owner_id="donorUserA" recipient_id="donorUserB" message="sdfsa" posted_date="2014-03-09 15:41:26"
               synonymized="true" reposted="false"/>

@@ -42,14 +42,11 @@ public class UserDAORealTest {
     private DBTestHelper dbTestHelper;
 
     @Before
-    @Transactional
-    @Rollback(false)
     public void before() throws Exception {
         dbTestHelper.fill(COMMON_DATA_SET);
     }
 
     @Test
-    @Transactional
     public void getUserByName() throws Exception {
         String name = "Den";
         User user = userDAO.getUserByName(name);
@@ -57,7 +54,6 @@ public class UserDAORealTest {
     }
 
     @Test
-    @Transactional
     public void getUserList() throws Exception {
         ITable expectedTable = dbTestHelper.getTableFromFile(TABLE, COMMON_DATA_SET);
         List<User> expectedUserList = new ArrayList<>();
@@ -69,10 +65,7 @@ public class UserDAORealTest {
     }
 
     @Test
-    @Transactional
-    @Rollback(false)
     public void saveAndUpdate() throws Exception {
-        System.out.println("save start");
         final String afterSaveTable = "/data_set/user/afterSave.xml";
         final String afterUpdateTable = "/data_set/user/afterUpdate.xml";
         User user;
@@ -87,17 +80,15 @@ public class UserDAORealTest {
         actual = dbTestHelper.getTableFromSchema(TABLE);
         Assertion.assertEquals(expected, actual);
 
-        //Test update
-//        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdateTable);
-//        user = rowToUser(expected, 0);
-//        userDAO.update(user);
-//        actual = dbTestHelper.getTableFromSchema(TABLE);
-//        Assertion.assertEquals(expected, actual);
-//        System.out.println("save end");
+//        Test update
+        expected = dbTestHelper.getTableFromFile(TABLE, afterUpdateTable);
+        user = rowToUser(expected, 0);
+        userDAO.update(user);
+        actual = dbTestHelper.getTableFromSchema(TABLE);
+        Assertion.assertEquals(expected, actual);
     }
 
     @Test
-    @Transactional
     public void saveAndUpdateList() throws Exception {
         final String afterSaveListTable = "/data_set/user/afterSaveList.xml";
         final String afterUpdateListTable = "/data_set/user/afterUpdateList.xml";

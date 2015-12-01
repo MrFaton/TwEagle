@@ -12,7 +12,6 @@ import org.dbunit.operation.DatabaseOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.io.FileOutputStream;
@@ -24,7 +23,6 @@ import java.sql.Connection;
  * @author root
  * @since 16.11.2015
  */
-@Transactional
 @ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
 public class DBTestHelper {
     public static final String[] IGNORED_COLUMN_ID = {"id"};
