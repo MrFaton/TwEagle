@@ -1,6 +1,7 @@
 package util;
 
 import org.dbunit.DatabaseUnitException;
+import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
@@ -8,6 +9,7 @@ import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.xml.FlatDtdDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
+import org.dbunit.ext.h2.H2DataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -67,6 +69,9 @@ public class DBTestHelper {
     private IDatabaseConnection getDatabaseConnection() throws DatabaseUnitException {
         final String SCHEMA = "tweagle";
         Connection connection = DataSourceUtils.getConnection(dataSource);
-        return new DatabaseConnection(connection, SCHEMA);
+        DatabaseConnection databaseConnection = new DatabaseConnection(connection, SCHEMA);
+        DatabaseConfig databaseConfig = databaseConnection.getConfig();
+        databaseConfig.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new H2DataTypeFactory());
+        return databaseConnection;
     }
 }

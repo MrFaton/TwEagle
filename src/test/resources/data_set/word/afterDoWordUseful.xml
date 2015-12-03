@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
+<dataset>
+    <words id="1" word="день" used="0"/>
+    <words id="2" word="ночь" used="2"/>
+</dataset>

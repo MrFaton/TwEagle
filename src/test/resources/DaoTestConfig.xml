@@ -11,7 +11,6 @@
     <import resource="TwEagleConfig.xml"/>
 
     <bean id="dataSource" class="org.h2.jdbcx.JdbcDataSource">
-        <!-- Disable foreign keys (references) REFERENTIAL_INTEGRITY=FALSE-->
         <property name="URL" value="jdbc:h2:mem:tweagle_test;MODE=MySQL;DB_CLOSE_DELAY=-1"/>
         <property name="user" value="sa"/>
         <property name="password" value=""/>
@@ -24,6 +23,7 @@
         <jdbc:script location="/sql/Create table - tweets.sql"/>
         <jdbc:script location="/sql/Create table - mentions.sql"/>
         <jdbc:script location="/sql/Create table - posted_messages.sql"/>
+        <jdbc:script location="/sql/Create table - words.sql"/>
     </jdbc:initialize-database>
 
     <bean id="dbTestHelper" class="util.DBTestHelper"/>

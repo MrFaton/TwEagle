@@ -1,5 +1,5 @@
 <!ELEMENT dataset (
-        users*, donor_users*, tweets*, mentions*, posted_messages*)>
+        users*, donor_users*, tweets*, mentions*, posted_messages*, words*)>
 
         <!ELEMENT users EMPTY>
         <!ATTLIST users
@@ -52,4 +52,11 @@
                 id CDATA #REQUIRED
                 twitter_id CDATA #REQUIRED
                 posted_date CDATA #REQUIRED
+                >
+
+        <!ELEMENT words EMPTY>
+        <!ATTLIST words
+                id CDATA #REQUIRED
+                word CDATA #REQUIRED
+                used CDATA #REQUIRED
                 >

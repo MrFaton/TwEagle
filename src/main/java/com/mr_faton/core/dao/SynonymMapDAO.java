@@ -4,7 +4,6 @@ import com.mr_faton.core.exception.NoSuchEntityException;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Description
@@ -15,6 +14,5 @@ import java.util.Map;
 public interface SynonymMapDAO {
     List<String> getSynonymList(String word) throws SQLException, NoSuchEntityException;
 
-    void save(String word, String synonym) throws SQLException;
-    void save(List<String> wordList, List<String> synonymList) throws SQLException;
+    void save(List<String> synonymList) throws SQLException;
 }
