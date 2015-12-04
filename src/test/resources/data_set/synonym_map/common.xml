@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
+<dataset>
+    <words id="1" word="замечательно" used="0"/>
+    <words id="2" word="хорошо" used="0"/>
+
+    <words id="3" word="милый" used="0"/>
+    <words id="4" word="великолепный" used="0"/>
+    <words id="5" word="чувствительный" used="0"/>
+
+    <synonym_map id="1" word_id="1" synonym_id="2"/>
+    <synonym_map id="2" word_id="2" synonym_id="1"/>
+</dataset>

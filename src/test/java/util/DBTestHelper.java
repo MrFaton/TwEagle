@@ -11,6 +11,7 @@ import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.ext.h2.H2DataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
+import org.dbunit.util.TableFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.test.context.ContextConfiguration;
@@ -64,6 +65,10 @@ public class DBTestHelper {
     public void generateSchemaDTD() throws Exception{
         FlatDtdDataSet.write(getDatabaseConnection().createDataSet(),
                 new FileOutputStream("tweagle(auto-generated).dtd"));
+    }
+
+    public String tableAsString(ITable table) throws Exception{
+        return new TableFormatter().format(table);
     }
 
     private IDatabaseConnection getDatabaseConnection() throws DatabaseUnitException {

@@ -52,7 +52,7 @@
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
     <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
     <bean id="wordDAO" class="com.mr_faton.core.dao.impl.WordDAOReal"/>
-    <!--<bean id="synonymMapDAO" class="com.mr_faton.core.dao.impl.SynonymMapDAOReal"/>-->
+    <bean id="synonymMapDAO" class="com.mr_faton.core.dao.impl.SynonymMapDAOReal"/>
     <bean id="notExistsSynonymDAO" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal"/>
 
 

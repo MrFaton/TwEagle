@@ -24,6 +24,7 @@
         <jdbc:script location="/sql/Create table - mentions.sql"/>
         <jdbc:script location="/sql/Create table - posted_messages.sql"/>
         <jdbc:script location="/sql/Create table - words.sql"/>
+        <jdbc:script location="/sql/Create table - synonym_map.sql"/>
     </jdbc:initialize-database>
 
     <bean id="dbTestHelper" class="util.DBTestHelper"/>
