@@ -27,9 +27,9 @@ public class DonorUserServiceReal implements DonorUserService {
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     @Override
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
-        logger.debug("begin search donor for parse messages");
+        logger.debug("begin search donor for parsing messages");
         DonorUser donorForMessage = donorUserDAO.getDonorForMessage();
-        logger.debug("end search donor for parse messages");
+        logger.debug("end search donor for parsing messages");
         return donorForMessage;
     }
 
@@ -37,32 +37,32 @@ public class DonorUserServiceReal implements DonorUserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(DonorUser donorUser) throws SQLException {
-        logger.info("begin save ");
+        logger.debug("begin save " + donorUser);
         donorUserDAO.save(donorUser);
-        logger.info("end save");
+        logger.debug("end save");
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(List<DonorUser> donorUserList) throws SQLException {
-        logger.info("begin save " + donorUserList.size() + " donor users ");
+        logger.debug("begin save " + donorUserList.size() + " donor users: " + donorUserList);
         donorUserDAO.save(donorUserList);
-        logger.info("end save list");
+        logger.debug("end save list");
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(DonorUser donorUser) throws SQLException {
-        logger.info("begin update " + donorUser);
+        logger.debug("begin update " + donorUser);
         donorUserDAO.update(donorUser);
-        logger.info("end update");
+        logger.debug("end update");
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(List<DonorUser> donorUserList) throws SQLException {
-        logger.info("begin update " + donorUserList.size() + " donor users");
+        logger.debug("begin update " + donorUserList.size() + " donor users: " + donorUserList);
         donorUserDAO.update(donorUserList);
-        logger.info("end update list");
+        logger.debug("end update list");
     }
 }
