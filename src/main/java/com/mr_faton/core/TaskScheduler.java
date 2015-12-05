@@ -3,7 +3,6 @@ package com.mr_faton.core;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import com.mr_faton.core.execution_pool.ExecutionPool;
 import com.mr_faton.core.task.Task;
-import com.mr_faton.core.util.Command;
 import com.mr_faton.core.util.SettingsHolder;
 import com.mr_faton.core.util.TimeWizard;
 import org.apache.log4j.Logger;
@@ -18,9 +17,9 @@ import java.util.List;
  * @since 15.09.2015
  * @version 1.5
  */
-public class TaskManager implements Runnable {
+public class TaskScheduler implements Runnable {
     private static final Logger logger = Logger.getLogger("" +
-            "com.mr_faton.core.TaskManager");
+            "com.mr_faton.core.TaskScheduler");
 
     private static int APP_START_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_START_HOUR"));
     private static int APP_STOP_HOUR = Integer.valueOf(SettingsHolder.getSetupByKey("APP_STOP_HOUR"));
@@ -32,7 +31,7 @@ public class TaskManager implements Runnable {
     private final ExecutionPool executionPool;
 //    private final TransactionManager transactionManager;
 
-    public TaskManager(ExecutionPool executionPool, /*TransactionManager transactionManager,*/ List<Task> taskList) {
+    public TaskScheduler(ExecutionPool executionPool, /*TransactionManager transactionManager,*/ List<Task> taskList) {
         logger.debug("constructor");
         this.executionPool = executionPool;
 //        this.transactionManager = transactionManager;

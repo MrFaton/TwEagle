@@ -15,6 +15,5 @@ public interface SynonymService {
     List<String> getSynonymList(String word) throws SQLException, NoSuchEntityException;
     void doWordUseful(String word) throws SQLException;
 
-    void save(String word, String synonym) throws SQLException;
-    void save(List<String> wordList, List<String> synonymList) throws SQLException;
+    void save(List<String> synonymList) throws SQLException;
 }

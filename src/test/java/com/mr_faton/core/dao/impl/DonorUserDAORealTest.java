@@ -50,6 +50,7 @@ public class DonorUserDAORealTest {
     @Test
     public void getDonorForMessage() throws Exception {
         DonorUser donorUser = donorUserDAO.getDonorForMessage();
+        Assert.assertNotNull(donorUser.isMale());
         Assert.assertNull(donorUser.getTakeMessageDate());
     }
 
@@ -76,6 +77,7 @@ public class DonorUserDAORealTest {
         Assertion.assertEquals(expected, actual);
 
         //Test update
+        donorUser.setMale(false);
         donorUser.setTakeMessageDate(TimeWizard.stringToDate("2012-01-02", DATE_PATTERN));
         donorUser.setTakeFollowingDate(TimeWizard.stringToDate("2013-03-04", DATE_PATTERN));
         donorUser.setTakeFollowersDate(TimeWizard.stringToDate("2014-05-06", DATE_PATTERN));
@@ -117,10 +119,12 @@ public class DonorUserDAORealTest {
         Assertion.assertEquals(expected, actual);
 
         //Test update
+        du1.setMale(false);
         du1.setTakeMessageDate(TimeWizard.stringToDate("2015-01-02", DATE_PATTERN));
         du1.setTakeFollowingDate(TimeWizard.stringToDate("2016-02-03", DATE_PATTERN));
         du1.setTakeFollowersDate(TimeWizard.stringToDate("2017-03-04", DATE_PATTERN));
 
+        du2.setMale(true);
         du2.setTakeMessageDate(TimeWizard.stringToDate("2005-01-02", DATE_PATTERN));
         du2.setTakeFollowingDate(TimeWizard.stringToDate("2006-02-03", DATE_PATTERN));
         du2.setTakeFollowersDate(TimeWizard.stringToDate("2007-03-04", DATE_PATTERN));

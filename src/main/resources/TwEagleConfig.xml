@@ -50,19 +50,21 @@
     <bean id="tweetDAO" class="com.mr_faton.core.dao.impl.TweetDAOReal"/>
     <bean id="mentionDAO" class="com.mr_faton.core.dao.impl.MentionDAOReal"/>
     <bean id="postedMessageDAO" class="com.mr_faton.core.dao.impl.PostedMessageDAOReal"/>
-    <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
     <bean id="wordDAO" class="com.mr_faton.core.dao.impl.WordDAOReal"/>
     <bean id="synonymMapDAO" class="com.mr_faton.core.dao.impl.SynonymMapDAOReal"/>
     <bean id="notExistsSynonymDAO" class="com.mr_faton.core.dao.impl.NotExistsSynonymDAOReal"/>
+    <bean id="tweetUserDAO" class="com.mr_faton.core.dao.impl.TweetUserDAOReal"/>
 
 
     <!-- Service-->
     <bean id="userService" class="com.mr_faton.core.service.impl.UserServiceReal"/>
     <bean id="donorUserService" class="com.mr_faton.core.service.impl.DonorUserServiceReal"/>
-    <bean id="tweetUserService" class="com.mr_faton.core.service.impl.TweetUserServiceReal"/>
-    <!--<bean id="synonymService" class="com.mr_faton.core.service.impl.SynonymServiceReal"/>-->
+    <bean id="synonymService" class="com.mr_faton.core.service.impl.SynonymServiceReal"/>
     <bean id="notExistsSynonymService" class="com.mr_faton.core.service.impl.NotExistsSynonymServiceReal"/>
-
+    <bean id="tweetUserService" class="com.mr_faton.core.service.impl.TweetUserServiceReal"/>
+    <bean id="tweetService" class="com.mr_faton.core.service.impl.TweetServiceReal"/>
+    <bean id="mentionService" class="com.mr_faton.core.service.impl.MentionServiceReal"/>
+    <bean id="postedMessageService" class="com.mr_faton.core.service.impl.PostedMessageServiceReal"/>
 
     <!-- Twitter API config-->
     <bean id="twitterAPI" class="com.mr_faton.core.api.impl.TwitterAPIReal"/>
@@ -72,7 +74,7 @@
     <bean id="synonymizerTask" class="com.mr_faton.core.task.impl.SynonymizerTask"/>
     <bean id="tweetTask" class="com.mr_faton.core.task.impl.TweetTask"/>
     <!--&lt;!&ndash; Task Manager&ndash;&gt;-->
-    <!--<bean id="taskManager" class="com.mr_faton.core.TaskManager">-->
+    <!--<bean id="taskScheduler" class="com.mr_faton.core.TaskSchedulerer">-->
     <!--<constructor-arg name="transactionManager" ref="transactionManager"/>-->
     <!--<constructor-arg name="executionPool" ref="executionPool"/>-->
     <!--<constructor-arg name="taskList">-->
@@ -85,6 +87,6 @@
 
     <!--&lt;!&ndash; TwEagle&ndash;&gt;-->
     <!--<bean id="twEagle" class="com.mr_faton.TwEagle">-->
-    <!--<constructor-arg name="taskManager" ref="taskManager"/>-->
+    <!--<constructor-arg name="taskScheduler" ref="taskScheduler"/>-->
     <!--</bean>-->
 </beans>

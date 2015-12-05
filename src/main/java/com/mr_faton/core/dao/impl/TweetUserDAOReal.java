@@ -34,6 +34,8 @@ public class TweetUserDAOReal implements TweetUserDAO {
     private static final String SQL_UPDATE = "" +
             "UPDATE tweagle.tweet_users SET " +
             "is_tweet = ?, cur_tweet = ?, max_tweet = ?, next_tweet = ?, last_upd = ? WHERE tu_name = ?;";
+    private static final String SQL_SELECT = "" +
+            "SELECT * FROM tweagle.tweet_users ";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -41,10 +43,10 @@ public class TweetUserDAOReal implements TweetUserDAO {
     @Override
     public TweetUser getUserForTweet() throws SQLException, NoSuchEntityException {
         logger.debug("get tweetUser for posting tweets");
-        final String SQL = "" +
-                "SELECT * FROM tweagle.tweet_users WHERE " +
-                "is_tweet = 1 AND cur_tweet < max_tweet AND " +
-                "next_tweet = (SELECT MIN(next_tweet) FROM tweagle.tweet_users);";
+        final String PREDICATE = "" +
+                "WHERE next_tweet = " +
+                "(SELECT MIN(next_tweet) FROM tweagle.tweet_users WHERE is_tweet = 1 AND cur_tweet < max_tweet);";
+        final String SQL = SQL_SELECT + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new TwitterUserRowMapper());
         } catch (EmptyResultDataAccessException emptyData) {
@@ -55,8 +57,7 @@ public class TweetUserDAOReal implements TweetUserDAO {
     @Override
     public List<TweetUser> getUserList() throws SQLException, NoSuchEntityException {
         logger.debug("get tweet users");
-        final String SQL = "SELECT * FROM tweagle.tweet_users;";
-        List<TweetUser> tweetUserList = jdbcTemplate.query(SQL, new TwitterUserRowMapper());
+        List<TweetUser> tweetUserList = jdbcTemplate.query(SQL_SELECT, new TwitterUserRowMapper());
         if (tweetUserList.isEmpty()) throw new NoSuchEntityException("no tweet users found");
         return tweetUserList;
     }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
+<dataset>
+    <not_exists_synonym word="man" used="2"/>
+</dataset>

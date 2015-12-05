@@ -1,9 +1,10 @@
 <!ELEMENT dataset (
-        users*, donor_users*, tweets*, mentions*, posted_messages*, words*, synonym_map*)>
+        users*, donor_users*, tweets*, mentions*, posted_messages*, words*, synonym_map*, not_exists_synonym*,
+        tweet_users*)>
 
         <!ELEMENT users EMPTY>
         <!ATTLIST users
-                u_name ID #REQUIRED
+                u_name CDATA #REQUIRED
                 u_password CDATA #REQUIRED
                 email CDATA #REQUIRED
                 male (true|false) #REQUIRED
@@ -19,8 +20,8 @@
 
         <!ELEMENT donor_users EMPTY>
         <!ATTLIST donor_users
-                du_name ID #REQUIRED
-                male (true|false) #REQUIRED
+                du_name CDATA #REQUIRED
+                male (true|false) #IMPLIED
                 take_messages_date CDATA #IMPLIED
                 take_following_date CDATA #IMPLIED
                 take_followers_date CDATA #IMPLIED
@@ -66,4 +67,21 @@
                 id CDATA #REQUIRED
                 word_id CDATA #REQUIRED
                 synonym_id CDATA #REQUIRED
+                >
+
+        <!ELEMENT not_exists_synonym EMPTY>
+        <!ATTLIST not_exists_synonym
+                word CDATA #REQUIRED
+                used CDATA #REQUIRED
+                >
+
+        <!ELEMENT tweet_users EMPTY>
+        <!ATTLIST tweet_users
+                id CDATA #REQUIRED
+                tu_name CDATA #REQUIRED
+                is_tweet CDATA #REQUIRED
+                cur_tweet CDATA #REQUIRED
+                max_tweet CDATA #REQUIRED
+                next_tweet CDATA #IMPLIED
+                last_upd CDATA #REQUIRED
                 >

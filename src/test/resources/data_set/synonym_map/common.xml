@@ -3,11 +3,16 @@
 <dataset>
     <words id="1" word="замечательно" used="0"/>
     <words id="2" word="хорошо" used="0"/>
+    <words id="3" word="прекрастно" used="0"/>
 
-    <words id="3" word="милый" used="0"/>
-    <words id="4" word="великолепный" used="0"/>
-    <words id="5" word="чувствительный" used="0"/>
+    <words id="4" word="милый" used="0"/>
+    <words id="5" word="великолепный" used="0"/>
+    <words id="6" word="чувствительный" used="0"/>
 
     <synonym_map id="1" word_id="1" synonym_id="2"/>
-    <synonym_map id="2" word_id="2" synonym_id="1"/>
+    <synonym_map id="2" word_id="1" synonym_id="3"/>
+    <synonym_map id="3" word_id="2" synonym_id="1"/>
+    <synonym_map id="4" word_id="2" synonym_id="3"/>
+    <synonym_map id="5" word_id="3" synonym_id="1"/>
+    <synonym_map id="6" word_id="3" synonym_id="2"/>
 </dataset>

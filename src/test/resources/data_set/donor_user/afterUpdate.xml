@@ -2,7 +2,7 @@
 <!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
 <dataset>
     <donor_users du_name="Alex"
-                 male="true"
+                 male="false"
                  take_messages_date="2012-01-02"
                  take_following_date="2013-03-04"
                  take_followers_date="2014-05-06"/>

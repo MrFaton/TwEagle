@@ -3,6 +3,7 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.SynonymMapDAO;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.ITable;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import util.DBTestHelper;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Description
@@ -36,6 +38,13 @@ public class SynonymMapDAORealTest {
     @Before
     public void setUp() throws Exception {
         dbTestHelper.fill(COMMON_DATA_SET);
+    }
+
+    @Test
+    public void getSynonymList() throws Exception {
+        List<String> synonymList = synonymMapDAO.getSynonymList("хорошо");
+        Assert.assertTrue(synonymList.size() == 2);
+        Assert.assertTrue(synonymList.contains("замечательно") && synonymList.contains("прекрастно"));
     }
 
     @Test

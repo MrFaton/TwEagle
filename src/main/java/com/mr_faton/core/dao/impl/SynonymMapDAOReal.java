@@ -3,10 +3,8 @@ package com.mr_faton.core.dao.impl;
 import com.mr_faton.core.dao.SynonymMapDAO;
 import com.mr_faton.core.exception.NoSuchEntityException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,32 +37,10 @@ public class SynonymMapDAOReal implements SynonymMapDAO {
 
     @Override
     public void save(final List<String> synonymList) throws SQLException {
-//        BatchPreparedStatementSetter bpss = new BatchPreparedStatementSetter() {
-//            @Override
-//            public void setValues(PreparedStatement ps, int i) throws SQLException {
-//                String word = synonymList.get(i);
-//                for (String synonym : synonymList) {
-//                    if (word.equals(synonym)) continue;
-//                    ps.setString(1, word);
-//                    ps.setString(2, synonym);
-//
-//                    ps.addBatch();
-//                    System.out.println(word + " = " + synonym);
-//                }
-//            }
-//
-//            @Override
-//            public int getBatchSize() {
-//                return synonymList.size();
-//            }
-//        };
-//
-//        jdbcTemplate.batchUpdate(SQL_SAVE, bpss);
         List<Object[]> batchArgs = new ArrayList<>();
         for (String word : synonymList) {
             for (String synonym : synonymList) {
                 if (word.equals(synonym)) continue;
-                System.out.println(word + " = " + synonym);
                 String[] args = {word, synonym};
                 batchArgs.add(args);
             }

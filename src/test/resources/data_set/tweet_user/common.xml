@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
+<dataset>
+    <users u_name="UserA" u_password="cjsa" email="UserA@mail.ru" male="true" creation_date="2014-08-16"
+           messages="453" following="1354" followers="2135"
+           consumer_key="jasl" consumer_secret="cjla" access_token="fpl" access_token_secret="lpgf"/>
+    <users u_name="UserB" u_password="kfoko" email="UserB@mail.ru" male="false" creation_date="2012-01-29"
+           messages="155" following="4897" followers="9864"
+           consumer_key="kodb" consumer_secret="kvdso" access_token="jvids" access_token_secret="kvsdpo"/>
+    <users u_name="UserC" u_password="vvkds" email="UserC@mail.ru" male="true" creation_date="2014-08-16"
+           messages="2156" following="24135" followers="1534"
+           consumer_key="kskvsd" consumer_secret="tsaydc" access_token="k4eo5p" access_token_secret="lvvd"/>
+
+    <tweet_users id="1" tu_name="UserA" is_tweet="1" cur_tweet="5" max_tweet="5" last_upd="1"
+                 next_tweet="2015-10-16 09:48:51"/>
+    <tweet_users id="2" tu_name="UserB" is_tweet="0" cur_tweet="1" max_tweet="3" last_upd="12"
+                 next_tweet="2014-03-12 16:34:19"/>
+    <tweet_users id="3" tu_name="UserC" is_tweet="1" cur_tweet="3" max_tweet="7" last_upd="1"
+                 next_tweet="2015-03-01 10:15:29"/>
+</dataset>

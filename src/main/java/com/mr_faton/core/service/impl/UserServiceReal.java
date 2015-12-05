@@ -21,41 +21,41 @@ public class UserServiceReal implements UserService {
     @Autowired
     UserDAO userDAO;
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     @Override
     public User getUserByName(String name) throws SQLException, NoSuchEntityException {
         return userDAO.getUserByName(name);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     @Override
     public List<User> getUserList() throws SQLException, NoSuchEntityException {
         return userDAO.getUserList();
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(User user) throws SQLException {
         userDAO.save(user);
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(List<User> userList) throws SQLException {
         userDAO.save(userList);
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(User user) throws SQLException {
         userDAO.update(user);
     }
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(List<User> userList) throws SQLException {
         userDAO.update(userList);

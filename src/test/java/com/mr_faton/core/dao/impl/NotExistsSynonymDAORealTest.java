@@ -1,42 +1,45 @@
-//package com.mr_faton.core.dao.impl;
-//
-//import com.mr_faton.core.context.AppContext;
-//import com.mr_faton.core.dao.NotExistsSynonymDAO;
-//import org.junit.AfterClass;
-//import org.junit.Test;
-//import org.springframework.jdbc.core.JdbcTemplate;
-//import util.Counter;
-//
-//import static org.junit.Assert.assertEquals;
-//
-///**
-// * Description
-// *
-// * @author root
-// * @since 11.11.2015
-// */
-//public class NotExistsSynonymDAORealTest {
-//    private static final String BASE_NAME = "NotExistsSynonymDAOReal";
-//    private static final JdbcTemplate JDBC_TEMPLATE = (JdbcTemplate) AppContext.getBeanByName("jdbcTemplate");
-//    private static final NotExistsSynonymDAO NOT_EXISTS_SYNONYM_DAO = (NotExistsSynonymDAO) AppContext.getBeanByName("notExistsSynonymDAO");
-//
-//    @AfterClass
-//    public static void tearDown() throws Exception {
-//        final String SQL = "" +
-//                "DELETE FROM tweagle.not_exists_synonym WHERE word LIKE 'NotExistsSynonymDAOReal%';";
-//        JDBC_TEMPLATE.update(SQL);
-//    }
-//
-//    @Test
-//    public void addWord() throws Exception {
-//        String notExistsWord = BASE_NAME + Counter.getNextNumber();
-//        final String SQL = "" +
-//                "SELECT used FROM tweagle.not_exists_synonym WHERE word = '" + notExistsWord + "';";
-//        final int usedTimes = 4;
-//        for (int i = 0; i <= usedTimes ; i++) {
-//            NOT_EXISTS_SYNONYM_DAO.addWord(notExistsWord);
-//        }
-//        final int extractedUsedTimes = JDBC_TEMPLATE.queryForObject(SQL, Integer.class);
-//        assertEquals(usedTimes, extractedUsedTimes);
-//    }
-//}
+package com.mr_faton.core.dao.impl;
+
+import com.mr_faton.core.dao.NotExistsSynonymDAO;
+import org.dbunit.Assertion;
+import org.dbunit.dataset.ITable;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import util.DBTestHelper;
+
+/**
+ * Description
+ *
+ * @author root
+ * @since 11.11.2015
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = ("classpath:/DaoTestConfig.xml"))
+@Transactional
+public class NotExistsSynonymDAORealTest {
+    private static final String TABLE = "not_exists_synonym";
+
+    @Autowired
+    private NotExistsSynonymDAO notExistsSynonymDAO;
+    @Autowired
+    DBTestHelper dbTestHelper;
+
+    @Test
+    public void addWord() throws Exception {
+        String afterAddWord = "/data_set/not_exists_synonym/afterAddWord.xml";
+        String word = "man";
+
+        notExistsSynonymDAO.addWord(word);
+        notExistsSynonymDAO.addWord(word);
+        notExistsSynonymDAO.addWord(word);
+
+        ITable expected = dbTestHelper.getTableFromFile(TABLE, afterAddWord);
+        ITable actual = dbTestHelper.getTableFromSchema(TABLE);
+
+        Assertion.assertEqualsIgnoreCols(expected, actual, DBTestHelper.IGNORED_COLUMN_ID);
+    }
+}

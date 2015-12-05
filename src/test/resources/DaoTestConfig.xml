@@ -25,6 +25,9 @@
         <jdbc:script location="/sql/Create table - posted_messages.sql"/>
         <jdbc:script location="/sql/Create table - words.sql"/>
         <jdbc:script location="/sql/Create table - synonym_map.sql"/>
+        <jdbc:script location="/sql/Create table - not_exists_synonym.sql"/>
+        <jdbc:script location="/sql/Create table tweet_users.sql"/>
+        <jdbc:script location="/sql/Create table tweet_users.sql"/>
     </jdbc:initialize-database>
 
     <bean id="dbTestHelper" class="util.DBTestHelper"/>

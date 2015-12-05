@@ -33,25 +33,25 @@ public class TweetUserServiceReal implements TweetUserService {
         return tweetUserDAO.getUserList();
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(TweetUser tweetUser) throws SQLException {
         tweetUserDAO.save(tweetUser);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void save(List<TweetUser> tweetUserList) throws SQLException {
         tweetUserDAO.save(tweetUserList);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(TweetUser user) throws SQLException {
         tweetUserDAO.update(user);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(List<TweetUser> userList) throws SQLException {
         tweetUserDAO.update(userList);

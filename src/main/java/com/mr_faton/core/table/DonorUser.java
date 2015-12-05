@@ -11,7 +11,7 @@ import java.util.Date;
  */
 public class DonorUser {
     private String name;
-    private boolean male;
+    private Boolean male;
     private Date takeMessageDate;
     private Date takeFollowingDate;
     private Date takeFollowersDate;
@@ -23,7 +23,7 @@ public class DonorUser {
         this.name = name;
     }
 
-    public boolean isMale() {
+    public Boolean isMale() {
         return male;
     }
     public void setMale(boolean male) {
@@ -53,7 +53,13 @@ public class DonorUser {
 
     @Override
     public String toString() {
-        return name;
+        return "DonorUser{" +
+                "name='" + name + '\'' +
+                ", male=" + male +
+                ", takeMessageDate=" + takeMessageDate +
+                ", takeFollowingDate=" + takeFollowingDate +
+                ", takeFollowersDate=" + takeFollowersDate +
+                '}';
     }
 
     @Override
@@ -63,8 +69,8 @@ public class DonorUser {
 
         DonorUser donorUser = (DonorUser) o;
 
-        if (male != donorUser.male) return false;
         if (!name.equals(donorUser.name)) return false;
+        if (male != null ? !male.equals(donorUser.male) : donorUser.male != null) return false;
         if (takeMessageDate != null ? !takeMessageDate.equals(donorUser.takeMessageDate) : donorUser.takeMessageDate != null)
             return false;
         if (takeFollowingDate != null ? !takeFollowingDate.equals(donorUser.takeFollowingDate) : donorUser.takeFollowingDate != null)
@@ -76,7 +82,7 @@ public class DonorUser {
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + (male ? 1 : 0);
+        result = 31 * result + (male != null ? male.hashCode() : 0);
         result = 31 * result + (takeMessageDate != null ? takeMessageDate.hashCode() : 0);
         result = 31 * result + (takeFollowingDate != null ? takeFollowingDate.hashCode() : 0);
         result = 31 * result + (takeFollowersDate != null ? takeFollowersDate.hashCode() : 0);

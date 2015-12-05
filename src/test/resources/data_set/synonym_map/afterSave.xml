@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
 <dataset>
-    <synonym_map id="1" word_id="3" synonym_id="4"/>
-    <synonym_map id="2" word_id="3" synonym_id="5"/>
-    <synonym_map id="3" word_id="4" synonym_id="3"/>
-    <synonym_map id="4" word_id="4" synonym_id="5"/>
-    <synonym_map id="5" word_id="5" synonym_id="3"/>
-    <synonym_map id="6" word_id="5" synonym_id="4"/>
+    <synonym_map id="1" word_id="4" synonym_id="5"/>
+    <synonym_map id="2" word_id="4" synonym_id="6"/>
+    <synonym_map id="3" word_id="5" synonym_id="4"/>
+    <synonym_map id="4" word_id="5" synonym_id="6"/>
+    <synonym_map id="5" word_id="6" synonym_id="4"/>
+    <synonym_map id="6" word_id="6" synonym_id="5"/>
 </dataset>

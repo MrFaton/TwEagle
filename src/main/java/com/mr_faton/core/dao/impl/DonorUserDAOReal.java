@@ -27,10 +27,10 @@ public class DonorUserDAOReal implements DonorUserDAO {
             "com.mr_faton.core.dao.impl.DonorUserDAOReal");
     private static final String SQL_SAVE = "" +
             "INSERT INTO tweagle.donor_users (du_name, male, take_messages_date, " +
-            "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?);";
+            "take_following_date, take_followers_date) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE du_name = du_name;";
     private static final String SQL_UPDATE = "" +
-            "UPDATE tweagle.donor_users SET take_messages_date = ?, take_following_date = ?, take_followers_date = ? " +
-            "WHERE du_name = ?;";
+            "UPDATE tweagle.donor_users SET male = ?, " +
+            "take_messages_date = ?, take_following_date = ?, take_followers_date = ? WHERE du_name = ?;";
     private static final String SQL_SELECT = "SELECT * FROM tweagle.donor_users ";
 
     @Autowired
@@ -39,7 +39,7 @@ public class DonorUserDAOReal implements DonorUserDAO {
     @Override
     public DonorUser getDonorForMessage() throws SQLException, NoSuchEntityException {
         logger.debug("get donorUser for parse messages");
-        final String PREDICATE = "WHERE take_messages_date IS NULL LIMIT 1;";
+        final String PREDICATE = "WHERE male IS NOT NULL AND take_messages_date IS NULL LIMIT 1;";
         final String SQL = SQL_SELECT + PREDICATE;
         try {
             return jdbcTemplate.queryForObject(SQL, new DonorUserRowMapper());
@@ -58,7 +58,11 @@ public class DonorUserDAOReal implements DonorUserDAO {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
                 ps.setString(1, donorUser.getName());
-                ps.setBoolean(2, donorUser.isMale());
+                if (donorUser.isMale() != null) {
+                    ps.setBoolean(2, donorUser.isMale());
+                } else {
+                    ps.setNull(2, Types.BOOLEAN);
+                }
 
                 if (donorUser.getTakeMessageDate() != null) {
                     ps.setDate(3, new Date(donorUser.getTakeMessageDate().getTime()));
@@ -90,7 +94,12 @@ public class DonorUserDAOReal implements DonorUserDAO {
                 DonorUser donorUser = donorUserList.get(i);
 
                 ps.setString(1, donorUser.getName());
-                ps.setBoolean(2, donorUser.isMale());
+                if (donorUser.isMale() != null) {
+                    ps.setBoolean(2, donorUser.isMale());
+                } else {
+                    ps.setNull(2, Types.BOOLEAN);
+                }
+
 
                 if (donorUser.getTakeMessageDate() != null) {
                     ps.setDate(3, new Date(donorUser.getTakeMessageDate().getTime()));
@@ -126,23 +135,29 @@ public class DonorUserDAOReal implements DonorUserDAO {
         PreparedStatementSetter pss = new PreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps) throws SQLException {
-                if (donorUser.getTakeMessageDate() != null) {
-                    ps.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                if (donorUser.isMale() != null) {
+                    ps.setBoolean(1, donorUser.isMale());
                 } else {
-                    ps.setNull(1, Types.DATE);
+                    ps.setNull(1, Types.BOOLEAN);
                 }
-                if (donorUser.getTakeFollowingDate() != null) {
-                    ps.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+
+                if (donorUser.getTakeMessageDate() != null) {
+                    ps.setDate(2, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
                     ps.setNull(2, Types.DATE);
                 }
-                if (donorUser.getTakeFollowersDate() != null) {
-                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                if (donorUser.getTakeFollowingDate() != null) {
+                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
                     ps.setNull(3, Types.DATE);
                 }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    ps.setDate(4, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    ps.setNull(4, Types.DATE);
+                }
 
-                ps.setString(4, donorUser.getName());
+                ps.setString(5, donorUser.getName());
             }
         };
 
@@ -157,23 +172,29 @@ public class DonorUserDAOReal implements DonorUserDAO {
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 DonorUser donorUser = donorUserList.get(i);
 
-                if (donorUser.getTakeMessageDate() != null) {
-                    ps.setDate(1, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
+                if (donorUser.isMale() != null) {
+                    ps.setBoolean(1, donorUser.isMale());
                 } else {
-                    ps.setNull(1, Types.DATE);
+                    ps.setNull(1, Types.BOOLEAN);
                 }
-                if (donorUser.getTakeFollowingDate() != null) {
-                    ps.setDate(2, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
+
+                if (donorUser.getTakeMessageDate() != null) {
+                    ps.setDate(2, new java.sql.Date(donorUser.getTakeMessageDate().getTime()));
                 } else {
                     ps.setNull(2, Types.DATE);
                 }
-                if (donorUser.getTakeFollowersDate() != null) {
-                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                if (donorUser.getTakeFollowingDate() != null) {
+                    ps.setDate(3, new java.sql.Date(donorUser.getTakeFollowingDate().getTime()));
                 } else {
                     ps.setNull(3, Types.DATE);
                 }
+                if (donorUser.getTakeFollowersDate() != null) {
+                    ps.setDate(4, new java.sql.Date(donorUser.getTakeFollowersDate().getTime()));
+                } else {
+                    ps.setNull(4, Types.DATE);
+                }
 
-                ps.setString(4, donorUser.getName());
+                ps.setString(5, donorUser.getName());
             }
 
             @Override

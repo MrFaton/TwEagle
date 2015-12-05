@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "dtd/tweagle.dtd">
+<dataset>
+    <tweet_users id="1" tu_name="UserB" is_tweet="0" cur_tweet="3" max_tweet="5" last_upd="8"
+                 next_tweet="2015-12-03 10:16:14"/>
+</dataset>
